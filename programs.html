@@ -38,8 +38,8 @@ const checked=r=>{if(r.error)throw new Error(r.error.message);return r.data};
 function programPhoto(p){return 'https://images.unsplash.com/'+(photos[p.slug]||'photo-1516321318423-f06f85e504b3')+'?auto=format&fit=crop&w=650&q=78';}
 async function start(){
  await auth();
- const query=await db.from('iac_programs').select('id,slug,title,subtitle,summary,duration_months,track,course_id').eq('published',true).order('title');
- programs=checked(query);
+ const [query,prices]=await Promise.all([db.from('iac_programs').select('id,slug,title,subtitle,summary,duration_months,track,course_id').eq('published',true).order('title'),db.from('iac_courses').select('id,fee_paise').eq('published',true)]);
+ programs=checked(query);const fees=new Map(checked(prices).map(x=>[x.id,x.fee_paise]));programs.forEach(p=>{p.monthly_fee_paise=fees.get(p.course_id)||null});
  get('programs').innerHTML=programs.map(p=>'<article class="card program"><img src="'+programPhoto(p)+'" loading="lazy" alt="'+escapeHtml(p.track)+' learning image"><div class="program-body"><span class="tag">12 MONTHS · CAREER TRACK</span><h3>'+escapeHtml(p.title)+'</h3><p class="muted">'+escapeHtml(p.subtitle)+'</p><button data-program="'+escapeHtml(p.id)+'">Explore Roadmap →</button></div></article>').join('');
  document.querySelectorAll('[data-program]').forEach(b=>b.onclick=()=>choose(b.dataset.program));
  const fromHash=new URLSearchParams(location.search).get('program');
