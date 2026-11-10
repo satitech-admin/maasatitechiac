@@ -1,0 +1,102 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Curriculum Studio — Maa Sati IAC</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap');
+:root{--bg:#f4f1eb;--paper:#fcfaf6;--ink:#17212b;--line:#ded5cc;--coral:#d75c3e;--muted:#64737b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px Manrope,system-ui}header{background:var(--ink);padding:16px max(18px,calc((100% - 1160px)/2));color:white;display:flex;justify-content:space-between;gap:15px;align-items:center}header a{color:white;text-decoration:none;font-size:12px;font-weight:800}main{width:min(1140px,calc(100% - 32px));margin:34px auto 75px}.eyebrow{font-size:11px;letter-spacing:2px;font-weight:800;color:#b86044}h1{font-size:clamp(33px,5vw,55px);letter-spacing:-2px;margin:8px 0 18px}h1 em{font:italic 1.02em 'Instrument Serif',Georgia,serif;color:var(--coral)}h2{font-size:23px;margin:0 0 12px}h3{margin:10px 0}.card{background:var(--paper);padding:22px;border:1px solid var(--line);border-radius:16px;margin:14px 0;box-shadow:0 12px 30px #17212b0a}p{color:var(--muted);line-height:1.7}.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.row{display:flex;gap:11px;flex-wrap:wrap;justify-content:space-between;align-items:center}.tag{font-size:11px;font-weight:800;background:#e7ede5;color:#2b6545;padding:5px 10px;border-radius:20px}label{display:block;font-size:12px;font-weight:800;margin:12px 0 5px}input,textarea,select{font:inherit;border:1px solid #c7c7c5;border-radius:9px;padding:11px 12px;background:white;width:100%}textarea{min-height:100px}button{font:inherit;font-size:12px;font-weight:800;background:var(--ink);color:white;border:0;border-radius:8px;padding:12px 16px;cursor:pointer}button:disabled{opacity:.5}button.secondary{background:transparent;border:1px solid var(--ink);color:var(--ink)}.notice{margin:12px 0;background:#e9efe8;padding:13px 16px;color:#2f6446;border-radius:10px}.notice.error{background:#fbe9df;color:#a14031}.tabbar{display:flex;gap:7px;flex-wrap:wrap;margin:23px 0}.tabbar button{background:transparent;color:var(--ink);border:1px solid #b4b9b6}.tabbar button.active{background:var(--ink);color:white}.hidden{display:none!important}.list{max-height:440px;overflow:auto}.item{padding:13px 0;border-bottom:1px solid var(--line)}.item:last-child{border:0}.small{font-size:12px;color:var(--muted)}@media(max-width:800px){.grid{grid-template-columns:1fr}header{flex-direction:column;align-items:flex-start}.card{padding:16px}}</style></head><body>
+<header><strong>MAA SATI IAC · CURRICULUM STUDIO</strong><nav><a href="/founder.html">Founder Access</a> · <a href="/programs.html">Student Programs</a> · <a href="/platform.html#admin">Institute Admin</a></nav></header>
+<main><div class="eyebrow">ADMINISTRATOR ONLY · REAL COURSE MATERIAL</div><h1>Design the <em>learning journey.</em></h1><p>Update real program roadmaps, add interview challenges and publish scored quizzes. All edits go directly to secured curriculum records. Student quiz correct answers remain hidden until submission.</p><div id="notice"></div><div id="gate" class="card">Checking authorized founder account…</div><section id="studio" class="hidden">
+<div class="card row"><div><strong>Selected program</strong><p class="small">Changes here affect the published student curriculum.</p></div><select id="program" style="max-width:400px"></select></div>
+<div class="tabbar"><button data-tab="months" class="active">Monthly Roadmaps</button><button data-tab="interview">Interview Question Builder</button><button data-tab="quiz">Mock Quiz Builder</button></div>
+<div id="months" class="card"><h2>Edit monthly roadmap</h2><div class="grid"><div><label>Choose month<select id="monthSelect"></select></label><form id="monthForm"><label>Title<input id="monthTitle" required maxlength="120"></label><label>Topics (one per line)<textarea id="monthTopics" required></textarea></label><label>Practical project<textarea id="monthProject" required></textarea></label><label>Learning outcome<textarea id="monthOutcome" required></textarea></label><button>Save monthly curriculum</button></form></div><div><h3>Editor guidance</h3><p>Keep every month practical, progressive and achievable. Students with active enrollment can mark a milestone complete, so do not misrepresent assignments as automatically graded.</p><p class="small">Use your own verified videos and project references. Do not copy copyrighted courses.</p></div></div></div>
+<div id="interview" class="card hidden"><h2>Add interview practice question</h2><form id="interviewForm"><div class="grid"><div><label>Category<select id="interviewCategory"><option value="technical">Technical</option><option value="behavioral">Behavioral</option><option value="scenario">Scenario</option><option value="project">Project</option></select></label></div><div><label>Difficulty<select id="interviewDifficulty"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select></label></div></div><label>Interview question<textarea id="interviewQuestion" minlength="12" maxlength="600" required></textarea></label><label>Evaluation points (one per line)<textarea id="interviewPoints" placeholder="Evidence\nClear explanation\nTrade-offs" required></textarea></label><label>Example coaching guidance<textarea id="interviewGuidance" required></textarea></label><button>Publish interview question</button></form></div>
+<div id="quiz" class="card hidden"><h2>Mock quiz authoring</h2><p>Create a draft quiz, add at least three complete questions and then publish it. Existing student quizzes remain intact.</p><div class="grid"><div><h3>New quiz</h3><form id="createQuiz"><label>Quiz title<input id="quizTitle" required minlength="5" maxlength="120"></label><label>Description<textarea id="quizDescription" required></textarea></label><label>Difficulty<select id="quizDifficulty"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select></label><button>Create draft</button></form><div style="margin-top:18px"><h3>Existing quizzes</h3><div id="quizList" class="list"></div></div></div>
+<div><h3>Add multiple choice question</h3><form id="addQuestion"><label>Draft quiz<select id="draftQuiz" required></select></label><label>Question<textarea id="questionPrompt" required minlength="12" maxlength="600"></textarea></label><label>Answer A<input id="optionA" required maxlength="250"></label><label>Answer B<input id="optionB" required maxlength="250"></label><label>Answer C<input id="optionC" required maxlength="250"></label><label>Answer D<input id="optionD" required maxlength="250"></label><label>Correct option<select id="correctAnswer"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select></label><label>Explanation after submission<textarea id="explanation" minlength="15" maxlength="700" required></textarea></label><button>Add question securely</button></form></div></div></div>
+</section></main>
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
+const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
+const get=id=>document.getElementById(id),escapeValue=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]||'&#39;'));
+const checked=r=>{if(r.error)throw Error(r.error.message);return r.data;};
+const note=(s,bad=false)=>get('notice').innerHTML='<div class="notice'+(bad?' error':'')+'">'+escapeValue(s)+'</div>';
+let programs=[],months=[],quizzes=[],currentProgram=null;
+async function boot(){
+ const auth=await db.auth.getUser();
+ if(auth.error||!auth.data.user){get('gate').innerHTML='<h2>Founder login required</h2><p>Sign in and verify the authorized founder mailbox.</p><a href="/founder.html">Open founder verification →</a>';return}
+ const role=await db.rpc('iac_is_admin');
+ if(role.error||role.data!==true){get('gate').innerHTML='<h2>Admin-only page</h2><p>Only the verified founder administrator may modify course curriculum. Use the official founder account.</p><a href="/founder.html">Verify founder access →</a>';return}
+ programs=checked(await db.from('iac_programs').select('id,title,slug').eq('published',true).order('title'));
+ if(!programs.length)throw Error('No programs available');
+ get('gate').classList.add('hidden');get('studio').classList.remove('hidden');
+ get('program').innerHTML=programs.map(p=>'<option value="'+escapeValue(p.id)+'">'+escapeValue(p.title)+'</option>').join('');
+ await selectProgram(programs[0].id);
+}
+async function selectProgram(id){
+ currentProgram=programs.find(p=>p.id===id);if(!currentProgram)return;
+ const [m,q]=await Promise.all([
+ db.from('iac_program_months').select('*').eq('program_id',id).order('month_number'),
+ db.from('iac_mock_quizzes').select('id,title,published,difficulty').eq('program_id',id).order('created_at',{ascending:false})
+ ]);
+ months=checked(m);quizzes=checked(q);
+ get('monthSelect').innerHTML=months.map(m=>'<option value="'+escapeValue(m.id)+'">Month '+m.month_number+' · '+escapeValue(m.title)+'</option>').join('');
+ editMonth(months[0]?.id);renderQuizzes();
+}
+function editMonth(id){
+ const m=months.find(x=>x.id===id);if(!m)return;
+ get('monthTitle').value=m.title;get('monthTopics').value=(m.topics||[]).join('\n');
+ get('monthProject').value=m.project;get('monthOutcome').value=m.outcome;
+}
+function renderQuizzes(){
+ get('quizList').innerHTML=quizzes.length?quizzes.map(q=>'<div class="item row"><div><strong>'+escapeValue(q.title)+'</strong><div class="small">'+escapeValue(q.difficulty)+' · '+(q.published?'Published':'Draft')+'</div></div>'+(q.published?'':'<button data-publish="'+escapeValue(q.id)+'">Publish</button>')+'</div>').join(''):'<p class="small">No quizzes in this program.</p>';
+ get('draftQuiz').innerHTML=quizzes.filter(q=>!q.published).map(q=>'<option value="'+escapeValue(q.id)+'">'+escapeValue(q.title)+'</option>').join('');
+ document.querySelectorAll('[data-publish]').forEach(b=>b.onclick=async()=>{
+  if(!confirm('Publish this quiz to students after checking every answer?'))return;
+  b.disabled=true;try{checked(await db.rpc('iac_admin_publish_mock_quiz',{p_quiz:b.dataset.publish}));note('Quiz published.');await selectProgram(currentProgram.id)}
+  catch(e){note(e.message,true)}finally{b.disabled=false}
+ });
+}
+get('program').onchange=e=>selectProgram(e.target.value).catch(x=>note(x.message,true));
+get('monthSelect').onchange=e=>editMonth(e.target.value);
+get('monthForm').onsubmit=async e=>{e.preventDefault();
+ const topics=get('monthTopics').value.split('\n').map(x=>x.trim()).filter(Boolean);
+ if(!topics.length){note('Add at least one topic.',true);return}
+ try{
+  const result=await db.from('iac_program_months').update({
+   title:get('monthTitle').value.trim(),topics,project:get('monthProject').value.trim(),outcome:get('monthOutcome').value.trim()
+  }).eq('id',get('monthSelect').value);
+  checked(result);note('Month updated in published curriculum.');await selectProgram(currentProgram.id);
+ }catch(error){note(error.message,true)}
+};
+get('interviewForm').onsubmit=async e=>{e.preventDefault();
+ try{
+ const points=get('interviewPoints').value.split('\n').map(x=>x.trim()).filter(Boolean);
+ if(points.length<2)throw Error('Add at least two evaluation points.');
+ checked(await db.from('iac_interview_questions').insert({
+  program_id:currentProgram.id,category:get('interviewCategory').value,difficulty:get('interviewDifficulty').value,
+  question:get('interviewQuestion').value.trim(),evaluation_points:points,example_guidance:get('interviewGuidance').value.trim(),published:true
+ }));
+ note('New interview question published to student practice.');get('interviewForm').reset();
+ }catch(error){note(error.message,true)}
+};
+get('createQuiz').onsubmit=async e=>{e.preventDefault();
+ try{
+ const result=checked(await db.from('iac_mock_quizzes').insert({
+  program_id:currentProgram.id,title:get('quizTitle').value.trim(),description:get('quizDescription').value.trim(),
+  difficulty:get('quizDifficulty').value,published:false
+ }).select('id').single());
+ note('Draft quiz created. Add at least three questions before publishing.');get('createQuiz').reset();
+ await selectProgram(currentProgram.id);get('draftQuiz').value=result.id;
+ }catch(error){note(error.message,true)}
+};
+get('addQuestion').onsubmit=async e=>{e.preventDefault();
+ const id=get('draftQuiz').value;if(!id){note('Create or choose a draft first.',true);return}
+ try{
+ checked(await db.rpc('iac_admin_add_quiz_question',{
+  p_quiz:id,p_prompt:get('questionPrompt').value.trim(),
+  p_options:[get('optionA').value.trim(),get('optionB').value.trim(),get('optionC').value.trim(),get('optionD').value.trim()],
+  p_correct_index:Number(get('correctAnswer').value),p_explanation:get('explanation').value.trim()
+ }));
+ note('Question and private answer key saved.');get('addQuestion').reset();get('draftQuiz').value=id;
+ }catch(error){note(error.message,true)}
+};
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{const target=b.dataset.tab;document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));for(const id of ['months','interview','quiz'])get(id).classList.toggle('hidden',id!==target);});
+boot().catch(e=>note(e.message,true));
+</script></body></html>
