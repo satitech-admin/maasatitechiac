@@ -12,12 +12,39 @@ button,.button{font:inherit;font-size:12px;font-weight:800;border-radius:9px;bac
 @media(max-width:1030px){.programs{grid-template-columns:repeat(2,minmax(0,1fr))}.roadmap{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:740px){header{flex-direction:column;align-items:flex-start}.hero{grid-template-columns:1fr}.hero-art{height:200px}.practice{grid-template-columns:1fr}.roadmap{grid-template-columns:1fr}.card{padding:17px}}
 @media(max-width:430px){.programs{grid-template-columns:1fr}.program img{height:160px}}
+
+/* Skill academy: real photography, timeline milestones and verified badge states */
+.program img{height:155px;object-fit:cover}
+.road-card{padding:0;overflow:hidden;min-width:0}
+.road-image{height:158px;position:relative;overflow:hidden;background:linear-gradient(120deg,#dbe4df,#becac3)}
+.road-image img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s}
+.road-card:hover .road-image img{transform:scale(1.04)}
+.road-image .month{position:absolute;top:12px;left:12px;background:#17212be6;color:#fff;border-radius:22px;padding:7px 12px;letter-spacing:1px;font-size:10px}
+.road-body{padding:19px;display:flex;flex-direction:column;flex:1}
+.road-body h3{font-size:17px;min-height:40px}
+.road-body ul{margin:10px 0 13px}
+.skill-status{display:flex;align-items:center;justify-content:space-between;gap:7px;margin:10px 0;flex-wrap:wrap}
+.skill-status .tag{font-size:10px}
+.project-detail{margin-top:13px;padding:13px;border:1px solid #d6dfd5;border-radius:12px;background:#f5f7f4}
+.project-detail summary{cursor:pointer;color:#274f40;font-size:12px;font-weight:800}
+.project-detail p{font-size:12px}
+.project-detail label{display:block;font-size:11px;font-weight:800;margin:9px 0 5px;color:#394e48}
+.project-detail input,.project-detail textarea{width:100%;font:inherit;font-size:12px;padding:10px;border:1px solid #becac4;border-radius:8px;background:white}
+.project-detail textarea{min-height:96px;resize:vertical}
+.project-detail button{margin-top:11px}
+.skill-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+.skill-actions button,.skill-actions a{font-size:11px;padding:10px 12px;text-decoration:none;border-radius:8px;display:inline-flex;align-items:center}
+.skill-badge{display:inline-flex;align-items:center;gap:7px;padding:8px 10px;border-radius:10px;background:linear-gradient(100deg,#e6efdd,#fff4d7);color:#316549;font-weight:850;font-size:12px;border:1px solid #cdd8ba}
+.skill-badge a{color:#316549;text-decoration:underline}
+.badge-explainer{padding:17px 19px;background:#eef4e7;border:1px solid #d3dfcf;border-radius:13px;margin-bottom:15px;color:#315340;font-size:12px;line-height:1.8}
+.badge-explainer strong{display:block;font-size:14px;margin-bottom:3px}
+@media(max-width:600px){.road-image{height:185px}.road-body h3{min-height:0}.road-body{padding:16px}}
 </style></head><body>
 <header><a href="/"><strong>MAA SATI IAC</strong><small>INSTITUTE OF ADVANCE COMPUTING</small></a><nav><a href="/platform.html">Learning Portal</a><a href="/assistant.html">Learning Assistant</a><a href="/analytics.html">Progress</a><a href="/fees.html">Fees</a><a href="/profile.html">My Profile</a><a href="/founder.html">Founder</a></nav></header>
 <main><section class="hero"><div><div class="eyebrow">12-MONTH CAREER LEARNING TRACKS</div><h1>One roadmap.<br><em>Real career skills.</em></h1><p>Choose your pathway, follow 12 practical milestones, practice interview questions and take scored mock quizzes. Work is saved to your verified student account. This curriculum is a learning plan, not a promise of placement or an automatic certificate.</p><div class="actions"><a href="/platform.html#courses" class="button">Request Course Enrollment</a><a href="/onboarding.html" class="button secondary">My Account</a></div></div><div class="hero-art"><img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1100&q=80" alt="Learners collaborating with laptops" loading="lazy"></div></section>
 <div id="notice" role="status" aria-live="polite"></div><section class="section"><h2>Choose your learning program</h2><div id="programs" class="programs"><p>Loading real program catalog…</p></div></section>
 <div id="detail" class="hidden"><section id="overview" class="section"></section><div class="tabs" id="tabs"><button class="tab active" data-tab="roadmap">12-Month Roadmap</button><button class="tab" data-tab="quizzes">Mock Quizzes</button><button class="tab" data-tab="interviews">Interview Practice</button><button class="tab" data-tab="history">My Performance</button></div>
-<section id="roadmap" class="section"><h2>Monthly learning roadmap</h2><div id="months" class="roadmap"></div></section>
+<section id="roadmap" class="section"><h2>Monthly learning roadmap</h2><div class="badge-explainer"><strong>🏅 Earn an official Maa Sati IAC Skill Badge + Certificate</strong>For each skill: pass the 3-question skill assessment (100%), submit your own real project with a working HTTPS link, then receive instructor/admin approval. Only after approval will a uniquely verifiable skill certificate and digital badge be issued. Course enrollment is required.</div><div id="months" class="roadmap"></div></section>
 <section id="quizzes" class="section hidden"><h2>Mock quizzes</h2><p>Practice questions are public to read; sign in to submit scored answers and retain performance history. Correct answers are verified on the server.</p><div id="quizList"></div><div id="quizPlay"></div></section>
 <section id="interviews" class="section hidden"><h2>Interview practice lab</h2><p>Write, revise and save your own interview responses. A self-review rubric helps you evaluate your answer; automated AI feedback requires a separately activated model service.</p><div class="row" style="margin:18px 0"><label for="category">Question type</label><select id="category" style="max-width:220px"><option value="all">All categories</option><option value="technical">Technical</option><option value="behavioral">Behavioral</option><option value="project">Project defense</option><option value="scenario">Scenario</option></select></div><div class="practice"><div id="interviewList" class="card"></div><div class="card" id="interviewPanel">Select an interview question to begin.</div></div></section>
 <section id="history" class="section hidden"><h2>My practice history</h2><div id="attempts"></div><div id="interviewHistory"></div></section></div>
@@ -29,13 +56,14 @@ const get=id=>document.getElementById(id);
 const escapeHtml=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]||'&#39;'));
 const safeNumber=v=>Number.isFinite(Number(v))?Number(v):0;
 const show=(msg,bad=false)=>get('notice').innerHTML='<div class="notice'+(bad?' error':'')+'">'+escapeHtml(msg)+'</div>';
-const photos={'web-development-12-months':'photo-1498050108023-c5249f4df085','ai-ml-12-months':'photo-1677442136019-21780ecad995','data-science-12-months':'photo-1551288049-bebda4e38f71','app-development-12-months':'photo-1512941937669-90a1b58e7e9d'};
+const photos={'web-development-12-months':'photo-1498050108023-c5249f4df085','ai-ml-12-months':'photo-1677442136019-21780ecad995','data-science-12-months':'photo-1551288049-bebda4e38f71','app-development-12-months':'photo-1512941937669-90a1b58e7e9d'};const skillPhotos=['photo-1461749280684-dccba630e2f6','photo-1555066931-4365d14bab8c','photo-1515879218367-8466d910aaa4','photo-1516321318423-f06f85e504b3','photo-1504639725590-34d0984388bd','photo-1551288049-bebda4e38f71','photo-1522071820081-009f0129c71c','photo-1526374965328-7f61d4dc18c5','photo-1512941937669-90a1b58e7e9d','photo-1555949963-ff9fe0c870eb','photo-1498050108023-c5249f4df085','photo-1517694712202-14dd9538aa97'];
 const empty=s=>'<div class="empty">'+escapeHtml(s)+'</div>';
-let programs=[],months=[],quizzes=[],interviews=[],selected=null,user=null,enrolled=false,progress=new Set(),currentQuiz=null,selectedInterview=null,questions=[],attempts=[];
+let programs=[],months=[],quizzes=[],interviews=[],selected=null,user=null,enrolled=false,progress=new Set(),currentQuiz=null,selectedInterview=null,questions=[],attempts=[],skillAssessments=new Map(),skillSubmissions=new Map(),earnedBadges=new Map(),passedSkills=new Set();
 async function auth(){const r=await db.auth.getUser();user=r.data?.user||null;return user;}
 function requireAuth(){if(user)return true;show('Sign in to save quiz results, interview answers or learning progress. Visit the student portal to register.',true);window.scrollTo({top:0,behavior:'smooth'});return false;}
 const checked=r=>{if(r.error)throw new Error(r.error.message);return r.data};
 function programPhoto(p){return 'https://images.unsplash.com/'+(photos[p.slug]||'photo-1516321318423-f06f85e504b3')+'?auto=format&fit=crop&w=650&q=78';}
+function skillPhoto(m){const offset={'web-development-12-months':0,'ai-ml-12-months':3,'data-science-12-months':6,'app-development-12-months':9}[selected.slug]||0;return 'https://images.unsplash.com/'+skillPhotos[(m.month_number-1+offset)%skillPhotos.length]+'?auto=format&fit=crop&w=800&q=78';}
 async function start(){
  await auth();
  const [query,prices]=await Promise.all([db.from('iac_programs').select('id,slug,title,subtitle,summary,duration_months,track,course_id').eq('published',true).order('title'),db.from('iac_courses').select('id,fee_paise').eq('published',true)]);
@@ -61,7 +89,7 @@ async function choose(id){
  user?db.from('iac_program_progress').select('program_month_id').eq('user_id',user.id):Promise.resolve({data:[],error:null})
  ]);
  months=checked(m);quizzes=checked(q);interviews=checked(inter);enrolled=['active','completed'].includes(checked(enroll)?.status);
- progress=new Set(checked(done).map(x=>x.program_month_id));currentQuiz=null;selectedInterview=null;
+ progress=new Set(checked(done).map(x=>x.program_month_id));currentQuiz=null;selectedInterview=null;await loadSkillState();
  get('overview').innerHTML='<div class="overview"><div class="eyebrow">YOUR SELECTED TRACK</div><h2>'+escapeHtml(selected.title)+'</h2><p>'+escapeHtml(selected.subtitle)+' · 12 monthly learning milestones, projects, interview preparation and practice assessments.</p><div class="row"><span class="tag">'+progress.size+' / '+months.length+' MONTHS MARKED COMPLETE</span><span class="tag">'+(enrolled?'COURSE ACCESS APPROVED':'ENROLLMENT REQUIRED FOR PROGRESS')+'</span></div></div>';
  renderMonths();renderQuizzes();renderInterviews();
  get('attempts').innerHTML=empty('Open My Performance after signing in to see recorded results.');
@@ -70,16 +98,52 @@ async function choose(id){
  document.querySelectorAll('[data-tab]').forEach(b=>{b.classList.toggle('active',b.dataset.tab==='roadmap')});
  ['roadmap','quizzes','interviews','history'].forEach(x=>get(x).classList.toggle('hidden',x!=='roadmap'));
 }
-function renderMonths(){
- get('months').innerHTML=months.map(m=>{const done=progress.has(m.id);return '<article class="card road-card'+(done?' done':'')+'"><span class="month">MONTH '+m.month_number+'</span><h3>'+escapeHtml(m.title)+'</h3><ul>'+(m.topics||[]).map(x=>'<li>'+escapeHtml(x)+'</li>').join('')+'</ul><p><strong>Outcome: </strong>'+escapeHtml(m.outcome)+'</p><div class="project"><strong>Project milestone</strong><div>'+escapeHtml(m.project)+'</div></div><button class="'+(done?'secondary':'')+'" data-month="'+escapeHtml(m.id)+'" '+(done||!enrolled?'disabled':'')+'>'+(done?'✓ Completed':(enrolled?'Mark month complete':'Enroll to track progress'))+'</button></article>'}).join('');
- document.querySelectorAll('[data-month]').forEach(b=>b.onclick=()=>completeMonth(b.dataset.month,b));
+
+async function loadSkillState(){
+ const ids=months.map(m=>m.id);skillAssessments=new Map();skillSubmissions=new Map();earnedBadges=new Map();passedSkills=new Set();
+ if(!ids.length)return;
+ const assessments=checked(await db.from('iac_skill_assessments').select('month_id,quiz_id,pass_score,project_instructions').in('month_id',ids).eq('published',true));
+ for(const a of assessments)skillAssessments.set(a.month_id,a);
+ if(!user||!assessments.length)return;
+ const quizIds=assessments.map(a=>a.quiz_id);
+ const [submissions,certificateList,attemptList]=await Promise.all([
+  db.from('iac_skill_project_submissions').select('id,month_id,status,project_url,description,instructor_feedback,reviewed_at').eq('user_id',user.id).in('month_id',ids),
+  db.from('iac_certificates').select('skill_month_id,certificate_code,revoked,certificate_type').eq('recipient_id',user.id).eq('certificate_type','skill'),
+  db.from('iac_mock_attempts').select('quiz_id,score').eq('user_id',user.id).in('quiz_id',quizIds).limit(500)
+ ]);
+ for(const x of checked(submissions))skillSubmissions.set(x.month_id,x);
+ for(const c of checked(certificateList))if(c.skill_month_id&&!c.revoked&&ids.includes(c.skill_month_id))earnedBadges.set(c.skill_month_id,c.certificate_code);
+ for(const a of assessments)if(checked(attemptList).some(x=>x.quiz_id===a.quiz_id&&x.score>=a.pass_score))passedSkills.add(a.month_id);
 }
-async function completeMonth(id,b){
- if(!requireAuth())return;
- if(!enrolled){show('Only students with active course enrollment may record completed milestones.',true);return;}
- b.disabled=true;
- try{checked(await db.from('iac_program_progress').insert({user_id:user.id,program_month_id:id}));progress.add(id);renderMonths();show('Milestone saved in your real student account.');}
- catch(e){b.disabled=false;show(e.message,true);}
+function renderMonths(){
+ get('months').innerHTML=months.map(m=>{
+  const a=skillAssessments.get(m.id),sub=skillSubmissions.get(m.id),certificate=earnedBadges.get(m.id);
+  const passed=passedSkills.has(m.id),status=certificate?'🏅 Skill certified':sub?.status==='pending'?'Project under review':sub?.status==='changes_requested'?'Changes requested':sub?.status==='rejected'?'Resubmit project':passed?'Quiz passed · submit project':'Quiz not passed';
+  const statusClass=certificate?'good':passed?'neutral':'';
+  const badgeLink=certificate?'<div class="skill-badge">🏅 Maa Sati IAC Verified Skill Badge <a href="/skill-badge.html?code='+encodeURIComponent(certificate)+'">View / Share</a></div>':'';
+  const feedback=sub?.instructor_feedback?'<p><strong>Mentor feedback: </strong>'+escapeHtml(sub.instructor_feedback)+'</p>':'';
+  const canSubmit=!!user&&enrolled&&passed&&!certificate&&(!sub||['changes_requested','rejected'].includes(sub.status));
+  const form=canSubmit?'<details class="project-detail"><summary>'+(sub?'Resubmit improved project':'Submit skill project for review')+'</summary><p>'+escapeHtml(a?.project_instructions||'')+'</p><form class="skillProjectForm" data-month="'+escapeHtml(m.id)+'"><label>HTTPS GitHub repository or live demo link</label><input type="url" name="url" required pattern="https://.+" maxlength="500" placeholder="https://github.com/yourname/your-project" value="'+escapeHtml(sub?.project_url||'')+'"><label>Project overview, your contribution and testing evidence (30+ characters)</label><textarea name="description" required minlength="30" maxlength="2500">'+escapeHtml(sub?.description||'')+'</textarea><button type="submit">Send for mentor review</button></form></details>':'';
+  const helper=!enrolled?'<p class="muted">Explore this skill freely. Approved course enrollment is required for project review and a badge.</p>':!passed?'<p class="muted">Pass all three quiz questions before submitting the project.</p>':sub?.status==='pending'?'<p class="muted">Your project is awaiting instructor review. Badge is not issued yet.</p>':'';
+  return '<article class="card road-card'+(certificate?' done':'')+'"><div class="road-image"><img src="'+skillPhoto(m)+'" alt="Real-world learning workspace for '+escapeHtml(m.title)+'" loading="lazy"><span class="month">MONTH '+m.month_number+'</span></div><div class="road-body"><h3>'+escapeHtml(m.title)+'</h3><ul>'+(m.topics||[]).map(x=>'<li>'+escapeHtml(x)+'</li>').join('')+'</ul><p><strong>Skill outcome: </strong>'+escapeHtml(m.outcome)+'</p><div class="project"><strong>Build a real project</strong><div>'+escapeHtml(m.project)+'</div></div><div class="skill-status"><span class="tag '+statusClass+'">'+escapeHtml(status)+'</span><span class="muted">Quiz: 3 Q · Pass: '+(a?.pass_score||100)+'%</span></div><div class="skill-actions"><button data-skill-quiz="'+escapeHtml(m.id)+'" '+(!a?'disabled':'')+'>📝 Take skill quiz</button></div>'+badgeLink+helper+feedback+form+'</div></article>';
+ }).join('');
+ document.querySelectorAll('[data-skill-quiz]').forEach(b=>b.onclick=async()=>{const assessment=skillAssessments.get(b.dataset.skillQuiz);if(!assessment)return;document.querySelector('[data-tab="quizzes"]')?.click();await loadQuiz(assessment.quiz_id);});
+ document.querySelectorAll('form.skillProjectForm').forEach(f=>f.onsubmit=submitSkillProject);
+}
+async function submitSkillProject(event){
+ event.preventDefault();if(!requireAuth())return;
+ const f=event.currentTarget,month=f.dataset.month,a=skillAssessments.get(month),prior=skillSubmissions.get(month);
+ if(!enrolled||!a||!passedSkills.has(month)){show('An approved enrollment and passing skill quiz are required.',true);return;}
+ const values=new FormData(f),url=String(values.get('url')||'').trim(),description=String(values.get('description')||'').trim();
+ if(!/^https:\/\/\S{5,495}$/.test(url)||description.length<30){show('Provide an HTTPS project link and a detailed description (30+ characters).',true);return;}
+ const button=f.querySelector('button');button.disabled=true;
+ try{
+  let result;
+  if(prior){result=await db.from('iac_skill_project_submissions').update({project_url:url,description,status:'pending',reviewed_at:null,reviewed_by:null,instructor_feedback:null}).eq('id',prior.id).eq('user_id',user.id);}
+  else result=await db.from('iac_skill_project_submissions').insert({month_id:month,user_id:user.id,project_url:url,description});
+  checked(result);await loadSkillState();renderMonths();
+  show('Project submitted for real mentor review. Your skill badge will be issued only after approval.');
+ }catch(err){button.disabled=false;show(err.message,true)}
 }
 function renderQuizzes(){
  get('quizList').innerHTML=quizzes.length?quizzes.map(q=>'<div class="card row" style="margin-bottom:10px"><div><span class="tag neutral">'+escapeHtml(q.difficulty.toUpperCase())+'</span><h3>'+escapeHtml(q.title)+'</h3><p class="muted">'+escapeHtml(q.description)+'</p></div><button data-quiz="'+escapeHtml(q.id)+'">Start quiz</button></div>').join(''):empty('Quiz will be published after instructor review.');
@@ -103,7 +167,8 @@ async function submitQuiz(event){
   const feedback=result.feedback||[];
   const title='<h3>Score: '+result.score+'% · '+result.correct_count+' / '+result.total+' correct</h3>';
   get('quizFeedback').innerHTML='<div class="review">'+title+feedback.map((f,index)=>'<p><strong>Q'+(index+1)+' · <span class="'+(f.correct?'correct':'incorrect')+'">'+(f.correct?'Correct':'Needs review')+'</span></strong><br>'+escapeHtml(f.explanation)+'</p>').join('')+'</div>';
-  show('Quiz result saved to your real account. Retake for practice if needed.');
+  if(skillAssessments.size&&Array.from(skillAssessments.values()).some(s=>s.quiz_id===currentQuiz.id)){await loadSkillState();renderMonths();}
+  show(result.score===100?'Skill quiz passed! Return to the roadmap to submit your project.':'Quiz result saved. Review explanations and try again to meet the skill requirement.');
  }catch(e){show(e.message,true)}finally{btn.disabled=false;}
 }
 function renderInterviews(){
