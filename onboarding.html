@@ -47,6 +47,20 @@ async function load(){
  let auth=await db.auth.getUser();
  if(auth.error||!auth.data.user){$('workspace').classList.add('hidden');$('guest').innerHTML='<h2>Sign in or create your student account</h2><p>Use the account registered for courses, seminars or internships.</p><a class="linkbutton" href="/platform.html#dashboard">Sign in / Register →</a><h3 style="margin-top:25px">Forgot your password?</h3><form id="guestReset"><label>Registered email<input required type="email" id="guestResetEmail"></label><button type="submit">Send password reset link</button></form>'; $('guestReset').onsubmit=async event=>{event.preventDefault();await requestReset($('guestResetEmail').value)};return}
  currentUser=auth.data.user;
+ // Keep email-verified signups functional even if they arrive here before opening the LMS.
+ const existingProfile=await db.from('iac_profiles').select('id').eq('id',currentUser.id).maybeSingle();
+ if(existingProfile.error)throw existingProfile.error;
+ if(!existingProfile.data){
+  const meta=currentUser.user_metadata||{};
+  const level=['school','college','other'].includes(meta.student_level)?meta.student_level:'other';
+  const rawName=String(meta.full_name||currentUser.email?.split('@')[0]||'Student').trim();
+  const fullname=rawName.length>=2?rawName.slice(0,120):'IAC Student';
+  checked(await db.from('iac_profiles').insert({
+   id:currentUser.id,full_name:fullname,student_level:level,
+   school_or_college:String(meta.school_or_college||'').slice(0,140)||null,
+   class_or_year:String(meta.class_or_year||'').slice(0,40)||null
+  }));
+ }
  $('workspace').classList.remove('hidden');$('guest').classList.add('hidden');
  checked(await db.rpc('iac_claim_founder_admin'));
  const [p,staff,guardian,requests]=await Promise.all([
