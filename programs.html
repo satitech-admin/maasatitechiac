@@ -1,0 +1,144 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Career Programs, Roadmaps & Interview Lab | Maa Sati IAC</title>
+<meta name="description" content="Maa Sati IAC 12-month Web Development, AI, Data Science and App Development programs with real roadmaps, mock quizzes and interview practice.">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap');
+:root{--paper:#f4f1eb;--surface:#fcfaf6;--ink:#17212b;--muted:#69727b;--line:#d8d1c8;--coral:#d75c3e;--sage:#e0e8df;--green:#237253}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px Manrope,system-ui,sans-serif}header{background:#17212b;color:#fff;padding:15px max(22px,calc((100% - 1190px)/2));display:flex;justify-content:space-between;align-items:center;gap:17px}header strong{font-size:20px}header small{font-size:9px;letter-spacing:1.2px;color:#e3c9ad;display:block}header a{color:white;text-decoration:none}nav{display:flex;flex-wrap:wrap;gap:15px;font-size:12px;font-weight:800}
+main{max-width:1170px;margin:0 auto;padding:32px 17px 70px}.eyebrow{font-size:11px;font-weight:800;letter-spacing:2px;color:#b65b3c}h1{font-size:clamp(34px,5vw,60px);letter-spacing:-2.5px;line-height:1.08;margin:13px 0}h1 em{font:italic 1.04em 'Instrument Serif',Georgia,serif;color:var(--coral)}h2{font-size:24px;letter-spacing:-.8px;margin:0 0 13px}h3{font-size:16px;margin:7px 0 9px}p{color:var(--muted);line-height:1.7}.hero{display:grid;grid-template-columns:1.4fr .8fr;gap:24px;align-items:center;margin-bottom:32px}.hero-art{height:270px;border-radius:21px;overflow:hidden;background:#202a34;position:relative}.hero-art img{width:100%;height:100%;object-fit:cover;filter:saturate(.8)}.hero-art:after{content:'LEARN · BUILD · PROVE';position:absolute;bottom:22px;left:22px;background:#17212bdb;color:white;border-radius:7px;font-size:11px;letter-spacing:2px;padding:12px}
+.card{border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:21px;box-shadow:0 10px 35px #17212b09}.programs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}.program{padding:0;overflow:hidden;display:flex;flex-direction:column;transition:transform .25s}.program:hover{transform:translateY(-3px)}.program img{height:125px;width:100%;object-fit:cover}.program-body{padding:16px;display:flex;flex-direction:column;gap:7px;flex:1}.program-body h3{margin:0;font-size:15px}.tag{display:inline-flex;font-size:10px;font-weight:800;color:#7e4432;background:#f4e2d9;padding:6px 10px;border-radius:30px}.tag.good{color:#266846;background:#e1eddf}.tag.neutral{color:#405565;background:#e6ebed}.row{display:flex;justify-content:space-between;align-items:center;gap:11px;flex-wrap:wrap}.actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:12px}
+button,.button{font:inherit;font-size:12px;font-weight:800;border-radius:9px;background:var(--ink);color:#fff;padding:12px 15px;border:1px solid var(--ink);cursor:pointer;text-decoration:none;display:inline-block}button.secondary{background:transparent;color:var(--ink)}button:disabled{opacity:.48;cursor:not-allowed}.tabs{display:flex;flex-wrap:wrap;gap:7px;margin:24px 0 17px}.tab{background:transparent;border:1px solid #c3c4bf;color:var(--ink)}.tab.active{color:white;background:var(--ink);border-color:var(--ink)}.section{margin-top:29px}.overview{background:linear-gradient(115deg,#17212b,#29404d);color:white;padding:26px;border-radius:17px}.overview p{color:#d5dfdd}.overview h2{font-size:27px}.overview .tag{background:#455466;color:white}.roadmap{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.road-card{display:flex;flex-direction:column}.road-card .month{font-size:11px;font-weight:900;letter-spacing:1.1px;color:#c05e45}.road-card p{font-size:12px}.road-card ul{font-size:12px;line-height:1.8;color:#586873;padding-left:19px}.road-card .project{font-size:12px;color:#29495c;background:#ecf0f0;border-radius:9px;padding:11px;margin-top:auto}.road-card .project strong{color:#29495c}.road-card button{margin-top:13px}.road-card.done{border-color:#76a18c;background:#f5faf6}
+.practice{display:grid;grid-template-columns:1.2fr 1fr;gap:15px}.question{padding:16px 0;border-bottom:1px solid var(--line)}.question:last-child{border:0}.question strong{font-size:14px}.choices{display:grid;gap:7px;margin:12px 0}.choice{padding:9px 12px;display:flex;gap:10px;align-items:flex-start;border:1px solid #d4d7d5;border-radius:8px;font-weight:500;font-size:12px;background:white}.choice input{margin-top:2px;accent-color:var(--coral)}.correct{color:#226b4f}.incorrect{color:#b44f35}.review{background:#eef2ed;border-radius:10px;padding:14px;margin:12px 0;font-size:12px}.interview{border-bottom:1px solid var(--line);padding:14px 0}.interview:last-child{border:0}.interview textarea{height:120px}.rubric{background:#eef2ed;padding:12px;border-radius:10px;font-size:12px;line-height:1.7}.rubric ul{margin:6px 0;padding-left:20px}.muted{color:var(--muted);font-size:12px}.empty{padding:22px;background:#f0f1ed;border-radius:12px;color:var(--muted)}.notice{margin:16px 0;padding:13px 16px;background:#e7eee6;color:#315d45;border-radius:9px;font-size:12px}.notice.error{color:#9c412e;background:#fbe8df}.hidden{display:none!important}select,textarea{width:100%;font:inherit;border:1px solid #c5cbd0;padding:10px;background:#fff;border-radius:9px}.footer{margin-top:45px;text-align:center;color:var(--muted);font-size:11px}
+@media(max-width:1030px){.programs{grid-template-columns:repeat(2,minmax(0,1fr))}.roadmap{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:740px){header{flex-direction:column;align-items:flex-start}.hero{grid-template-columns:1fr}.hero-art{height:200px}.practice{grid-template-columns:1fr}.roadmap{grid-template-columns:1fr}.card{padding:17px}}
+@media(max-width:430px){.programs{grid-template-columns:1fr}.program img{height:160px}}
+</style></head><body>
+<header><a href="/"><strong>MAA SATI IAC</strong><small>INSTITUTE OF ADVANCE COMPUTING</small></a><nav><a href="/platform.html">Learning Portal</a><a href="/assistant.html">Learning Assistant</a><a href="/analytics.html">Progress</a><a href="/founder.html">Founder</a></nav></header>
+<main><section class="hero"><div><div class="eyebrow">12-MONTH CAREER LEARNING TRACKS</div><h1>One roadmap.<br><em>Real career skills.</em></h1><p>Choose your pathway, follow 12 practical milestones, practice interview questions and take scored mock quizzes. Work is saved to your verified student account. This curriculum is a learning plan, not a promise of placement or an automatic certificate.</p><div class="actions"><a href="/platform.html#courses" class="button">Request Course Enrollment</a><a href="/onboarding.html" class="button secondary">My Account</a></div></div><div class="hero-art"><img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1100&q=80" alt="Learners collaborating with laptops" loading="lazy"></div></section>
+<div id="notice" role="status" aria-live="polite"></div><section class="section"><h2>Choose your learning program</h2><div id="programs" class="programs"><p>Loading real program catalog…</p></div></section>
+<div id="detail" class="hidden"><section id="overview" class="section"></section><div class="tabs" id="tabs"><button class="tab active" data-tab="roadmap">12-Month Roadmap</button><button class="tab" data-tab="quizzes">Mock Quizzes</button><button class="tab" data-tab="interviews">Interview Practice</button><button class="tab" data-tab="history">My Performance</button></div>
+<section id="roadmap" class="section"><h2>Monthly learning roadmap</h2><div id="months" class="roadmap"></div></section>
+<section id="quizzes" class="section hidden"><h2>Mock quizzes</h2><p>Practice questions are public to read; sign in to submit scored answers and retain performance history. Correct answers are verified on the server.</p><div id="quizList"></div><div id="quizPlay"></div></section>
+<section id="interviews" class="section hidden"><h2>Interview practice lab</h2><p>Write, revise and save your own interview responses. A self-review rubric helps you evaluate your answer; automated AI feedback requires a separately activated model service.</p><div class="row" style="margin:18px 0"><label for="category">Question type</label><select id="category" style="max-width:220px"><option value="all">All categories</option><option value="technical">Technical</option><option value="behavioral">Behavioral</option><option value="project">Project defense</option><option value="scenario">Scenario</option></select></div><div class="practice"><div id="interviewList" class="card"></div><div class="card" id="interviewPanel">Select an interview question to begin.</div></div></section>
+<section id="history" class="section hidden"><h2>My practice history</h2><div id="attempts"></div><div id="interviewHistory"></div></section></div>
+<div class="footer">Maa Sati IAC · Course access and completed milestones require approved enrollment · Interviews are for educational practice, not employment guarantees</div></main>
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
+const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
+const get=id=>document.getElementById(id);
+const escapeHtml=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]||'&#39;'));
+const safeNumber=v=>Number.isFinite(Number(v))?Number(v):0;
+const show=(msg,bad=false)=>get('notice').innerHTML='<div class="notice'+(bad?' error':'')+'">'+escapeHtml(msg)+'</div>';
+const photos={'web-development-12-months':'photo-1498050108023-c5249f4df085','ai-ml-12-months':'photo-1677442136019-21780ecad995','data-science-12-months':'photo-1551288049-bebda4e38f71','app-development-12-months':'photo-1512941937669-90a1b58e7e9d'};
+const empty=s=>'<div class="empty">'+escapeHtml(s)+'</div>';
+let programs=[],months=[],quizzes=[],interviews=[],selected=null,user=null,enrolled=false,progress=new Set(),currentQuiz=null,selectedInterview=null,questions=[],attempts=[];
+async function auth(){const r=await db.auth.getUser();user=r.data?.user||null;return user;}
+function requireAuth(){if(user)return true;show('Sign in to save quiz results, interview answers or learning progress. Visit the student portal to register.',true);window.scrollTo({top:0,behavior:'smooth'});return false;}
+const checked=r=>{if(r.error)throw new Error(r.error.message);return r.data};
+function programPhoto(p){return 'https://images.unsplash.com/'+(photos[p.slug]||'photo-1516321318423-f06f85e504b3')+'?auto=format&fit=crop&w=650&q=78';}
+async function start(){
+ await auth();
+ const query=await db.from('iac_programs').select('id,slug,title,subtitle,summary,duration_months,track,course_id').eq('published',true).order('title');
+ programs=checked(query);
+ get('programs').innerHTML=programs.map(p=>'<article class="card program"><img src="'+programPhoto(p)+'" loading="lazy" alt="'+escapeHtml(p.track)+' learning image"><div class="program-body"><span class="tag">12 MONTHS · CAREER TRACK</span><h3>'+escapeHtml(p.title)+'</h3><p class="muted">'+escapeHtml(p.subtitle)+'</p><button data-program="'+escapeHtml(p.id)+'">Explore Roadmap →</button></div></article>').join('');
+ document.querySelectorAll('[data-program]').forEach(b=>b.onclick=()=>choose(b.dataset.program));
+ const fromHash=new URLSearchParams(location.search).get('program');
+ const found=programs.find(p=>p.slug===fromHash)||programs.find(p=>p.slug==='web-development-12-months')||programs[0];
+ if(found)await choose(found.id);
+}
+async function choose(id){
+ selected=programs.find(p=>p.id===id);if(!selected)return;
+ get('detail').classList.remove('hidden');
+ const [m,q,inter,enroll,done]=await Promise.all([
+ db.from('iac_program_months').select('*').eq('program_id',id).order('month_number'),
+ db.from('iac_mock_quizzes').select('id,title,description,difficulty').eq('program_id',id).eq('published',true).order('difficulty'),
+ db.from('iac_interview_questions').select('id,category,difficulty,question,evaluation_points,example_guidance').eq('program_id',id).eq('published',true).order('category'),
+ user?db.from('iac_enrollments').select('status').eq('user_id',user.id).eq('course_id',selected.course_id).maybeSingle():Promise.resolve({data:null,error:null}),
+ user?db.from('iac_program_progress').select('program_month_id').eq('user_id',user.id):Promise.resolve({data:[],error:null})
+ ]);
+ months=checked(m);quizzes=checked(q);interviews=checked(inter);enrolled=['active','completed'].includes(checked(enroll)?.status);
+ progress=new Set(checked(done).map(x=>x.program_month_id));currentQuiz=null;selectedInterview=null;
+ get('overview').innerHTML='<div class="overview"><div class="eyebrow">YOUR SELECTED TRACK</div><h2>'+escapeHtml(selected.title)+'</h2><p>'+escapeHtml(selected.subtitle)+' · 12 monthly learning milestones, projects, interview preparation and practice assessments.</p><div class="row"><span class="tag">'+progress.size+' / '+months.length+' MONTHS MARKED COMPLETE</span><span class="tag">'+(enrolled?'COURSE ACCESS APPROVED':'ENROLLMENT REQUIRED FOR PROGRESS')+'</span></div></div>';
+ renderMonths();renderQuizzes();renderInterviews();
+ get('attempts').innerHTML=empty('Open My Performance after signing in to see recorded results.');
+ get('interviewHistory').innerHTML='';
+ get('quizPlay').innerHTML='';
+ document.querySelectorAll('[data-tab]').forEach(b=>{b.classList.toggle('active',b.dataset.tab==='roadmap')});
+ ['roadmap','quizzes','interviews','history'].forEach(x=>get(x).classList.toggle('hidden',x!=='roadmap'));
+}
+function renderMonths(){
+ get('months').innerHTML=months.map(m=>{const done=progress.has(m.id);return '<article class="card road-card'+(done?' done':'')+'"><span class="month">MONTH '+m.month_number+'</span><h3>'+escapeHtml(m.title)+'</h3><ul>'+(m.topics||[]).map(x=>'<li>'+escapeHtml(x)+'</li>').join('')+'</ul><p><strong>Outcome: </strong>'+escapeHtml(m.outcome)+'</p><div class="project"><strong>Project milestone</strong><div>'+escapeHtml(m.project)+'</div></div><button class="'+(done?'secondary':'')+'" data-month="'+escapeHtml(m.id)+'" '+(done||!enrolled?'disabled':'')+'>'+(done?'✓ Completed':(enrolled?'Mark month complete':'Enroll to track progress'))+'</button></article>'}).join('');
+ document.querySelectorAll('[data-month]').forEach(b=>b.onclick=()=>completeMonth(b.dataset.month,b));
+}
+async function completeMonth(id,b){
+ if(!requireAuth())return;
+ if(!enrolled){show('Only students with active course enrollment may record completed milestones.',true);return;}
+ b.disabled=true;
+ try{checked(await db.from('iac_program_progress').insert({user_id:user.id,program_month_id:id}));progress.add(id);renderMonths();show('Milestone saved in your real student account.');}
+ catch(e){b.disabled=false;show(e.message,true);}
+}
+function renderQuizzes(){
+ get('quizList').innerHTML=quizzes.length?quizzes.map(q=>'<div class="card row" style="margin-bottom:10px"><div><span class="tag neutral">'+escapeHtml(q.difficulty.toUpperCase())+'</span><h3>'+escapeHtml(q.title)+'</h3><p class="muted">'+escapeHtml(q.description)+'</p></div><button data-quiz="'+escapeHtml(q.id)+'">Start quiz</button></div>').join(''):empty('Quiz will be published after instructor review.');
+ document.querySelectorAll('[data-quiz]').forEach(b=>b.onclick=()=>loadQuiz(b.dataset.quiz));
+}
+async function loadQuiz(id){
+ const quiz=quizzes.find(q=>q.id===id);if(!quiz)return;
+ const result=await db.from('iac_mock_questions').select('id,prompt,options,sort_order').eq('quiz_id',id).order('sort_order');
+ questions=checked(result);currentQuiz=quiz;
+ get('quizPlay').innerHTML='<div class="card" style="margin:20px 0"><div class="row"><h2>'+escapeHtml(quiz.title)+'</h2><span class="tag neutral">'+questions.length+' QUESTIONS</span></div><form id="quizForm">'+questions.map((q,index)=>'<div class="question"><strong>'+(index+1)+'. '+escapeHtml(q.prompt)+'</strong><div class="choices">'+q.options.map((option,i)=>'<label class="choice"><input type="radio" required name="q'+escapeHtml(q.id)+'" value="'+i+'"><span>'+escapeHtml(option)+'</span></label>').join('')+'</div></div>').join('')+'<div class="actions"><button id="submitQuiz">Submit for verified scoring</button></div></form><div id="quizFeedback"></div></div>';
+ get('quizForm').onsubmit=submitQuiz;
+ get('quizPlay').scrollIntoView({behavior:'smooth',block:'start'});
+}
+async function submitQuiz(event){
+ event.preventDefault();if(!requireAuth())return;
+ const btn=get('submitQuiz');btn.disabled=true;
+ try{
+  const form=new FormData(event.currentTarget),answers={};
+  for(const q of questions){const picked=form.get('q'+q.id);if(picked===null)throw Error('Answer every question.');answers[q.id]=Number(picked);}
+  const result=checked(await db.rpc('iac_submit_mock_quiz',{p_quiz:currentQuiz.id,p_answers:answers}));
+  const feedback=result.feedback||[];
+  const title='<h3>Score: '+result.score+'% · '+result.correct_count+' / '+result.total+' correct</h3>';
+  get('quizFeedback').innerHTML='<div class="review">'+title+feedback.map((f,index)=>'<p><strong>Q'+(index+1)+' · <span class="'+(f.correct?'correct':'incorrect')+'">'+(f.correct?'Correct':'Needs review')+'</span></strong><br>'+escapeHtml(f.explanation)+'</p>').join('')+'</div>';
+  show('Quiz result saved to your real account. Retake for practice if needed.');
+ }catch(e){show(e.message,true)}finally{btn.disabled=false;}
+}
+function renderInterviews(){
+ const category=get('category').value||'all';
+ const list=interviews.filter(q=>category==='all'||q.category===category);
+ get('interviewList').innerHTML=list.length?list.map(q=>'<div class="interview"><span class="tag neutral">'+escapeHtml(q.category)+' · '+escapeHtml(q.difficulty)+'</span><p>'+escapeHtml(q.question)+'</p><button data-interview="'+escapeHtml(q.id)+'">Practice answer</button></div>').join(''):empty('No questions in this category.');
+ document.querySelectorAll('[data-interview]').forEach(b=>b.onclick=()=>openInterview(b.dataset.interview));
+}
+function openInterview(id){
+ selectedInterview=interviews.find(q=>q.id===id);if(!selectedInterview)return;
+ const q=selectedInterview;
+ get('interviewPanel').innerHTML='<span class="tag">'+escapeHtml(q.category)+' INTERVIEW</span><h3>'+escapeHtml(q.question)+'</h3><p class="muted">Practice speaking your answer aloud, then write a structured response. Only you and authorized staff can see saved drafts.</p><form id="interviewForm"><label for="answer">Your draft answer (minimum 20 characters)</label><textarea id="answer" minlength="20" maxlength="5000" required placeholder="Situation or problem, your approach, trade-offs, outcome…"></textarea><div class="actions"><button>Save practice answer</button></div></form><div style="margin-top:16px"><button class="secondary" id="rubricBtn">Reveal self-review rubric</button><div id="rubric" class="hidden"></div></div>';
+ get('interviewForm').onsubmit=saveInterview;
+ get('rubricBtn').onclick=()=>{get('rubric').classList.toggle('hidden');get('rubric').innerHTML='<div class="rubric"><strong>Review these points:</strong><ul>'+q.evaluation_points.map(x=>'<li>'+escapeHtml(x)+'</li>').join('')+'</ul><p>'+escapeHtml(q.example_guidance)+'</p><p class="muted">This is a self-assessment rubric, not a machine-generated interview grade.</p></div>';};
+}
+async function saveInterview(event){
+ event.preventDefault();if(!requireAuth())return;
+ const draft=get('answer').value.trim();if(draft.length<20){show('Write at least 20 characters.',true);return;}
+ const button=event.target.querySelector('button');button.disabled=true;
+ try{checked(await db.from('iac_interview_practice').insert({user_id:user.id,question_id:selectedInterview.id,draft_answer:draft}));show('Interview practice saved to your student account. Review the rubric and practice answering out loud.');}
+ catch(e){show(e.message,true)}finally{button.disabled=false;}
+}
+async function loadHistory(){
+ if(!requireAuth()){get('attempts').innerHTML=empty('Sign in to see private practice results.');return;}
+ const ids=quizzes.map(q=>q.id),interviewIds=interviews.map(q=>q.id);
+ const [a,b]=await Promise.all([
+ ids.length?db.from('iac_mock_attempts').select('quiz_id,score,correct_count,total_questions,submitted_at').eq('user_id',user.id).in('quiz_id',ids).order('submitted_at',{ascending:false}).limit(30):Promise.resolve({data:[],error:null}),
+ interviewIds.length?db.from('iac_interview_practice').select('question_id,created_at,self_rating').eq('user_id',user.id).in('question_id',interviewIds).order('created_at',{ascending:false}).limit(30):Promise.resolve({data:[],error:null})
+ ]);
+ const records=checked(a),practice=checked(b);
+ get('attempts').innerHTML='<h3>Scored quiz history</h3>'+(records.length?records.map(x=>'<div class="card row" style="margin:9px 0"><span>'+escapeHtml(quizzes.find(q=>q.id===x.quiz_id)?.title||'Mock Quiz')+'</span><strong>'+x.score+'% · '+x.correct_count+'/'+x.total_questions+'</strong><small>'+new Date(x.submitted_at).toLocaleDateString('en-IN')+'</small></div>').join(''):empty('No attempts recorded yet.'));
+ get('interviewHistory').innerHTML='<h3 style="margin-top:23px">Saved interview practice</h3>'+(practice.length?practice.map(x=>'<div class="card row" style="margin:9px 0"><span>'+escapeHtml(interviews.find(q=>q.id===x.question_id)?.question||'Interview question')+'</span><span class="muted">'+new Date(x.created_at).toLocaleDateString('en-IN')+'</span></div>').join(''):empty('No interview drafts saved yet.'));
+}
+get('category').onchange=renderInterviews;
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=async()=>{
+ const target=b.dataset.tab;
+ document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));
+ for(const panel of ['roadmap','quizzes','interviews','history'])get(panel).classList.toggle('hidden',panel!==target);
+ if(target==='history')await loadHistory();
+});
+start().catch(e=>show(e.message,true));
+</script></body></html>
