@@ -111,9 +111,32 @@ function renderInterviews(){
 function openInterview(id){
  selectedInterview=interviews.find(q=>q.id===id);if(!selectedInterview)return;
  const q=selectedInterview;
- get('interviewPanel').innerHTML='<span class="tag">'+escapeHtml(q.category)+' INTERVIEW</span><h3>'+escapeHtml(q.question)+'</h3><p class="muted">Practice speaking your answer aloud, then write a structured response. Only you and authorized staff can see saved drafts.</p><form id="interviewForm"><label for="answer">Your draft answer (minimum 20 characters)</label><textarea id="answer" minlength="20" maxlength="5000" required placeholder="Situation or problem, your approach, trade-offs, outcome…"></textarea><div class="actions"><button>Save practice answer</button></div></form><div style="margin-top:16px"><button class="secondary" id="rubricBtn">Reveal self-review rubric</button><div id="rubric" class="hidden"></div></div>';
+ get('interviewPanel').innerHTML='<span class="tag">'+escapeHtml(q.category)+' INTERVIEW</span><h3>'+escapeHtml(q.question)+'</h3><p class="muted">Practice speaking your answer aloud, then write a structured response. Only you and authorized staff can see saved drafts.</p><form id="interviewForm"><label for="answer">Your draft answer (minimum 20 characters)</label><textarea id="answer" minlength="20" maxlength="5000" required placeholder="Situation or problem, your approach, trade-offs, outcome…"></textarea><div class="actions"><button>Save practice answer</button><button type="button" class="secondary" id="aiFeedbackBtn">Get AI interview coaching</button></div></form><div id="aiFeedbackResult" class="hidden" aria-live="polite"></div><div style="margin-top:16px"><button class="secondary" id="rubricBtn">Reveal self-review rubric</button><div id="rubric" class="hidden"></div></div>';
  get('interviewForm').onsubmit=saveInterview;
+ get('aiFeedbackBtn').onclick=runAICoach;
  get('rubricBtn').onclick=()=>{get('rubric').classList.toggle('hidden');get('rubric').innerHTML='<div class="rubric"><strong>Review these points:</strong><ul>'+q.evaluation_points.map(x=>'<li>'+escapeHtml(x)+'</li>').join('')+'</ul><p>'+escapeHtml(q.example_guidance)+'</p><p class="muted">This is a self-assessment rubric, not a machine-generated interview grade.</p></div>';};
+}
+async function runAICoach(){
+ if(!requireAuth())return;
+ if(!selectedInterview)return;
+ const draft=get('answer')?.value.trim()||'';
+ if(draft.length<20){show('Write at least 20 characters before requesting interview coaching.',true);return;}
+ const button=get('aiFeedbackBtn');button.disabled=true;button.textContent='Checking coach…';
+ const output=get('aiFeedbackResult');output.classList.remove('hidden');output.innerHTML='<div class="review">Preparing your coaching feedback…</div>';
+ try{
+  const session=await db.auth.getSession();
+  if(!session.data.session?.access_token)throw Error('Sign in again to continue.');
+  const response=await fetch('https://ylobnofwmryltbzdtkla.supabase.co/functions/v1/iac-interview-coach',{
+   method:'POST',headers:{'Content-Type':'application/json','apikey':'sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9','Authorization':'Bearer '+session.data.session.access_token},
+   body:JSON.stringify({question_id:selectedInterview.id,answer:draft})
+  });
+  const result=await response.json();
+  if(!response.ok&&result.mode!=='rubric_only')throw Error(result.error||'Coach temporarily unavailable');
+  const label=result.mode==='ai_feedback'?'Personalized AI interview coaching':'Self-review rubric · AI activation pending';
+  output.innerHTML='<div class="review"><h3>'+escapeHtml(label)+'</h3><p style="white-space:pre-wrap">'+escapeHtml(result.feedback||'')+'</p>'+
+   (result.mode==='rubric_only'?'<p><strong>Review points</strong></p><ul>'+(result.rubric||[]).map(x=>'<li>'+escapeHtml(x)+'</li>').join('')+'</ul><p>'+escapeHtml(result.guidance||'')+'</p>':'')+'</div>';
+ }catch(e){output.innerHTML='<div class="review">'+escapeHtml(e.message||'Coaching temporarily unavailable')+'</div>';}
+ finally{button.disabled=false;button.textContent='Get AI interview coaching';}
 }
 async function saveInterview(event){
  event.preventDefault();if(!requireAuth())return;
