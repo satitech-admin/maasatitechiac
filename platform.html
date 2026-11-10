@@ -191,4 +191,4 @@ else if(name==='issue-certificate'){if(!isAdmin())throw Error('Only admins may i
 window.addEventListener('hashchange',render);
 (async()=>{try{await refreshUser();const health=await q('courses').select('id',{count:'exact',head:true});if(health.error)throw health.error;await render()}catch(e){app.innerHTML=empty('Secure platform is temporarily unavailable.');showError(e)}})();
 
-</script></body></html>
+</script><script src="/share-iac.js" defer></script></body></html>
