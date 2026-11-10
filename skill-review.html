@@ -1,0 +1,62 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Skill Project Reviews | Maa Sati IAC Admin</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap');
+:root{--paper:#f4f1eb;--surface:#fffdfa;--ink:#17212b;--muted:#69767b;--line:#ddd5cb;--coral:#d75c3e}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px Manrope,system-ui,sans-serif}header{background:#17212b;color:white;padding:17px max(20px,calc((100% - 1120px)/2));display:flex;justify-content:space-between;align-items:center;gap:15px}header a{color:white;text-decoration:none;font-size:12px;font-weight:800}main{width:min(1090px,calc(100% - 34px));margin:36px auto 65px}h1{font-size:clamp(30px,5vw,52px);letter-spacing:-1.7px;margin:8px 0 14px}h1 em{font:italic 1.04em 'Instrument Serif',Georgia,serif;color:var(--coral)}h2{font-size:22px;margin:0 0 12px}h3{font-size:17px;margin:0 0 9px}p{color:var(--muted);line-height:1.75}.eyebrow{font-size:11px;font-weight:800;letter-spacing:2px;color:#b35b42}.card{background:var(--surface);padding:21px;border:1px solid var(--line);border-radius:17px;box-shadow:0 11px 31px #17212b0c;margin-bottom:15px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}button,.button{padding:11px 15px;background:var(--ink);color:#fff;border:1px solid var(--ink);border-radius:9px;font:800 12px Manrope,system-ui,sans-serif;cursor:pointer;text-decoration:none}button.secondary{background:transparent;color:var(--ink)}button.bad{background:#a94b3c;border-color:#a94b3c}button:disabled{opacity:.55;cursor:not-allowed}.small{font-size:12px;color:var(--muted)}.tag{font-size:11px;font-weight:800;padding:6px 10px;border-radius:20px;background:#e7ede7;color:#315d42}.notice{background:#e8eee5;padding:14px 17px;border-radius:9px;color:#2b6547;margin:14px 0}.notice.error{background:#f9e9e2;color:#a34b35}.item{border-bottom:1px solid var(--line);padding:15px 0}.item:last-child{border:0}.item a{word-break:break-all;color:#9b553b}.item textarea{display:block;width:100%;min-height:78px;resize:vertical;padding:10px 12px;border:1px solid #bdc8bf;border-radius:9px;background:#fff;font:inherit;margin:10px 0}.item .actions{display:flex;gap:9px;flex-wrap:wrap}.badge{background:#eaf3e6;padding:11px;border-radius:10px;color:#27563d;font-weight:700;font-size:12px}.hidden{display:none!important}@media(max-width:750px){.grid{grid-template-columns:1fr}header{flex-direction:column;align-items:flex-start}.card{padding:16px}}
+</style></head><body>
+<header><a href="/">MAA SATI IAC · SKILL ASSESSMENTS</a><nav><a href="/curriculum-admin.html">Curriculum Studio</a> · <a href="/platform.html#admin">Admin</a> · <a href="/programs.html">Programs</a></nav></header>
+<main><div class="eyebrow">AUTHENTIC STUDENT ASSESSMENT · ADMIN ONLY</div><h1>Review work.<br><em>Recognize skills.</em></h1>
+<p>Skill credentials must represent real evidence. Review a student's submitted repository, project functionality and implementation. The database verifies approved enrollment and an actual 100% skill-quiz result before issuing the unique Maa Sati IAC badge and certificate.</p><div id="notice" role="status" aria-live="polite"></div>
+<div id="authGate" class="card">Checking authorized account…</div>
+<div id="workspace" class="hidden"><div class="row"><h2>Project submissions awaiting review</h2><button id="refresh" type="button" class="secondary">Refresh submissions</button></div><div class="grid"><section class="card"><h2>Pending review</h2><div id="pending"></div></section><section class="card"><h2>Recent decisions</h2><div id="recent"></div></section></div><div class="badge">🏅 Approval issues a unique skill certificate + digital badge, records the verified milestone and makes it available in the student's profile. Never approve a link without testing the project.</div></div>
+</main><script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
+const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
+const el=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]||'&#39;'));
+const checked=r=>{if(r.error)throw Error(r.error.message);return r.data};
+function notice(message,error=false){el('notice').innerHTML='<div class="notice'+(error?' error':'')+'">'+esc(message)+'</div>'}
+function safeUrl(s){try{const url=new URL(s);return url.protocol==='https:'?url.href:'#'}catch{return '#'}}
+let currentAdmin=null;
+async function load(){
+ const [auth,permission]=await Promise.all([db.auth.getUser(),db.rpc('iac_is_admin')]);
+ if(auth.error||!auth.data.user||permission.error||permission.data!==true){
+  el('authGate').innerHTML='<h2>Verified institute administrator required</h2><p>Students and public visitors cannot approve projects or create badges. Sign in using an authorized admin account and return here.</p><a href="/platform.html#dashboard" class="button">Sign in</a>';
+  el('workspace').classList.add('hidden');return;
+ }
+ currentAdmin=auth.data.user;el('authGate').classList.add('hidden');el('workspace').classList.remove('hidden');
+ await refresh();
+}
+async function refresh(){
+ const [sub,monthly,program,profiles]=await Promise.all([
+  db.from('iac_skill_project_submissions').select('id,month_id,user_id,project_url,description,status,instructor_feedback,submitted_at,reviewed_at').order('submitted_at',{ascending:false}).limit(120),
+  db.from('iac_program_months').select('id,program_id,month_number,title'),
+  db.from('iac_programs').select('id,title'),
+  db.from('iac_profiles').select('id,full_name').limit(500)
+ ]);
+ const recs=checked(sub),months=new Map(checked(monthly).map(x=>[x.id,x])),names=new Map(checked(program).map(x=>[x.id,x.title])),students=new Map(checked(profiles).map(x=>[x.id,x.full_name]));
+ const card=s=>{
+  const m=months.get(s.month_id),label=(names.get(m?.program_id)||'Course')+' · Month '+(m?.month_number||'?')+' · '+(m?.title||'Skill');
+  return '<div class="item"><h3>'+esc(label)+'</h3><p class="small">Student: '+esc(students.get(s.user_id)||'Student account')+' · '+new Date(s.submitted_at).toLocaleDateString('en-IN')+'</p><p><a href="'+esc(safeUrl(s.project_url))+'" target="_blank" rel="noopener noreferrer">'+esc(s.project_url)+'</a></p><p>'+esc(s.description)+'</p>'+(s.status==='pending'?'<label for="feedback-'+esc(s.id)+'" class="small">Review notes (required if requesting changes)</label><textarea id="feedback-'+esc(s.id)+'" placeholder="Functionality tested, skills demonstrated, code review observations, or requested improvements"></textarea><div class="actions"><button data-approve="'+esc(s.id)+'">Approve project + issue badge</button><button data-reject="'+esc(s.id)+'" class="bad">Request changes</button></div>':'<div class="small"><strong>Status:</strong> '+esc(s.status)+'</div>'+(s.instructor_feedback?'<p class="small">Feedback: '+esc(s.instructor_feedback)+'</p>':''))+'</div>';
+ };
+ const pending=recs.filter(x=>x.status==='pending');
+ el('pending').innerHTML=pending.length?pending.map(card).join(''):'<p class="small">No pending project reviews. Student project submissions will appear here after enrolled learners pass their skill assessments.</p>';
+ const recent=recs.filter(x=>x.status!=='pending').slice(0,25);
+ el('recent').innerHTML=recent.length?recent.map(card).join(''):'<p class="small">No decisions recorded yet.</p>';
+ document.querySelectorAll('[data-approve],[data-reject]').forEach(button=>button.onclick=()=>review(button));
+}
+async function review(button){
+ const approve=button.hasAttribute('data-approve'),id=button.getAttribute(approve?'data-approve':'data-reject');
+ const feedback=el('feedback-'+id)?.value.trim()||'';
+ if(!approve&&feedback.length<12){notice('Explain requested changes in at least 12 characters.',true);return}
+ if(!confirm(approve?'Confirm you inspected the actual working project? Approval will issue an official verified badge and certificate.':'Return project to student with feedback?'))return;
+ button.disabled=true;
+ try{
+  const result=checked(await db.rpc('iac_review_skill_project',{p_submission:id,p_approved:approve,p_feedback:feedback||null}));
+  if(result.badge_awarded)notice('Project approved. A genuine skill badge and certificate were issued to the student.');
+  else notice('Changes requested. Student can revise and resubmit project evidence.');
+  await refresh();
+ }catch(error){notice(error.message,true)}finally{button.disabled=false}
+}
+el('refresh').onclick=()=>refresh().catch(e=>notice(e.message,true));
+load().catch(e=>notice(e.message,true));
+</script></body></html>
