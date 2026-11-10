@@ -49,7 +49,7 @@ function render(){
  const ownSkills=skills.filter(s=>activeIds.has(s.program_id));
  const passed=ownSkills.filter(x=>x.quiz_passed).length,earned=ownSkills.filter(x=>x.badge_awarded).length;
  const reviews=ownSkills.filter(x=>x.project_status==='pending').length;
- const metrics=[['Verified badges',badges.length],['Skill quizzes passed',passed],['Quizzes attempted',history.length],['Projects awaiting review',reviews]];
+ const metrics=[['Verified badges',badges.length],['Skill quizzes passed',passed],['Quiz attempts',history.length],['Projects awaiting review',reviews]];
  $('metrics').innerHTML=metrics.map(x=>'<div class="metric"><strong>'+x[1]+'</strong><span>'+esc(x[0])+'</span></div>').join('');
  let next=ownSkills.find(s=>s.next_step==='revise_project')||ownSkills.find(s=>s.next_step==='submit_project')||ownSkills.find(s=>s.next_step==='quiz')||ownSkills.find(s=>s.next_step==='mentor_review');
  if(next){
@@ -93,6 +93,7 @@ async function loadQuizHistory(page=1){
   if(response.error)throw Error(response.error.message);
   const result=response.data||{},incoming=result.items||[];
   quizPage=Number(result.page)||1;quizTotal=Number(result.total)||0;
+  const quizMetric=$('metrics').children[2]?.querySelector('strong');if(quizMetric)quizMetric.textContent=quizTotal;
   quizItems=quizPage===1?incoming:quizItems.concat(incoming);
   $('quizCounter').textContent=quizTotal?quizItems.length+' of '+quizTotal+' saved attempts':'No quiz attempts yet';
   $('quizHistory').innerHTML=quizItems.length?'<div class="tablewrap"><table><thead><tr><th>Quiz</th><th>Score</th><th>When</th><th>Action</th></tr></thead><tbody>'+quizItems.map(q=>'<tr><td>'+esc(q.quiz_title)+'<div class="small">'+esc(q.program_title)+'</div></td><td><strong>'+q.score+'%</strong><div class="small">'+q.correct_count+'/'+q.total_questions+' correct</div></td><td>'+time(q.submitted_at)+'</td><td><a href="/programs.html?program='+encodeURIComponent(q.program_slug)+'#quizzes">Try again</a></td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No saved quiz scores yet. Choose a course and take your first skill quiz.</div>';
