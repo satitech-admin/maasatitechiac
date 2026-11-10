@@ -18,13 +18,13 @@
 <section class="card" id="skills"><div class="row"><div><h2>Skills & projects</h2><p class="small">See every monthly skill, your best quiz score and your project status.</p></div><span id="skillsCount" class="pill wait">48 available skills</span></div>
 <div class="toolbar"><div><label for="programFilter">Choose a course</label><select id="programFilter"><option value="all">All four programs</option></select></div><div><label for="statusFilter">What do you want to see?</label><select id="statusFilter"><option value="all">All learning steps</option><option value="enrolled">My enrolled skills</option><option value="quiz">Ready for quiz</option><option value="submit_project">Ready to submit project</option><option value="mentor_review">Waiting for mentor</option><option value="revise_project">Changes requested</option><option value="earned">Skills earned</option></select></div></div>
 <div id="skillList" class="skills"></div></section>
-<div class="grid"><section class="card" id="quizResults"><div class="row"><h2>My recent quiz results</h2><a class="button secondary" href="/programs.html#quizzes">Practice quizzes</a></div><div id="quizHistory"></div></section><section class="card" id="badges"><h2>My verified skill badges</h2><div id="badgeList"></div></section></div>
+<div class="grid"><section class="card" id="quizResults"><div class="row"><h2>My recent quiz results</h2><a class="button secondary" href="/programs.html#quizzes">Practice quizzes</a></div><div id="quizHistory"></div><div class="actions" style="margin-top:13px"><button id="moreQuizzes" class="secondary hidden" type="button">Load more quiz results</button><span id="quizCounter" class="small"></span></div></section><section class="card" id="badges"><h2>My verified skill badges</h2><div id="badgeList"></div></section></div>
 </section><p class="footer">Maa Sati IAC · Private, genuine records only · A badge is issued after an authorized mentor approves the submitted project</p></main>
 <script type="module">
 import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
 const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
 const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]||'&#39;'));
-let snapshot=null;
+let snapshot=null,quizPage=0,quizTotal=0,quizItems=[];
 const labels={
  enroll:['Enrollment needed','Apply for course enrollment'],
  quiz:['Quiz to complete','Take the skill quiz'],
@@ -67,7 +67,7 @@ function render(){
  $('programFilter').innerHTML='<option value="all">All four programs</option>'+programs.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.title)+'</option>').join('');
  $('programFilter').value=mine.length===1?mine[0].id:'all';
  $('statusFilter').value=mine.length?'enrolled':'all';
- $('quizHistory').innerHTML=history.length?'<div class="tablewrap"><table><thead><tr><th>Quiz</th><th>Score</th><th>When</th></tr></thead><tbody>'+history.slice(0,30).map(q=>'<tr><td>'+esc(q.title)+'<div class="small">'+esc(q.program_title)+'</div></td><td><strong>'+q.score+'%</strong><div class="small">'+q.correct_count+'/'+q.total_questions+' correct</div></td><td>'+time(q.submitted_at)+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty">You have not submitted any quizzes yet. Start with the first roadmap skill.</div>';
+ $('quizHistory').innerHTML='<div class="empty">Loading real quiz scores…</div>';
  $('badgeList').innerHTML=badges.length?badges.map(b=>'<div class="badge"><strong>🏅 '+esc(b.title)+'</strong><p class="small">'+esc(b.program_title)+' · Month '+b.month_number+' · Earned '+time(b.awarded_at)+'</p><div class="actions"><a class="button secondary" href="/skill-badge.html?code='+encodeURIComponent(b.code)+'">View / Share Badge</a><a class="button secondary" href="/certificate.html?code='+encodeURIComponent(b.code)+'">Certificate PDF</a></div></div>').join(''):'<div class="empty">No earned badges yet. A quiz pass and a mentor-approved real project are both required.</div>';
  filterSkills();
 }
@@ -85,6 +85,21 @@ function filterSkills(){
  return '<article class="skill"><span class="pill '+(s.badge_awarded?'ok':s.quiz_passed?'wait':'')+'">MONTH '+s.month_number+' · '+esc(s.program_title)+'</span><h3>'+esc(s.title)+'</h3><p>'+esc((s.topics||[]).join(' · '))+'</p><div class="statsline"><span>📝 Best quiz: <strong>'+esc(score)+'</strong></span><span>Attempts: '+s.quiz_attempts+'</span></div><div class="statsline"><span>🧰 Project: <strong>'+esc(s.project_status.replaceAll('_',' '))+'</strong></span><span>Passing: '+s.pass_score+'%</span></div><div class="status '+cls+'"><strong>'+esc(next[0])+'</strong>'+(s.project_feedback?'<p>'+esc(s.project_feedback)+'</p>':'')+'</div><div class="actions"><a href="'+esc(linkFor(s))+'" class="button">'+esc(next[1])+' →</a>'+(s.next_step==='earned'?'<a class="button secondary" href="/certificate.html?code='+encodeURIComponent(s.certificate_code)+'">Certificate</a>':'')+'</div></article>';
  }).join(''):'<div class="empty">No skills in this filter. Choose a different course or status.</div>';
 }
+
+async function loadQuizHistory(page=1){
+ const button=$('moreQuizzes');button.disabled=true;button.textContent='Loading…';
+ try{
+  const response=await db.rpc('iac_student_quiz_history',{p_page:page,p_page_size:25});
+  if(response.error)throw Error(response.error.message);
+  const result=response.data||{},incoming=result.items||[];
+  quizPage=Number(result.page)||1;quizTotal=Number(result.total)||0;
+  quizItems=quizPage===1?incoming:quizItems.concat(incoming);
+  $('quizCounter').textContent=quizTotal?quizItems.length+' of '+quizTotal+' saved attempts':'No quiz attempts yet';
+  $('quizHistory').innerHTML=quizItems.length?'<div class="tablewrap"><table><thead><tr><th>Quiz</th><th>Score</th><th>When</th><th>Action</th></tr></thead><tbody>'+quizItems.map(q=>'<tr><td>'+esc(q.quiz_title)+'<div class="small">'+esc(q.program_title)+'</div></td><td><strong>'+q.score+'%</strong><div class="small">'+q.correct_count+'/'+q.total_questions+' correct</div></td><td>'+time(q.submitted_at)+'</td><td><a href="/programs.html?program='+encodeURIComponent(q.program_slug)+'#quizzes">Try again</a></td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No saved quiz scores yet. Choose a course and take your first skill quiz.</div>';
+  button.classList.toggle('hidden',!result.has_more);
+ }catch(e){$('quizHistory').innerHTML='<div class="empty">Quiz history could not load: '+esc(e.message)+'</div>';button.classList.add('hidden');}
+ finally{button.disabled=false;button.textContent='Load more quiz results';}
+}
 async function load(){
  const auth=await db.auth.getUser();if(!auth.data?.user){
   $('workspace').classList.add('hidden');$('guest').innerHTML='<h2>Sign in to see your real learning progress</h2><p>Your marks, completed skills, submitted projects and certificates are private to your verified account.</p><a class="button" href="/platform.html#dashboard">Sign in / Register</a><a class="button secondary" style="margin-left:7px" href="/programs.html">Explore public roadmaps</a>';return;
@@ -92,9 +107,9 @@ async function load(){
  const r=await db.rpc('iac_student_learning_snapshot');
  if(r.error)throw Error(r.error.message);
  snapshot=r.data||{};$('guest').classList.add('hidden');$('workspace').classList.remove('hidden');$('message').innerHTML='';
- render();
+ render();await loadQuizHistory(1);
 }
 $('programFilter').onchange=filterSkills;$('statusFilter').onchange=filterSkills;
-$('reload').onclick=()=>load().catch(e=>notice(e.message,true));
+$('reload').onclick=()=>load().catch(e=>notice(e.message,true));$('moreQuizzes').onclick=()=>loadQuizHistory(quizPage+1);
 load().catch(e=>{ $('guest').innerHTML='<h2>Learning dashboard temporarily unavailable</h2><p>'+esc(e.message)+'</p><button id="retry" class="secondary">Retry</button>';document.getElementById('retry').onclick=()=>load().catch(err=>notice(err.message,true));});
 </script></body></html>
