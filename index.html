@@ -302,7 +302,7 @@ const observer=new MutationObserver(()=>{if(!document.body)return;apply()});
 observer.observe(document.documentElement,{childList:true,subtree:true});
 })();
 </script><script>document.addEventListener('click',function(e){var b=e.target.closest('[data-enquiry]');if(b){e.preventDefault();e.stopImmediatePropagation();window.location.assign('/platform.html#events')}} ,true);</script><style id="iac-production-routing-style">
-#home section:has(#homeProjects){display:none!important}
+#homeProjects{min-height:120px}
 #home .cta-slab{margin-top:16px}
 #chatToggle,#chatPanel,.floating-chat,.chat-toggle{display:none!important}
 </style>
@@ -318,5 +318,23 @@ ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();
 window.location.assign('/platform.html#'+routes[dest]);
 },true);
 if(location.hash&&routes[location.hash.slice(1)])location.replace('/platform.html#'+routes[location.hash.slice(1)]);
+})();
+</script><script id="iac-live-student-projects">
+(async function(){
+const root=document.getElementById('homeProjects');
+if(!root)return;
+root.innerHTML='<p style="color:#697078">Loading approved student work…</p>';
+const go=()=>location.assign('/platform.html#projects');
+const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fallback='<div class="panel" style="grid-column:1/-1"><h3>Student project gallery</h3><p>Verified, school-approved student projects will appear here after their first submission and review.</p><button class="btn" id="openIacProjects">Explore project portal →</button></div>';
+try{
+const base='https://ylobnofwmryltbzdtkla.supabase.co';
+const key='sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9';
+const res=await fetch(base+'/rest/v1/iac_projects?select=title,summary,project_image_url,school_name,student_display_name,class_name&status=eq.approved&consent_verified=eq.true&limit=3',{headers:{apikey:key,'Accept':'application/json'}});
+if(!res.ok)throw new Error('Projects unavailable');
+const items=await res.json();
+root.innerHTML=items.length?items.map(p=>'<article class="project">'+(p.project_image_url?'<div class="project-art"><img loading="lazy" alt="Approved student project" src="'+esc(p.project_image_url)+'"></div>':'')+'<div class="project-info"><strong>'+esc(p.title)+'</strong><p>'+esc(p.summary)+'</p><small>'+esc(p.student_display_name||'Young Innovator')+' · '+esc(p.school_name||'School project')+'</small></div></article>').join(''):fallback;
+}catch(e){root.innerHTML=fallback}
+document.getElementById('openIacProjects')?.addEventListener('click',go);
 })();
 </script></body></html>
