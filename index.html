@@ -301,4 +301,22 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 const observer=new MutationObserver(()=>{if(!document.body)return;apply()});
 observer.observe(document.documentElement,{childList:true,subtree:true});
 })();
-</script><script>document.addEventListener('click',function(e){var b=e.target.closest('[data-enquiry]');if(b){e.preventDefault();e.stopImmediatePropagation();window.location.assign('/platform.html#events')}} ,true);</script></body></html>
+</script><script>document.addEventListener('click',function(e){var b=e.target.closest('[data-enquiry]');if(b){e.preventDefault();e.stopImmediatePropagation();window.location.assign('/platform.html#events')}} ,true);</script><style id="iac-production-routing-style">
+#home section:has(#homeProjects){display:none!important}
+#home .cta-slab{margin-top:16px}
+#chatToggle,#chatPanel,.floating-chat,.chat-toggle{display:none!important}
+</style>
+<script id="iac-production-routing">
+(function(){
+const routes={courses:'courses',school:'events',internships:'internships',projects:'projects',certificates:'certificates',portal:'dashboard'};
+document.addEventListener('click',function(ev){
+const target=ev.target.closest('[data-page],[data-course],[data-enquiry],a[href^="#"]');
+if(!target)return;
+const dest=target.dataset.course?'courses':target.dataset.enquiry?'events':target.dataset.page||(target.getAttribute('href')||'').slice(1);
+if(!Object.prototype.hasOwnProperty.call(routes,dest))return;
+ev.preventDefault();ev.stopPropagation();ev.stopImmediatePropagation();
+window.location.assign('/platform.html#'+routes[dest]);
+},true);
+if(location.hash&&routes[location.hash.slice(1)])location.replace('/platform.html#'+routes[location.hash.slice(1)]);
+})();
+</script></body></html>
