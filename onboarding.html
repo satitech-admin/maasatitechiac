@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Student & Staff Onboarding — Maa Sati IAC</title>
+<meta name="description" content="Verified Maa Sati IAC student onboarding, guardian approvals, instructor access and account recovery.">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap');
+:root{--paper:#f4f1eb;--surface:#fcfaf6;--ink:#17212b;--accent:#d75c3e;--muted:#66727b;--line:#ddd5cb;--good:#286847}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px Manrope,system-ui,sans-serif}
+header{background:var(--ink);color:#fff;padding:17px max(20px,calc((100% - 1180px)/2));display:flex;align-items:center;justify-content:space-between;gap:15px}header strong{font-size:20px}header small{display:block;color:#d2bb9b;font-size:10px;letter-spacing:1.2px}header a{color:inherit;text-decoration:none}nav{display:flex;flex-wrap:wrap;gap:15px;font-weight:700;font-size:12px}
+main{width:min(1160px,calc(100% - 32px));margin:32px auto 75px}.eyebrow{color:#c76342;font-weight:800;font-size:11px;letter-spacing:1.5px}
+h1{font-size:clamp(32px,5vw,55px);letter-spacing:-1.8px;margin:8px 0}h1 em{font:italic 1.08em 'Instrument Serif',Georgia,serif;color:var(--accent)}h2{font-size:22px;margin:0 0 12px}h3{font-size:15px;margin:9px 0}p{color:var(--muted);line-height:1.7}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.card{background:var(--surface);padding:22px;border:1px solid var(--line);border-radius:17px;box-shadow:0 12px 35px #17212b0b;margin-bottom:18px}
+label{font-size:12px;font-weight:750;display:block;margin:14px 0 7px}input,textarea,select{font:inherit;width:100%;padding:11px 12px;border:1px solid #c5c9cb;border-radius:9px;background:#fff;color:var(--ink)}textarea{min-height:110px;resize:vertical}
+button,.linkbutton{cursor:pointer;font:inherit;font-size:12px;font-weight:800;padding:11px 15px;background:var(--ink);color:white;border:0;border-radius:8px;text-decoration:none;display:inline-block}button:disabled{opacity:.55;cursor:default}button.ghost{background:transparent;border:1px solid #a2a6a5;color:var(--ink)}button.danger{background:#a34136}
+.pill{font-weight:800;font-size:11px;padding:5px 10px;border-radius:20px;background:#e6e9e4;color:#42534a;display:inline-block}.pill.approved{background:#dcebe0;color:#226543}.pill.pending{background:#f7eadb;color:#985c24}.pill.rejected{background:#f4dedc;color:#953d35}
+.notice{background:#e7eee7;padding:13px 15px;border:1px solid #d3ded2;border-radius:10px;margin:12px 0;color:#37654a}.notice.error{background:#fbe7e1;color:#9a392e;border-color:#f0cdc3}
+.item{border-bottom:1px solid var(--line);padding:12px 0}.item:last-child{border-bottom:0}.row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}.small{font-size:12px;color:var(--muted)}a.text{color:#995a46;font-weight:700}.hidden{display:none!important}.foot{font-size:11px;color:var(--muted);text-align:center;margin:35px}
+@media(max-width:850px){.grid{grid-template-columns:1fr}}@media(max-width:600px){header{padding:15px;display:block}nav{margin-top:11px}.card{padding:17px}}
+</style></head><body><header><a href="/"><strong>MAA SATI IAC</strong><small>INSTITUTE OF ADVANCE COMPUTING</small></a><nav><a href="/platform.html">Courses & Login</a><a href="/analytics.html">Progress</a><a href="/assistant.html">Support</a></nav></header>
+<main><div class="eyebrow">SECURE ADMISSIONS AND ACCOUNT MANAGEMENT</div><h1>Welcome to your <em>next chapter.</em></h1><p>Manage your real student profile, guardian approval and instructor applications. Permissions are granted from institute records—not from a selected account type.</p>
+<div id="notice" role="status" aria-live="polite"></div><div id="guest" class="card">Checking your account…</div>
+<div id="workspace" class="hidden">
+<div class="grid">
+<section><div class="card"><div class="row"><h2>My account</h2><span class="pill" id="emailStatus"></span></div><p id="accountEmail"></p><div id="accountInfo"></div><a class="text" href="/platform.html#dashboard">Go to My Learning →</a></div>
+<div class="card"><h2>Guardian authorization</h2><p>For school students (Classes 9–12), the institute must verify parent/guardian permission before course access or seminar registration. Providing an email address alone is not verification.</p><div id="guardianStatus"></div><form id="guardianForm"><label>Parent / guardian's full name<input required id="guardianName" minlength="2" maxlength="120" autocomplete="off"></label><label>Parent / guardian's email<input type="email" required id="guardianEmail" maxlength="254"></label><button type="submit">Submit guardian details for review</button></form><p class="small">The institute will confirm permission through a verified school record, direct verification or an in-person process. Please do not upload identity documents here.</p></div>
+<div class="card"><h2>Password recovery</h2><p>You can update your password using a verified session or request a password reset to your registered email.</p><form id="resetRequest"><label>Registered email<input type="email" id="resetEmail" required></label><button type="submit" class="ghost">Email a reset link</button></form><form id="changePassword"><label>New password<input id="newPassword" type="password" minlength="10" autocomplete="new-password" required></label><button type="submit">Update password</button></form></div></section>
+<section><div class="card"><h2>Teacher / School Coordinator Application</h2><p>Mentors and school coordinators are approved by authorized institute management. Creating a student account never automatically grants staff access.</p><div id="myStaffRequest"></div><form id="staffRequest"><label>Requested role<select id="role"><option value="teacher">Teacher / Mentor</option><option value="coordinator">School Coordinator</option></select></label><label>Institution / organization<input id="institution" required minlength="2" maxlength="160"></label><label>Experience & why you want access<textarea id="experience" minlength="20" maxlength="1500" required></textarea></label><button type="submit">Request staff access</button></form></div>
+<div id="adminArea" class="hidden">
+<div class="card"><h2>Staff approvals · Admin only</h2><div id="staffQueue"></div></div>
+<div class="card"><h2>Guardian approvals · Admin only</h2><p>Approve only after genuinely checking the guardian's authorization. Selecting a verification method is an accountability record, not automated proof.</p><div id="guardianQueue"></div></div>
+<div class="card"><h2>Staff approval audit</h2><div id="auditLog"></div></div>
+</div>
+</section></div></div><div class="foot">Maa Sati IAC · Personal student information is visible only to its owner and authorized staff · Parent permission must be verified before minors join</div>
+</main>
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
+const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const $=id=>document.getElementById(id);
+const safe=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]||'&#39;'));
+const displayDate=value=>value?new Date(value).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}):'Pending';
+let currentUser=null,role=null,profile=null;
+function notice(message,error=false){$('notice').innerHTML='<div class="notice'+(error?' error':'')+'">'+safe(message)+'</div>'}
+function checked(result){if(result.error)throw new Error(result.error.message);return result.data}
+function pill(status){return '<span class="pill '+safe(status)+'">'+safe(status)+'</span>'}
+function listEmpty(message){return '<p class="small">'+safe(message)+'</p>'}
+async function load(){
+ let auth=await db.auth.getUser();
+ if(auth.error||!auth.data.user){$('workspace').classList.add('hidden');$('guest').innerHTML='<h2>Sign in or create your student account</h2><p>Use the account registered for courses, seminars or internships.</p><a class="linkbutton" href="/platform.html#dashboard">Sign in / Register →</a><h3 style="margin-top:25px">Forgot your password?</h3><form id="guestReset"><label>Registered email<input required type="email" id="guestResetEmail"></label><button type="submit">Send password reset link</button></form>'; $('guestReset').onsubmit=async event=>{event.preventDefault();await requestReset($('guestResetEmail').value)};return}
+ currentUser=auth.data.user;
+ $('workspace').classList.remove('hidden');$('guest').classList.add('hidden');
+ checked(await db.rpc('iac_claim_founder_admin'));
+ const [p,staff,guardian,requests]=await Promise.all([
+ db.from('iac_profiles').select('*').eq('id',currentUser.id).maybeSingle(),
+ db.from('iac_staff_roles').select('role').eq('user_id',currentUser.id).maybeSingle(),
+ db.from('iac_guardian_consents').select('*').eq('student_id',currentUser.id).maybeSingle(),
+ db.from('iac_staff_requests').select('id,requested_role,institution,status,created_at').eq('applicant_id',currentUser.id).order('created_at',{ascending:false})
+ ]);
+ profile=checked(p);role=checked(staff)?.role||null;
+ const consent=checked(guardian),staffRequests=checked(requests);
+ $('accountEmail').textContent=currentUser.email||'';
+ $('resetEmail').value=currentUser.email||'';
+ $('emailStatus').textContent=currentUser.email_confirmed_at?'Email verified':'Email confirmation pending';
+ $('accountInfo').innerHTML='<p><strong>'+safe(profile?.full_name||'Profile pending')+'</strong> · '+safe(profile?.student_level||'Unspecified')+(role?' · '+safe(role):'')+'</p><p>'+safe(profile?.school_or_college||'School/college not specified')+'</p>';
+ $('guardianStatus').innerHTML=consent?'<p>Current status: '+pill(consent.status)+'</p><p class="small">Submitted '+displayDate(consent.submitted_at)+' · '+safe(consent.guardian_email)+'</p>':listEmpty(profile?.student_level==='school'?'Guardian approval required before joining school programs.':'Guardian approval is required for minors. Adults do not need to submit this form.');
+ $('guardianForm').classList.toggle('hidden',consent?.status==='approved');
+ if(consent){$('guardianName').value=consent.guardian_name;$('guardianEmail').value=consent.guardian_email}
+ $('myStaffRequest').innerHTML=staffRequests.length?staffRequests.map(x=>'<div class="item">'+safe(x.requested_role)+' at '+safe(x.institution)+' '+pill(x.status)+' <small>'+displayDate(x.created_at)+'</small></div>').join(''):listEmpty('No staff role requested yet.');
+ $('adminArea').classList.toggle('hidden',role!=='admin');
+ if(role==='admin')await loadAdmin();
+}
+async function loadAdmin(){
+ const [apps,consents,people,audit]=await Promise.all([
+ db.from('iac_staff_requests').select('id,applicant_id,requested_role,institution,experience_summary,status,created_at').eq('status','pending').order('created_at',{ascending:true}).limit(100),
+ db.from('iac_guardian_consents').select('student_id,guardian_name,guardian_email,status,submitted_at').eq('status','pending').order('submitted_at',{ascending:true}).limit(100),
+ db.from('iac_profiles').select('id,full_name,school_or_college').limit(300),
+ db.from('iac_staff_access_audit').select('action,occurred_at,subject_user_id').order('occurred_at',{ascending:false}).limit(20)
+ ]);
+ const profiles=new Map(checked(people).map(p=>[p.id,p]));
+ const applications=checked(apps),guardianList=checked(consents);
+ $('staffQueue').innerHTML=applications.length?applications.map(a=>'<div class="item"><strong>'+safe(profiles.get(a.applicant_id)?.full_name||'Applicant')+'</strong><p>'+safe(a.institution)+' · '+safe(a.requested_role)+'</p><p class="small">'+safe(a.experience_summary)+'</p><div class="row"><button data-action="staff-approve" data-id="'+safe(a.id)+'">Approve</button><button class="danger" data-action="staff-reject" data-id="'+safe(a.id)+'">Reject</button></div></div>').join(''):listEmpty('No pending staff applications.');
+ $('guardianQueue').innerHTML=guardianList.length?guardianList.map(g=>'<div class="item"><strong>'+safe(profiles.get(g.student_id)?.full_name||'Student')+'</strong><p>'+safe(profiles.get(g.student_id)?.school_or_college||'')+'</p><p class="small">Guardian: '+safe(g.guardian_name)+' · '+safe(g.guardian_email)+'</p><label>Actual verification method<select class="verifyMethod" data-id="'+safe(g.student_id)+'"><option value="">Choose after verification</option><option value="verified_phone">Verified phone</option><option value="verified_school_record">Verified school record</option><option value="in_person">In person</option></select></label><div class="row"><button data-action="guardian-approve" data-id="'+safe(g.student_id)+'">Approve verified consent</button><button class="danger" data-action="guardian-reject" data-id="'+safe(g.student_id)+'">Reject</button></div></div>').join(''):listEmpty('No pending guardian verification requests.');
+ $('auditLog').innerHTML=checked(audit).length?checked(audit).map(a=>'<div class="item"><strong>'+safe(a.action)+'</strong><span class="small"> · '+displayDate(a.occurred_at)+'</span></div>').join(''):listEmpty('No staff access decisions recorded.');
+ document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>review(b));
+}
+async function review(button){
+ const action=button.dataset.action,id=button.dataset.id,approve=action.endsWith('approve');
+ if(!confirm((approve?'Confirm verified approval':'Reject request')+'?'))return;
+ button.disabled=true;
+ try{
+  if(action.startsWith('staff-'))checked(await db.rpc('iac_review_staff_request',{p_request:id,p_approve:approve}));
+  else{
+   const method=document.querySelector('.verifyMethod[data-id="'+id+'"]')?.value||'';
+   if(approve&&!method)throw new Error('Verify consent first and select a real verification method.');
+   checked(await db.rpc('iac_review_guardian_consent',{p_student:id,p_approve:approve,p_method:approve?method:null}));
+  }
+  notice('Approval decision saved.');await load();
+ }catch(e){notice(e.message,true)}finally{button.disabled=false}
+}
+$('guardianForm').onsubmit=async e=>{
+ e.preventDefault();const button=$('guardianForm').querySelector('button');button.disabled=true;
+ try{checked(await db.rpc('iac_resubmit_guardian',{p_name:$('guardianName').value.trim(),p_email:$('guardianEmail').value.trim()}));notice('Guardian details submitted. Access remains pending until the institute verifies permission.');await load()}
+ catch(error){notice(error.message,true)}finally{button.disabled=false}
+};
+$('staffRequest').onsubmit=async e=>{
+ e.preventDefault();const button=$('staffRequest').querySelector('button');button.disabled=true;
+ try{
+  checked(await db.from('iac_staff_requests').insert({applicant_id:currentUser.id,requested_role:$('role').value,institution:$('institution').value.trim(),experience_summary:$('experience').value.trim()}));
+  $('staffRequest').reset();notice('Your staff application was submitted. Admin verification is required.');await load();
+ }catch(error){notice(error.message,true)}finally{button.disabled=false}
+};
+async function requestReset(email){
+ try{
+  checked(await db.auth.resetPasswordForEmail(email,{redirectTo:location.origin+'/onboarding.html#reset'}));
+  notice('If this email has a registered account, a password reset link will be sent.');
+ }catch(error){notice(error.message,true)}
+}
+$('resetRequest').onsubmit=e=>{e.preventDefault();requestReset($('resetEmail').value.trim())};
+$('changePassword').onsubmit=async e=>{
+ e.preventDefault();
+ try{const pass=$('newPassword').value;if(pass.length<10)throw new Error('Use at least 10 characters.');checked(await db.auth.updateUser({password:pass}));$('newPassword').value='';notice('Password updated. Sign out other devices if you suspect unauthorized access.')}
+ catch(error){notice(error.message,true)}
+};
+db.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY')notice('Password recovery session confirmed. Set a new password below.')});
+load().catch(e=>notice(e.message,true));
+</script></body></html>
