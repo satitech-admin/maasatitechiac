@@ -429,4 +429,14 @@ document.addEventListener('DOMContentLoaded',function(){
     if(button){nav.classList.remove('open');document.getElementById('menuToggle')?.setAttribute('aria-expanded','false');}
   });}
 });
+</script><script id="iac-skill-credential-promo">
+document.addEventListener('DOMContentLoaded',function(){
+ const home=document.getElementById('home');
+ if(!home||document.getElementById('skillCredentialsPromo'))return;
+ const section=document.createElement('section');
+ section.className='section';section.id='skillCredentialsPromo';
+ section.style.cssText='padding:35px 0;background:linear-gradient(120deg,#eef3e9,#faf8f2);border-top:1px solid #d7e1d8';
+ section.innerHTML='<div class="wrap" style="display:grid;grid-template-columns:1.1fr .9fr;gap:25px;align-items:center;padding:0 17px"><div><div style="font-size:11px;letter-spacing:2px;color:#ab5d43;font-weight:900">48 HANDS-ON SKILL CHECKPOINTS · 4 PROGRAMS</div><h2 style="font-size:clamp(27px,4vw,44px);letter-spacing:-1.3px;color:#17212b;line-height:1.16;margin:13px 0">Build a project. Pass the quiz.<br><em style="font-family:Georgia,serif;color:#c45e43">Earn a verified badge.</em></h2><p style="max-width:530px;color:#62756c;line-height:1.8">Every monthly skill includes an actual coding or analytics project and a 3-question skill assessment. Students who pass the quiz and receive instructor approval earn a verifiable Maa Sati IAC skill completion certificate and digital badge.</p><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px"><a class="btn" href="/programs.html">Explore skill roadmaps →</a><a class="btn soft" href="/skill-badge.html">Verify a skill badge</a></div></div><div style="border-radius:18px;overflow:hidden;min-height:230px;background:#21332d"><img loading="lazy" src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1050&q=80" alt="Students collaborating on practical technology projects" style="width:100%;height:100%;min-height:260px;max-height:350px;object-fit:cover"></div></div>';
+ home.appendChild(section);
+});
 </script><script src="/share-iac.js" defer></script></body></html>
