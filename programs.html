@@ -45,6 +45,10 @@ async function start(){
  const fromHash=new URLSearchParams(location.search).get('program');
  const found=programs.find(p=>p.slug===fromHash)||programs.find(p=>p.slug==='web-development-12-months')||programs[0];
  if(found)await choose(found.id);
+ const tab=(location.hash||'').slice(1);
+ if(['roadmap','quizzes','interviews','history'].includes(tab)){
+  const button=document.querySelector('[data-tab="'+tab+'"]');if(button)button.click();
+ }
 }
 async function choose(id){
  selected=programs.find(p=>p.id===id);if(!selected)return;
