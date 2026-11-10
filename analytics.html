@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Authenticated Maa Sati IAC academic analytics, upcoming classes and verified student notifications.">
+<title>Academic Dashboard | Maa Sati IAC</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap');
+:root{--bg:#f4f1eb;--paper:#fcfaf6;--ink:#17212b;--muted:#687681;--coral:#d75c3e;--line:#d8d4cc;--success:#2b7255;--shadow:0 16px 42px #17212b0d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Manrope,system-ui,sans-serif;color:var(--ink)}
+header{background:#17212b;color:#fff;padding:13px max(20px,calc((100% - 1200px)/2));display:flex;justify-content:space-between;align-items:center;gap:20px}header a{color:inherit;text-decoration:none}header strong{font-size:19px}header small{display:block;color:#dfc39d;letter-spacing:1px;font-size:9px}nav{display:flex;align-items:center;gap:18px;font-weight:700;font-size:12px;flex-wrap:wrap}
+main{width:min(1180px,calc(100% - 34px));margin:32px auto 65px}
+h1{font-size:clamp(32px,5vw,54px);letter-spacing:-1.5px;margin:7px 0 12px;line-height:1.14}h1 em{font-family:'Instrument Serif',Georgia,serif;color:var(--coral);font-weight:400}h2{font-size:22px;letter-spacing:-.4px;margin:0 0 12px}h3{font-size:15px;margin:0 0 10px}p{line-height:1.6;color:var(--muted)}.eyebrow{font-size:11px;letter-spacing:1.8px;color:#bc533b;font-weight:800}.subtitle{max-width:780px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:17px;padding:20px;box-shadow:var(--shadow)}
+.section{margin-top:23px}.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.metric{min-height:116px;display:flex;flex-direction:column;gap:8px;justify-content:space-between}.metric strong{font-size:30px;letter-spacing:-1.5px;line-height:1}.metric span{font-size:12px;font-weight:700;color:var(--muted)}.metric small{font-size:10px;color:#9a756d}
+.two{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px}.row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.line{height:1px;background:var(--line);margin:13px 0}
+button{cursor:pointer;font:inherit;font-weight:800;font-size:12px;padding:10px 14px;border:0;background:var(--ink);color:white;border-radius:9px}
+button.outline{color:var(--ink);border:1px solid #85919a;background:transparent}button:disabled{opacity:.5;cursor:default}
+.badge{display:inline-flex;padding:5px 10px;border-radius:20px;background:#e3e9e3;color:#24644a;font-size:11px;font-weight:800}.badge.warn{background:#f7ece0;color:#8e5a34}
+.muted{color:var(--muted);font-size:13px}.empty{background:#f0eee9;border-radius:10px;padding:17px;color:var(--muted);font-size:13px}
+.item{padding:13px 0;border-bottom:1px solid var(--line)}.item:last-child{border-bottom:0}.item-title{font-size:14px;font-weight:800}.item small{color:var(--muted);font-size:11px;display:block;margin-top:4px}
+.bar{height:9px;background:#e1e5e4;overflow:hidden;border-radius:30px;margin-top:8px}.bar-fill{background:linear-gradient(90deg,#c97554,#44746b);height:100%;border-radius:30px;max-width:100%;transition:width .6s}
+.course{padding:13px 0;border-bottom:1px solid var(--line)}.course:last-child{border:0}
+.notice{padding:12px 15px;border-radius:9px;background:#e6ede5;color:#315f49;margin:13px 0;font-size:12px}.notice.error{background:#f9e8df;color:#a04030}
+a.inline{color:#995c48;text-decoration:underline;font-weight:750}.inbox{max-height:510px;overflow:auto}
+.notification{padding:14px 13px;border:1px solid var(--line);border-radius:11px;margin:8px 0;background:#fff;display:flex;align-items:flex-start;gap:10px}.notification.unread{border-color:#dbad91;background:#fff8f1}
+.ntext{min-width:0;flex:1}.ntext strong{font-size:13px}.ntext p{font-size:12px;margin:5px 0}.ntext small{font-size:10px;color:var(--muted)}.notification a{color:#97503d;font-size:12px;text-decoration:none}
+button.ghost{font-size:11px;background:transparent;border:1px solid #adb4b5;color:var(--ink);padding:7px 9px}
+.footer{margin-top:45px;padding:20px;text-align:center;color:var(--muted);font-size:11px}
+@media(max-width:970px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.two{grid-template-columns:1fr}}
+@media(max-width:570px){header{align-items:flex-start;flex-direction:column;padding:15px}nav{gap:11px}main{margin-top:23px}.card{padding:15px}.cards{gap:8px}.metric{min-height:96px}.metric strong{font-size:24px}}
+@media(prefers-reduced-motion:reduce){.bar-fill{transition:none}}
+</style></head>
+<body><header><a href="/"><strong>MAA SATI IAC</strong><small>INSTITUTE OF ADVANCE COMPUTING</small></a><nav><a href="/platform.html">Learning Portal</a><a href="/assistant.html">Learning Assistant</a><a href="/payments.html">Fees</a><a href="/certificate.html">Certificates</a></nav></header>
+<main><div class="eyebrow">LIVE ACADEMIC RECORDS</div>
+<div class="row"><div><h1>Academic <em>command center.</em></h1><p class="subtitle">Upcoming sessions, assignment deadlines, progress and institute updates—all based on verified student records.</p></div><button id="refresh" class="outline" type="button">Refresh records</button></div>
+<div id="message" role="status" aria-live="polite"></div>
+<div id="auth" class="card">Checking your account…</div>
+<div id="workspace" hidden><section class="section"><h2 id="statsTitle">My learning progress</h2><div class="cards" id="metrics"></div></section>
+<div class="two section"><div class="card"><div class="row"><h2 id="coursesTitle">My course progress</h2><span id="courseCount" class="badge"></span></div><div id="courses"></div></div>
+<div class="card"><div class="row"><h2>Upcoming live classes</h2><span class="badge">IST</span></div><div id="classes"></div></div></div>
+<div class="two section"><div class="card"><h2>Assignment deadlines & results</h2><div id="assignments"></div></div>
+<div class="card"><div class="row"><h2>My notifications</h2><button id="markAll" type="button" class="ghost">Mark all read</button></div><p class="muted">New class, assignment, grade and enrollment updates appear here when recorded by the institute.</p><div class="inbox" id="notifications"></div></div></div>
+<div class="card section" id="staffPanel" hidden><div class="row"><div><div class="eyebrow">INSTRUCTOR / MANAGEMENT VIEW</div><h2>Institute academic reporting</h2></div><button type="button" id="exportCsv" class="outline">Export course summary CSV</button></div><p class="muted">Real aggregate metrics. No student names are included in the downloadable summary.</p><div id="staffMetrics" class="cards"></div><div id="staffCourses"></div></div>
+</div>
+<div class="footer">Maa Sati IAC · Academic records are protected by student-specific access permissions · No invented achievements or attendance</div>
+</main>
+<script type="module">
+import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.119.0';
+const sb=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
+const get=id=>document.getElementById(id);
+const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]||'&#39;'));
+const val=n=>Number.isFinite(Number(n))?Number(n):0;
+const stamp=s=>s?new Date(s).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Kolkata'}):'Schedule pending';
+const alert=(text,failed=false)=>get('message').innerHTML='<div class="notice'+(failed?' error':'')+'">'+escapeHTML(text)+'</div>';
+const meter=(title,value,hint='')=>'<div class="card metric"><span>'+escapeHTML(title)+'</span><strong>'+escapeHTML(String(value??0))+'</strong><small>'+escapeHTML(hint)+'</small></div>';
+const empty=msg=>'<div class="empty">'+escapeHTML(msg)+'</div>';
+const fmtGrade=v=>v==null?'—':String(v)+'%';
+const link=path=>(/^\/(platform\.html|analytics\.html|assistant\.html|certificate\.html)([?#][a-zA-Z0-9_=&-]+)?$/.test(path||''))?path:'#';
+let currentUser=null,staff=false,staffSummary=null;
+const checked=result=>{if(result.error)throw new Error(result.error.message);return result.data;};
+async function load(){
+ get('refresh').disabled=true;
+ try{
+ const auth=await sb.auth.getUser();if(auth.error||!auth.data.user){
+  get('auth').innerHTML='<h2>Sign in to view academic records</h2><p>Use the same institute account you enrolled with. Students see only their own progress and notifications.</p><a class="inline" href="/platform.html#dashboard">Open student sign-in / registration →</a>';
+  get('workspace').hidden=true;return;
+ }
+ currentUser=auth.data.user;get('auth').innerHTML='<div class="row"><strong>'+escapeHTML(currentUser.email||'Student')+'</strong><span class="badge">Authenticated account</span></div>';get('workspace').hidden=false;
+ const role=checked(await sb.from('iac_staff_roles').select('role').eq('user_id',currentUser.id).maybeSingle());staff=!!role;
+ const [mine,upcoming,tasks,subs,notices,courseData]=await Promise.all([
+  sb.rpc('iac_personal_analytics'),
+  sb.from('iac_live_classes').select('id,title,starts_at,duration_minutes,course_id').gte('starts_at',new Date().toISOString()).order('starts_at').limit(12),
+  sb.from('iac_assignments').select('id,title,due_at,course_id').order('due_at',{ascending:true,nullsFirst:false}).limit(50),
+  sb.from('iac_submissions').select('assignment_id,grade,feedback,submitted_at').eq('student_id',currentUser.id).limit(300),
+  sb.from('iac_notifications').select('id,category,title,message,target_url,created_at,read_at').eq('user_id',currentUser.id).order('created_at',{ascending:false}).limit(60),
+  sb.from('iac_courses').select('id,title').eq('published',true)
+ ]);
+ const data=checked(mine),classes=checked(upcoming),assignments=checked(tasks),submissions=checked(subs),notifications=checked(notices),courses=checked(courseData);
+ const names=new Map(courses.map(c=>[c.id,c.title]));
+ get('metrics').innerHTML=[
+ meter('Enrolled courses',val(data.active_enrollments),'Active memberships'),
+ meter('Lessons completed',val(data.completed_lessons),'Recorded in your learning account'),
+ meter('Assignment submissions',val(data.my_submissions),'Submitted to instructors'),
+ meter('Unread alerts',val(data.my_notifications_unread),'Recent student notifications')
+ ].join('');
+ const ownCourses=Array.isArray(data.by_course)?data.by_course:[];
+ get('courseCount').textContent=ownCourses.length+' courses';
+ get('courses').innerHTML=ownCourses.length?ownCourses.map(c=>{const total=val(c.total_lessons),done=val(c.completed_lessons);return '<div class="course"><div class="row"><strong>'+escapeHTML(c.title)+'</strong><span class="badge">'+escapeHTML(c.status)+'</span></div><div class="muted">'+done+' / '+total+' lessons completed</div><div class="bar"><div class="bar-fill" style="width:'+Math.round(total?Math.min(100,done/total*100):0)+'%"></div></div></div>'}).join(''):empty('No enrolled courses yet. <a href="/platform.html#courses">Browse courses</a> to request your first enrollment.');
+ get('classes').innerHTML=classes.length?classes.map(c=>'<div class="item"><div class="item-title">'+escapeHTML(c.title)+'</div><small>'+stamp(c.starts_at)+' · '+val(c.duration_minutes)+' minutes · '+escapeHTML(names.get(c.course_id)||'Enrolled course')+'</small><a class="inline" href="/platform.html#dashboard">Join details in My Learning</a></div>').join(''):empty('No upcoming classes scheduled for your accessible courses.');
+ const submitted=new Map(submissions.map(x=>[x.assignment_id,x]));
+ get('assignments').innerHTML=assignments.length?assignments.slice(0,12).map(a=>{const s=submitted.get(a.id);return '<div class="item"><div class="item-title">'+escapeHTML(a.title)+'</div><small>'+escapeHTML(names.get(a.course_id)||'Course')+' · '+(a.due_at?stamp(a.due_at):'No deadline set')+'</small>'+(s?'<span class="badge">'+(s.grade!=null?'Graded '+fmtGrade(s.grade):'Submitted')+'</span>':'<span class="badge warn">Pending submission</span>')+'</div>'}).join(''):empty('No assignments available for your current enrollments.');
+ get('markAll').disabled=!notifications.some(n=>!n.read_at);
+ get('notifications').innerHTML=notifications.length?notifications.map(n=>'<div class="notification'+(n.read_at?'':' unread')+'"><div class="ntext"><strong>'+escapeHTML(n.title)+'</strong><p>'+escapeHTML(n.message)+'</p><small>'+stamp(n.created_at)+' · '+escapeHTML(n.category)+'</small><div><a href="'+escapeHTML(link(n.target_url))+'">View related page</a></div></div>'+(n.read_at?'':'<button class="ghost markOne" data-id="'+escapeHTML(n.id)+'">Read</button>')+'</div>').join(''):empty('No notifications yet. Your instructor’s real course updates will appear here.');
+ document.querySelectorAll('.markOne').forEach(b=>b.onclick=async()=>{b.disabled=true;try{checked(await sb.from('iac_notifications').update({read_at:new Date().toISOString()}).eq('id',b.dataset.id).eq('user_id',currentUser.id));await load()}catch(e){alert(e.message,true)}});
+ get('staffPanel').hidden=!staff;
+ if(staff)await loadStaff();
+ }catch(e){alert(e.message||String(e),true)}finally{get('refresh').disabled=false}
+}
+async function loadStaff(){
+ staffSummary=checked(await sb.rpc('iac_academic_analytics'));
+ const a=staffSummary;
+ get('staffMetrics').innerHTML=[
+ meter('Students registered',val(a.students),'Institute account profiles'),
+ meter('Active enrollments',val(a.active_enrollments),'Across course tracks'),
+ meter('Awaiting approval',val(a.pending_enrollments),'Enrollment requests'),
+ meter('Assignments submitted',val(a.submissions),'Instructor submissions'),
+ meter('Graded work',val(a.graded_submissions),'Evaluated assignments'),
+ meter('Average mark',a.avg_grade==null?'—':fmtGrade(a.avg_grade),'Graded submissions only'),
+ meter('Upcoming live classes',val(a.upcoming_live_classes),'Not past sessions'),
+ meter('Verified attendance days',val(a.verified_attendance_days),'Recorded school attendance')
+ ].join('');
+ get('staffCourses').innerHTML='<h2 style="margin-top:30px">Course performance</h2>'+
+ ((a.by_course||[]).length?(a.by_course||[]).map(c=>'<div class="course"><div class="row"><strong>'+escapeHTML(c.title)+'</strong><span class="badge">'+val(c.active)+' active · '+val(c.completed)+' finished</span></div><div class="muted">'+val(c.enrollments)+' total enrollments · '+val(c.lesson_completions)+' completed lessons · '+val(c.submissions)+' submissions</div><div class="bar"><div class="bar-fill" style="width:'+Math.round(val(c.enrollments)?val(c.completed)/val(c.enrollments)*100:0)+'%"></div></div></div>').join(''):empty('No published course statistics.'));
+}
+get('refresh').onclick=load;
+get('markAll').onclick=async()=>{if(!currentUser)return;get('markAll').disabled=true;try{checked(await sb.from('iac_notifications').update({read_at:new Date().toISOString()}).eq('user_id',currentUser.id).is('read_at',null));await load();alert('Notifications marked read.')}catch(e){alert(e.message,true)}};
+get('exportCsv').onclick=()=>{
+ if(!staff||!staffSummary)return;
+ const rows=[['Course','Enrollments','Active','Completed','Published Lessons','Lesson Completions','Submissions'],...(staffSummary.by_course||[]).map(c=>[c.title,val(c.enrollments),val(c.active),val(c.completed),val(c.lessons),val(c.lesson_completions),val(c.submissions)])];
+ const csv=rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+ const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),u=URL.createObjectURL(blob);
+ const a=document.createElement('a');a.href=u;a.download='maa-sati-iac-academic-summary.csv';a.click();URL.revokeObjectURL(u);
+};
+load();
+</script></body></html>
