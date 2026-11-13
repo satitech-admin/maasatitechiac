@@ -8,10 +8,16 @@ Updated 2026-11-13. Scope: existing institute website and learner platform (not 
 - Source syntax checks and DB RLS/security negative check performed.
 - Pending: signed-in student acceptance test and public Vercel site access verification.
 
-## Three major phases still remaining after this milestone
-1. **Mentor & administration operations.** Review workflow UX improvements, class/batch communication, learner support and notifications. Keep all approvals server-enforced.
-2. **Complete integrated QA & security.** Real student-to-mentor-to-verified-credential flow; responsive/mobile/accessibility checks; data privacy, payment and login verification; resolve defects found.
-3. **Public launch & handover.** Configure safe public Vercel access, validate the production domain and SSL, confirm communications, publish operations guide, document backups and monitoring, and obtain explicit release sign-off.
+## Mentor & Administration Operations — implemented development milestone
+- New private `mentor-operations.html` dashboard with verified staff login, ticket status filters, paginated ticket list, replies, status updates and pending project review counts.
+- Existing student support and project review tables reused rather than building duplicate systems.
+- Internal in-app notifications for staff support replies and skill-project decisions use the existing student notification inbox. Private trigger functions are not callable by anonymous or ordinary signed-in accounts.
+- New operations navigation appears for staff on the institute learning portal; review page links back to operations.
+- Remaining operational acceptance: sign in with real verified staff role and real student ticket, verify reply, update, notification delivery and closed-ticket behavior. Currently no real support tickets or active skill submissions to exercise.
+
+## Two major phases still remaining after this milestone
+1. **Complete integrated QA & security.** Real student-to-mentor-to-verified-credential flow; responsive/mobile/accessibility checks; data privacy, payment and login verification; resolve defects found.
+2. **Public launch & handover.** Configure safe public Vercel access, validate production domain and SSL, verify communications, finalize operations guide/backups/monitoring and obtain release sign-off.
 
 ## Known external acceptance blockers
 - At the last connected database check there were no active student enrollments and no skill-project submissions, so a real authorized student-to-certificate flow was unavailable to test.
