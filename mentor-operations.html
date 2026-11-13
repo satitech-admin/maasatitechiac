@@ -99,7 +99,7 @@ async function loadTickets(reset=true){
     send.disabled=true;statusOnly.disabled=true;
     try{
      if(sendReply){
-      const result=await db.from('iac_support_replies').insert({ticket_id:ticket.id,sender_id:staffUser.id,message:response.value.trim()});
+      const result=await db.from('iac_support_replies').insert({ticket_id:ticket.id,sender_id:staffUser.id,message:response.value.trim()}).select('id').single();
       if(result.error)throw Error(result.error.message);
      }
      if(selection.value&&selection.value!==ticket.status){
