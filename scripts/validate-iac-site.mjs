@@ -39,7 +39,7 @@ if(!globalHeaders||!globalHeaders.headers?.some(h=>h.key==='X-Content-Type-Optio
 for(const shortName of privatePages){
   const file=shortName+'.html';
   const html=fs.readFileSync(file,'utf8');
-  if(!/<meta\\s+name=["']robots["'][^>]*noindex/i.test(html))errors.push(file+': missing noindex metadata');
+  if(!/<meta\s+name=["']robots["'][^>]*noindex/i.test(html))errors.push(file+': missing noindex metadata');
   const rule=(config.headers||[]).find(h=>h.source==='/'+file);
   if(!rule?.headers?.some(h=>h.key==='X-Robots-Tag'&&h.value.includes('noindex')))errors.push(file+': missing private X-Robots-Tag');
   if(!rule?.headers?.some(h=>h.key==='Cache-Control'&&h.value.includes('no-store')))errors.push(file+': missing no-store Cache-Control');
