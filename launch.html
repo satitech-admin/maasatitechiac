@@ -24,6 +24,8 @@ button{font:inherit;font-size:12px;font-weight:800;color:white;background:var(--
 <div class="row"><h2 id="acceptanceHeading">Launch Acceptance Evidence</h2><span class="status hold" id="acceptanceCount">Not checked</span></div>
 <p class="small">Only authorized institute administrators can record acceptance results. Each result is an <strong>owner-reported attestation</strong>, not an automated website or payment verification. Keep every item Pending until a real authorized test is completed.</p>
 <div id="acceptanceChecklist" class="evidence-grid" aria-live="polite">Loading authorized release checklist…</div>
+<div class="item"><h3>Recent acceptance changes</h3><p class="small">Timestamped decisions saved by authorized institute administrators. These records are owner attestations, not independent automated test results.</p>
+<div id="acceptanceHistory" class="small">No changes recorded yet.</div></div>
 <p class="small">The system maintains a timestamped change log. Final public release still requires successful public HTTPS access and real learner acceptance testing.</p>
 </section>
 <div class="card"><h2>Readiness test steps</h2><div id="manual"></div></div>
@@ -69,6 +71,20 @@ async function loadAcceptance(){
     .select('gate_key,state,evidence_note,reviewed_at').order('gate_key');
   if(result.error)throw Error(result.error.message);
   const byKey=new Map((result.data||[]).map(x=>[x.gate_key,x]));
+  const history=await db.from('iac_launch_acceptance_audit')
+    .select('gate_key,old_state,new_state,changed_at').order('changed_at',{ascending:false}).limit(12);
+  if(history.error)throw Error(history.error.message);
+  const historyHost=$('acceptanceHistory');
+  historyHost.replaceChildren();
+  if(!(history.data||[]).length){historyHost.textContent='No changes recorded yet.';}
+  for(const change of history.data||[]){
+   const line=document.createElement('p');line.className='small';
+   const gate=acceptanceGates.find(x=>x[0]===change.gate_key);
+   const at=new Date(change.changed_at);
+   const stamp=Number.isNaN(at.getTime())?'Unknown time':at.toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'});
+   line.textContent=stamp+' · '+(gate?.[1]||change.gate_key)+' · '+(change.old_state||'Not recorded')+' → '+change.new_state;
+   historyHost.appendChild(line);
+  }
   const verified=acceptanceGates.filter(x=>byKey.get(x[0])?.state==='owner_verified').length;
   const blocked=acceptanceGates.filter(x=>byKey.get(x[0])?.state==='blocked').length;
   count.textContent=verified+'/'+acceptanceGates.length+' owner-reported checks · '+blocked+' blocked';
