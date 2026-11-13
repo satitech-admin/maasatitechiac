@@ -54,6 +54,9 @@ const assistantJs=fs.readFileSync('assistant.html','utf8');
 if(!assistantJs.includes("client.rpc('iac_staff_respond_ticket'"))errors.push('Staff replies in Student Support must use the atomic staff RPC');
 if(assistantJs.includes("client.from('iac_support_tickets').update("))errors.push('Student Support must not perform separate staff status updates');
 if(!mentorJs.includes('pendingRefresh'))errors.push('Mentor ticket filters must queue refreshes while loading');
+const platformJs=fs.readFileSync('platform.html','utf8');
+if(!platformJs.includes('<option value="" selected disabled>Choose student type</option>'))errors.push('Student type must require explicit signup selection');
+if(!platformJs.includes('mentorNav.hidden=true'))errors.push('Staff navigation must be hidden after logout');
 const learningJs=fs.readFileSync('learning-journey.html','utf8');
 if(!learningJs.includes('iac_student_learning_snapshot')||!learningJs.includes('badge_awarded'))errors.push('Learning journey lost verified backend provenance');
 
