@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#17212b">
+<title>Account Acceptance Check | Maa Sati IAC</title>
+<meta name="description" content="A read-only, private student and staff account acceptance check for Maa Sati IAC.">
+<style>
+:root{--ink:#17212b;--muted:#5f6e75;--paper:#f4f1ea;--surface:#fffefa;--line:#d9d3ca;--accent:#bb6345;--good:#226746;--bad:#ab3d35;--warn:#88541d}
+*{box-sizing:border-box}body{margin:0;font:14px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--paper);color:var(--ink)}
+header{background:var(--ink);color:white}header .wrap{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;padding:17px 0}header a{color:inherit;text-decoration:none;font-weight:750}header small{display:block;font-size:10px;opacity:.7}nav{display:flex;gap:14px;font-size:12px;flex-wrap:wrap}
+.wrap{width:min(1070px,calc(100% - 32px));margin:auto}main{padding:35px 0 75px}.eyebrow{font-size:11px;letter-spacing:.16em;font-weight:850;color:var(--accent)}
+h1{font-size:clamp(32px,5vw,58px);letter-spacing:-.05em;line-height:1.08;margin:8px 0 14px}h2{font-size:21px;letter-spacing:-.02em;margin:0 0 12px}h3{font-size:15px;margin:0 0 5px}p{color:var(--muted);margin:7px 0 13px}.lead{max-width:770px;font-size:17px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;margin:15px 0;box-shadow:0 14px 28px #17212b07}.row{display:flex;align-items:center;justify-content:space-between;gap:13px;flex-wrap:wrap}
+.btn{appearance:none;border:1px solid var(--ink);border-radius:10px;background:var(--ink);color:#fff;font-weight:750;font:inherit;padding:11px 17px;min-height:43px;cursor:pointer;display:inline-flex;text-decoration:none;align-items:center;justify-content:center}
+.btn.secondary{background:transparent;color:var(--ink);border-color:#9aa99d}.btn:disabled{opacity:.55;cursor:default}
+.steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.step{border:1px solid var(--line);border-radius:12px;padding:17px;background:#fff;min-width:0}
+.state{display:inline-block;border-radius:99px;background:#eeeae2;padding:4px 10px;font-size:11px;font-weight:850;margin-bottom:9px}
+.state.pass{background:#e2efe6;color:var(--good)}.state.pending{background:#f5ecd9;color:var(--warn)}.state.fail{background:#fce3e0;color:var(--bad)}
+.step p{font-size:12px;margin:6px 0 0}.actions{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+.note{font-size:12px;border-left:3px solid var(--accent);background:#f4eee6;padding:11px 13px;color:#4a5556}
+footer{padding:20px 0;border-top:1px solid var(--line);text-align:center;color:var(--muted);font-size:11px}
+button:focus-visible,a:focus-visible{outline:3px solid #d89173;outline-offset:3px}
+@media(max-width:730px){.steps{grid-template-columns:1fr}.card{padding:17px}main{padding-top:26px}}
+</style></head>
+<body><header><div class="wrap"><a href="/">MAA SATI IAC<small>INSTITUTE OF ADVANCE COMPUTING</small></a><nav aria-label="Institute navigation"><a href="/platform.html">Login</a><a href="/my-learning.html">My Learning</a><a href="/onboarding.html">Onboarding</a><a href="/launch.html">Admin Launch</a></nav></div></header>
+<main class="wrap">
+<span class="eyebrow">READ-ONLY RELEASE TESTING</span><h1>My Account<br>Acceptance Check</h1>
+<p class="lead">Sign in with your own authorized account, then run checks for your email verification, private learning records, enrollment, actual quiz/project evidence and notifications. No grades, credentials, payment or account permissions are modified.</p>
+<div class="card"><div class="row"><div><h2>Run your checks</h2><p>Results describe this account at the time of testing. Green access checks do not mean you completed a course.</p></div><button id="run" class="btn" type="button">Run account checks</button></div>
+<div id="summary" role="status" aria-live="polite" class="note">Not tested. Sign in first and press “Run account checks”.</div>
+<div class="actions"><button id="copy" class="btn secondary" disabled type="button">Copy safe results</button><a class="btn secondary" href="/platform.html#dashboard">Sign in / Register</a><a class="btn secondary" href="/onboarding.html">Account verification</a></div>
+</div>
+<section class="card" aria-labelledby="detailsTitle"><h2 id="detailsTitle">Check results</h2><div id="results" class="steps" aria-live="polite"></div></section>
+<section class="card"><h2>What still requires a real test?</h2>
+<p>These read-only checks cannot prove email delivery, guardian identity, actual quiz completion, project quality, mentor approval, payment capture or certificate QR verification. Follow your real learning journey, submit your own work and have authorized staff review it. The admin Launch Dashboard keeps separate owner-reported acceptance evidence.</p>
+<div class="actions"><a class="btn secondary" href="/learning-journey.html">Learning journey</a><a class="btn secondary" href="/skill-review.html">Mentor project review</a><a class="btn secondary" href="/launch.html">Launch evidence dashboard</a></div>
+<p class="note">Privacy: This check is read-only and displays only summary counts for the current authenticated account. Do not paste student names, passwords, verification links or personal data into release notes.</p>
+</section>
+</main><footer>Maa Sati IAC · Private account diagnostic · No automatic certificates or payments</footer>
+<script type="module">
+import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.119.0';
+const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
+const $=id=>document.getElementById(id);
+const cases=[
+ ['account','Authenticated session','A valid session must be present.'],
+ ['email','Email verification','The account email must be confirmed by the email owner.'],
+ ['profile','Learner profile','A complete student type and profile must be available.'],
+ ['enrollment','Active enrollment','An authorized active or completed course enrollment must be visible.'],
+ ['progress','Private lesson progress API','Check whether personal lesson checkpoints can be read securely.'],
+ ['quiz','Real quiz attempts','Look for actually saved quiz attempts, not fabricated scores.'],
+ ['project','Real project submissions','Look for a project submitted by this account.'],
+ ['notifications','Notification inbox','Check whether the private inbox can be queried and if alerts exist.'],
+ ['staff','Institute team access','Check whether the account has a verified staff/admin role.']
+];
+let lastReport='';
+const results=new Map(cases.map(([id])=>[id,{state:'pending',message:'Not tested yet.'}]));
+const status=(key,state,message)=>results.set(key,{state,message});
+function render(){
+ const container=$('results');container.replaceChildren();
+ for(const [key,title,description] of cases){
+  const result=results.get(key);const article=document.createElement('article');article.className='step';
+  const pill=document.createElement('span');pill.className='state '+result.state;pill.textContent=result.state==='pass'?'PASS':result.state==='fail'?'ERROR':'PENDING';
+  const heading=document.createElement('h3');heading.textContent=title;
+  const descriptionNode=document.createElement('p');descriptionNode.textContent=description;
+  const outcome=document.createElement('p');outcome.textContent=result.message;
+  article.append(pill,heading,descriptionNode,outcome);container.append(article);
+ }
+}
+function failure(error){return(error?.message||'Request failed').replace(/[\r\n]+/g,' ').slice(0,160)}
+async function runCheck(key,fn){
+ try{await fn()}catch(error){status(key,'fail','Could not verify: '+failure(error))}
+ render();
+}
+async function run(){
+ $('run').disabled=true;$('copy').disabled=true;lastReport='';
+ for(const [key] of cases)status(key,'pending','Checking…');
+ render();$('summary').textContent='Checking your authorized account…';
+ try{
+  const login=await db.auth.getUser();
+  if(login.error)throw Error(login.error.message);
+  const user=login.data?.user;
+  if(!user){
+   status('account','pending','No authenticated account. Use Sign in / Register first.');
+   for(const [key] of cases)if(key!=='account')status(key,'pending','Sign in before testing.');
+   $('summary').textContent='Sign in is required. The check has not accessed any private records.';
+   return;
+  }
+  status('account','pass','Authenticated session confirmed by the identity service.');
+  status('email',user.email_confirmed_at?'pass':'pending',user.email_confirmed_at?'Account email is confirmed.':'Email confirmation is not finished. Use Resend verification email in Login.');
+  render();
+  await runCheck('profile',async()=>{
+   const r=await db.from('iac_profiles').select('student_level').eq('id',user.id).maybeSingle();
+   if(r.error)throw Error(r.error.message);
+   if(!r.data)status('profile','pending','No complete profile is saved. Open Onboarding.');
+   else if(!['college','school'].includes(r.data.student_level))status('profile','pending','Student type needs institute guidance before enrollment.');
+   else status('profile','pass','A student profile with a declared learner type exists. School learners still require separately verified guardian approval.');
+  });
+  await runCheck('enrollment',async()=>{
+   const r=await db.rpc('iac_student_learning_snapshot');
+   if(r.error)throw Error(r.error.message);
+   const programs=Array.isArray(r.data?.programs)?r.data.programs:[];
+   const active=programs.filter(p=>['active','completed'].includes(p.enrollment_status)).length;
+   status('enrollment',active?'pass':'pending',active?active+' enrolled course(s) visible.':'No active or completed course enrollment for this account.');
+  });
+  await runCheck('progress',async()=>{
+   const r=await db.from('iac_lesson_checkpoints').select('month_id',{count:'exact',head:true}).eq('user_id',user.id);
+   if(r.error)throw Error(r.error.message);
+   status('progress','pass','Private checkpoint read permitted; '+Number(r.count||0)+' checkpoint(s) saved. This does not prove lesson completion.');
+  });
+  await runCheck('quiz',async()=>{
+   const r=await db.rpc('iac_student_quiz_history',{p_page:1,p_page_size:1});
+   if(r.error)throw Error(r.error.message);
+   const total=Number(r.data?.total||0);
+   status('quiz',total>0?'pass':'pending',total>0?total+' genuine saved attempt(s) visible.':'No saved skill quiz attempt found for this account.');
+  });
+  await runCheck('project',async()=>{
+   const r=await db.from('iac_skill_project_submissions').select('id',{count:'exact',head:true}).eq('user_id',user.id);
+   if(r.error)throw Error(r.error.message);
+   const count=Number(r.count||0);
+   status('project',count>0?'pass':'pending',count>0?count+' submitted project record(s) visible. Mentor approval must be verified separately.':'No skill project submission saved yet.');
+  });
+  await runCheck('notifications',async()=>{
+   const r=await db.from('iac_notifications').select('id',{count:'exact',head:true}).eq('user_id',user.id);
+   if(r.error)throw Error(r.error.message);
+   const count=Number(r.count||0);
+   status('notifications',count?'pass':'pending',count?count+' private notification record(s) visible.':'Inbox query succeeded, but there are no real alerts yet.');
+  });
+  await runCheck('staff',async()=>{
+   const [s,a]=await Promise.all([db.rpc('iac_is_staff'),db.rpc('iac_is_admin')]);
+   if(s.error||a.error)throw Error(s.error?.message||a.error?.message);
+   if(a.data===true)status('staff','pass','Verified institute administrator role found.');
+   else if(s.data===true)status('staff','pass','Verified institute staff role found. Credential approvals remain admin-controlled.');
+   else status('staff','pending','Standard learner account: staff privileges not granted (normal for students).');
+  });
+  const successes=[...results.values()].filter(x=>x.state==='pass').length;
+  const pending=[...results.values()].filter(x=>x.state==='pending').length;
+  const errors=[...results.values()].filter(x=>x.state==='fail').length;
+  const summary='Completed private read-only checks: '+successes+' passed, '+pending+' pending, '+errors+' errors. Not a full launch certification.';
+  $('summary').textContent=summary;
+  lastReport=['Maa Sati IAC — private account readiness result','Checked at: '+new Date().toISOString(),summary,...cases.map(([id,title])=>title+': '+results.get(id).state.toUpperCase()+' — '+results.get(id).message),'No personal data or secrets included.'].join('\n');
+  $('copy').disabled=false;
+ }catch(error){status('account','fail','Account validation failed. '+failure(error));$('summary').textContent='Unable to verify your account. Sign in again or contact institute support.'}
+ finally{$('run').disabled=false;render()}
+}
+$('run').addEventListener('click',run);
+$('copy').addEventListener('click',async()=>{
+ if(!lastReport)return;
+ try{await navigator.clipboard.writeText(lastReport);$('summary').textContent='Results copied without personal information. Paste into your private acceptance notes.';}
+ catch{$('summary').textContent='Automatic copy unavailable in this browser. Re-run the check after allowing clipboard access.';}
+});
+render();
+</script></body></html>
