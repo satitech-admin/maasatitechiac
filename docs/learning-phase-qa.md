@@ -8,6 +8,8 @@ This phase covers beginner onboarding, the learning dashboard, the private guide
 - 4 published career programs, 48 monthly skills, 48 published skill guides, and 48 published skill assessments.
 - Student dashboard calls `iac_student_learning_snapshot` for authenticated progress and `iac_student_quiz_history` for paginated scores.
 - Private lesson checkpoints have owner-only SELECT, INSERT, UPDATE policies, with active enrollment checked on writes.
+- Read-only permission check: anonymous role has no checkpoint SELECT or INSERT, authenticated role has SELECT/INSERT but no DELETE. RLS is enabled with three owner policies.
+- Transaction-scoped negative authorization tests passed: unauthorized authenticated caller was rejected by `iac_review_skill_project`, and an unenrolled identity was rejected by checkpoint INSERT. Both transactions were rolled back; no student rows created.
 - Private practice reflections are limited to 2,000 characters in the database. Their self-reported status is separate from certified progress.
 - Skill-project submission requires actual enrollment, a recorded passing assessment and a student-owned submission (database RLS).
 - Skill-project approval calls `iac_review_skill_project`: authenticated administrators only, no self-approval, rechecks student enrollment and quiz eligibility, issues badge+certificate transactionally.
