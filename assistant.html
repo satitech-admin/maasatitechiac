@@ -52,7 +52,7 @@ get('refresh').onclick=()=>loadTickets().catch(err=>notice(err.message,true));
 get('request').onsubmit=async event=>{
  event.preventDefault();
  try{
-  const sent=await client.from('iac_support_tickets').insert({student_id:user.id,category:get('category').value,subject:get('subject').value.trim(),message:get('message').value.trim()});
+  const sent=await client.from('iac_support_tickets').insert({student_id:user.id,category:get('category').value,subject:get('subject').value.trim(),message:get('message').value.trim()}).select('id').single();
   if(sent.error)throw sent.error;
   get('request').reset();notice('Support ticket submitted.');await loadTickets();
  }catch(err){notice(err.message,true);}
