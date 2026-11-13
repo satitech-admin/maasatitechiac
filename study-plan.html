@@ -106,7 +106,7 @@ $('preferencesForm').addEventListener('submit',async event=>{
  try{
   const row={user_id:currentUser.id,days_per_week:Number($('days').value),minutes_per_day:Number($('minutes').value),updated_at:new Date().toISOString()};
   if(![3,5,7].includes(row.days_per_week)||![20,40,60].includes(row.minutes_per_day))throw Error('Please choose a valid study schedule.');
-  const result=await db.from('iac_study_preferences').upsert(row,{onConflict:'user_id'});
+  const result=await db.from('iac_study_preferences').upsert(row,{onConflict:'user_id'}).select('user_id').single();
   if(result.error)throw Error(result.error.message);
   $('saveStatus').textContent='Your private schedule is saved.';render();
  }catch(e){$('saveStatus').textContent=e.message||'Unable to save';$('saveStatus').className='status error'}
