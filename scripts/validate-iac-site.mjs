@@ -99,6 +99,19 @@ if(!quizClient.includes("db.rpc('iac_submit_mock_quiz'"))
 const adminQuizClient=fs.readFileSync('curriculum-admin.html','utf8');
 if(!adminQuizClient.includes('iac_admin_add_quiz_question'))
   errors.push('Quiz authoring must use the protected admin RPC');
+// Billing preflight: never enable a school checkout before verified guardian permission.
+// The server enforces the final decision; frontend checks are only a clear explanation for learners.
+const paymentUi=fs.readFileSync('payments.html','utf8');
+const paymentServer=fs.readFileSync('supabase/functions/iac-razorpay/index.ts','utf8');
+if(!paymentUi.includes('ready&&eligibilityReady&&kind'))errors.push('Payment UI could enable checkout before guardian eligibility');
+if(!paymentUi.includes("iac_guardian_consents")||!paymentUi.includes("Go to Onboarding"))errors.push('Payment UI must show guardian consent and onboarding actions');
+if(!paymentServer.includes('admin.rpc("iac_guardian_ready"'))errors.push('Razorpay edge function must check guardian eligibility before creating provider orders');
+if(!paymentServer.includes('X-Razorpay-Signature')||!paymentServer.includes('const user=await getUser(req)'))
+ errors.push('Razorpay webhook verification or user authentication was removed');
+const eligibilityIndex=paymentServer.indexOf('admin.rpc("iac_guardian_ready"');
+const providerOrderIndex=paymentServer.indexOf('const order=await rz("orders"');
+if(eligibilityIndex<0||providerOrderIndex<0||eligibilityIndex>providerOrderIndex)
+ errors.push('Razorpay eligibility must precede provider order creation');
 const platformJs=fs.readFileSync('platform.html','utf8');
 if(!platformJs.includes('<option value="" selected disabled>Choose student type</option>'))errors.push('Student type must require explicit signup selection');
 if(!platformJs.includes('mentorNav.hidden=true'))errors.push('Staff navigation must be hidden after logout');
