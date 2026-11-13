@@ -12,6 +12,10 @@ Updated 2026-11-13. Scope: existing institute website and learner platform (not 
 - New private `mentor-operations.html` dashboard with verified staff login, ticket status filters, paginated ticket list, replies, status updates and pending project review counts.
 - Existing student support and project review tables reused rather than building duplicate systems.
 - Internal in-app notifications for staff support replies and skill-project decisions use the existing student notification inbox. Private trigger functions are not callable by anonymous or ordinary signed-in accounts.
+- Admin-only course announcements now use an explicit confirmation, published-course selector, audited database function and private delivery log. The server enforces admin status, 5-120 character title, 15-700 character body, no empty recipient batch, max 500 recipients and a 60-second same-admin/same-course cooldown. Sending does not trigger external SMS or WhatsApp.
+- Database restrictions checked: no anonymous reads or direct INSERT to announcement log; authenticated users may execute the RPC but non-admin callers are rejected by the function. Both notification trigger functions deny direct execution.
+- SQL advisor flags the authenticated-executable privileged announcement RPC as a generic warning; use is intentional because the server function explicitly verifies `iac_is_admin()` before any data write. Review this in future security audits.
+- Remaining acceptance: first real enrolled-student notice, staff reply alert, student inbox read, status decision notification; no recipient data or sent announcements exist yet.
 - New operations navigation appears for staff on the institute learning portal; review page links back to operations.
 - Remaining operational acceptance: sign in with real verified staff role and real student ticket, verify reply, update, notification delivery and closed-ticket behavior. Currently no real support tickets or active skill submissions to exercise.
 
