@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# The sitemap lists public institute pages only. Private dashboards use noindex metadata.
+Sitemap: https://maasatitechiac.vercel.app/sitemap.xml
