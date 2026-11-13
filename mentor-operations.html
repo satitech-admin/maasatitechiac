@@ -29,7 +29,7 @@
 import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
 const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
 const $=id=>document.getElementById(id),escapeHtml=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let staffUser=null,page=0,total=0,loading=false;const limit=25;
+let staffUser=null,page=0,total=0,loading=false,pendingRefresh=false;const limit=25;
 function notice(message,bad=false){$('notice').textContent=message;$('notice').className='status'+(bad?' error':'')}
 function safeDate(date){const value=new Date(date);return Number.isNaN(value.getTime())?'—':value.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}
 function statusLabel(status){return String(status||'unknown').replaceAll('_',' ')}
@@ -49,7 +49,8 @@ function statusQuery(query,mode){
  return query;
 }
 async function loadTickets(reset=true){
- if(loading)return;loading=true;$('loadMore').disabled=true;
+ if(loading){if(reset)pendingRefresh=true;return;}
+ loading=true;$('loadMore').disabled=true;
  try{
   if(reset){page=0;$('tickets').replaceChildren();}
   const mode=$('statusFilter').value;
@@ -115,7 +116,10 @@ async function loadTickets(reset=true){
   $('loadMore').classList.toggle('hidden',allCount>=total);
   page++;
  }catch(error){notice(error.message,true)}
- finally{loading=false;$('loadMore').disabled=false}
+ finally{
+  loading=false;$('loadMore').disabled=false;
+  if(pendingRefresh){pendingRefresh=false;await loadTickets(true);}
+ }
 }
 async function loadAnnouncementHistory(){
  const res=await db.from('iac_course_announcements').select('title,body,created_at,delivered_count').order('created_at',{ascending:false}).limit(8);
