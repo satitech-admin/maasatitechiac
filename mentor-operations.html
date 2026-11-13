@@ -103,7 +103,7 @@ async function loadTickets(reset=true){
       if(result.error)throw Error(result.error.message);
      }
      if(selection.value&&selection.value!==ticket.status){
-      const result=await db.from('iac_support_tickets').update({status:selection.value,updated_at:new Date().toISOString()}).eq('id',ticket.id);
+      const result=await db.from('iac_support_tickets').update({status:selection.value,updated_at:new Date().toISOString()}).eq('id',ticket.id).select('id').single();
       if(result.error)throw Error(result.error.message);
      }
      notice(sendReply?'Reply saved.':'Status saved.');await updateMetrics();await loadTickets(true);
