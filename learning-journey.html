@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#17212b"><meta name="description" content="A simple guided student learning journey with real lesson, quiz, project, review and verified badge statuses.">
+<title>My Learning Journey | Maa Sati IAC</title>
+<style>
+:root{--paper:#f4f1eb;--surface:#fffdf9;--ink:#17212b;--muted:#65717a;--line:#ded8ce;--coral:#ca6145;--good:#2b7655}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.6 system-ui,-apple-system,Segoe UI,sans-serif}a{color:inherit}button,select{font:inherit}button{cursor:pointer}a:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid #e1a378;outline-offset:3px}
+header{background:var(--ink);color:white;padding:15px max(17px,calc((100% - 1160px)/2));display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}header a{text-decoration:none;font-weight:750}header small{display:block;font-size:10px;opacity:.75}nav{display:flex;gap:16px;flex-wrap:wrap;font-size:12px}
+main{width:min(1100px,calc(100% - 32px));margin:35px auto 70px}.eyebrow{font-weight:850;letter-spacing:.14em;font-size:11px;color:#b05740}h1{font-size:clamp(35px,5vw,56px);line-height:1.12;letter-spacing:-.045em;margin:8px 0}h2{font-size:23px;margin:5px 0 11px}h3{font-size:17px;margin:0 0 5px}p{color:var(--muted);margin:7px 0 16px;line-height:1.7}.lead{font-size:17px;max-width:690px}.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:23px;margin:18px 0;box-shadow:0 12px 35px #17212b08}.row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.btn{display:inline-block;border-radius:10px;background:var(--ink);border:1px solid var(--ink);color:white;font-weight:800;text-decoration:none;padding:12px 16px;font-size:13px}.btn.soft{color:var(--ink);background:transparent;border-color:#b8c1b9}.btn:focus-visible{outline-offset:4px}.eyelabel{display:block;color:var(--muted);font-weight:750;font-size:12px;margin:0 0 7px}select{display:block;background:white;border:1px solid #abb7b4;color:var(--ink);border-radius:9px;padding:12px;width:100%;max-width:500px}.hint{font-size:12px}.hidden{display:none!important}.step-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:11px;margin:18px 0}.step{position:relative;border:1px solid var(--line);border-radius:14px;padding:15px 12px;background:#fff;min-width:0}.step .num{width:31px;height:31px;border-radius:100%;display:grid;place-items:center;font-weight:850;background:#e8ebea;color:#40505b}.step[data-status="done"]{border-color:#a9d1bb;background:#f2f8f2}.step[data-status="done"] .num{background:#2b7655;color:white}.step[data-status="next"]{border-color:#dfac8b;background:#fff5ed}.step[data-status="next"] .num{background:#bd5f42;color:white}.step strong{display:block;margin:11px 0 5px}.step p{font-size:12px;margin:0}.status{display:inline-block;background:#ecedea;border-radius:30px;padding:5px 10px;font-weight:800;font-size:11px}.status.good{background:#e3f2e7;color:#256445}.status.pending{background:#fff0df;color:#925321}.stack{display:grid;gap:11px}.task{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:15px 0;border-bottom:1px solid var(--line)}.task:last-child{border:0}.task p{font-size:12px;margin:4px 0}.empty{background:#eef2ee;border-radius:12px;padding:18px;color:#425a4d}.small{color:var(--muted);font-size:12px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}footer{border-top:1px solid var(--line);padding:20px 0;text-align:center;color:var(--muted);font-size:12px}
+@media(max-width:900px){.step-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:600px){main{margin-top:24px}.step-grid{grid-template-columns:1fr}.task{align-items:stretch;flex-direction:column}.task .btn{align-self:flex-start}.card{padding:17px}.row{align-items:flex-start}header{gap:10px}nav{gap:10px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style></head>
+<body><header><a href="/">MAA SATI IAC<small>INSTITUTE OF ADVANCE COMPUTING</small></a><nav aria-label="Main navigation"><a href="/start-here.html">New student guide</a><a href="/programs.html">Courses</a><a href="/my-learning.html">My Progress</a><a href="/profile.html">My Profile</a></nav></header>
+<main><div class="eyebrow">YOUR PERSONAL LEARNING PATH</div><h1>Learn. Practice.<br>Build. Achieve.</h1><p class="lead">One simple place to understand what you have completed and what to do next. Your progress is read from your real student account — no demo scores or automatic certificates.</p>
+<div id="message" role="status" aria-live="polite">Checking your account…</div>
+<section id="content" class="hidden">
+ <div class="card"><div class="row"><div><h2>Choose your course</h2><p class="hint">Only your active or completed enrollments can show private learning progress.</p></div><a href="/programs.html" class="btn soft">Explore all courses</a></div><label class="eyelabel" for="courseSelect">My course</label><select id="courseSelect" aria-label="Select enrolled course"></select></div>
+ <section class="card" aria-labelledby="stepTitle"><div class="row"><div><div class="eyebrow">CURRENT SKILL</div><h2 id="stepTitle">Your next learning step</h2><p id="stepDescription">Follow the numbered journey below.</p></div><span id="badgeStatus" class="status">In progress</span></div>
+ <div class="step-grid" id="journeySteps" aria-label="Five learning stages"></div>
+ <div class="actions" id="primaryActions"></div>
+ </section>
+ <section class="card" aria-labelledby="skillsTitle"><div class="row"><div><h2 id="skillsTitle">Your monthly skills</h2><p class="hint">Choose a skill below to see its real status and next action.</p></div><span id="skillCount" class="status"></span></div><div class="stack" id="skillOptions"></div></section>
+ <section class="card"><h2>What do these statuses mean?</h2><div class="stack"><p><strong>Quiz pending:</strong> Learn the topic, then answer the skill assessment.</p><p><strong>Project to submit:</strong> Your assessment is passed; submit your own working project.</p><p><strong>Mentor review:</strong> An authorized reviewer must check the work before a badge is issued.</p><p><strong>Changes requested:</strong> Improve and resubmit using the feedback shown in your account.</p><p><strong>Badge earned:</strong> Your verified credential can be opened and shared.</p></div></section>
+</section>
+<div class="actions"><a class="btn soft" href="/my-learning.html">Full dashboard and quiz history</a><a class="btn soft" href="/start-here.html">How the institute works</a></div></main>
+<footer>Maa Sati IAC · Student-only progress · Real review required for verified credentials</footer>
+<script type="module">
+import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.119.0';
+const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
+const el=id=>document.getElementById(id);
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safe=x=>encodeURIComponent(String(x??''));
+const labels={enroll:'Enrollment required',quiz:'Take the skill quiz',submit_project:'Submit your project',mentor_review:'Waiting for mentor review',revise_project:'Make project changes',credential_review:'Credential review in progress',earned:'Verified badge earned'};
+let state=null,program=null,selectedSkill=null;
+const enrolled=p=>['active','completed'].includes(p.enrollment_status);
+const skillLink=(s,action)=>'/programs.html?program='+safe(s.program_slug)+'&skill='+safe(s.month_id)+'&action='+action;
+const badgeLink=s=>'/skill-badge.html?code='+safe(s.certificate_code);
+function getNext(s){
+ if(s.next_step==='earned'&&s.certificate_code)return {title:'View earned badge',url:badgeLink(s)};
+ if(s.next_step==='submit_project'||s.next_step==='revise_project')return {title:s.next_step==='revise_project'?'Improve your project':'Submit your project',url:skillLink(s,'project')};
+ if(s.next_step==='quiz')return {title:'Take skill quiz',url:skillLink(s,'quiz')};
+ if(s.next_step==='mentor_review'||s.next_step==='credential_review')return {title:'View submission status',url:skillLink(s,'roadmap')};
+ if(s.next_step==='enroll')return {title:'Request enrollment',url:'/platform.html#courses'};
+ return {title:'Open skill roadmap',url:skillLink(s,'roadmap')};
+}
+function stageStates(s){
+ const badge=Boolean(s.badge_awarded&&s.certificate_code),passed=Boolean(s.quiz_passed);
+ const submitted=Boolean(s.project_status&& !['not_submitted','not submitted','none'].includes(s.project_status));
+ const reviewed=badge||['approved','accepted'].includes(s.project_status);
+ const states=[true,passed,submitted,reviewed,badge];
+ const step=s.next_step||'enroll';
+ let nextIndex=step==='quiz'?1:['submit_project','revise_project'].includes(step)?2:step==='mentor_review'?3:step==='credential_review'?4:step==='earned'?-1:0;
+ return states.map((done,i)=>done?'done':i===nextIndex?'next':'waiting');
+}
+function drawStep(s){
+ selectedSkill=s;const statuses=stageStates(s);
+ el('stepTitle').textContent=s.title||'Learning skill';
+ el('stepDescription').textContent=(s.program_title||program?.title||'Your course')+' · Month '+(s.month_number||'—')+' · '+(labels[s.next_step]||'Follow your roadmap');
+ const badge=s.badge_awarded&&s.certificate_code;
+ el('badgeStatus').textContent=badge?'Verified badge earned':s.next_step==='mentor_review'?'Awaiting review':s.next_step==='revise_project'?'Changes requested':'In progress';
+ el('badgeStatus').className='status '+(badge?'good':s.next_step==='mentor_review'||s.next_step==='revise_project'?'pending':'');
+ const steps=[
+  ['Read the lesson','Open your topic guide and practice the examples.'],
+  ['Pass the quiz','Meet the required score for your skill assessment.'],
+  ['Submit project','Share your own working project and explanation.'],
+  ['Mentor review','Wait for the instructor to verify the project.'],
+  ['Earn credential','Open a badge only after official approval.']
+ ];
+ el('journeySteps').innerHTML=steps.map(([title,description],i)=>'<article class="step" data-status="'+statuses[i]+'"><span class="num">'+(statuses[i]==='done'?'✓':i+1)+'</span><strong>'+title+'</strong><p>'+description+'</p><span class="small">'+(statuses[i]==='done'?'Completed':statuses[i]==='next'?'Your next step':'Not finished')+'</span></article>').join('');
+ const next=getNext(s);
+ el('primaryActions').innerHTML='<a class="btn" href="'+esc(next.url)+'">'+esc(next.title)+' →</a><a class="btn soft" href="'+esc(skillLink(s,'roadmap'))+'">Read learning guide</a>'+((s.project_feedback)?'<p class="small" style="width:100%"><strong>Mentor feedback:</strong> '+esc(s.project_feedback)+'</p>':'');
+ document.querySelectorAll('[data-skill]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.skill===String(s.month_id))));
+}
+function drawCourse(id){
+ program=(state.programs||[]).find(p=>String(p.id)===String(id));
+ const skills=(state.skills||[]).filter(s=>String(s.program_id)===String(id)).sort((a,b)=>(Number(a.month_number)||0)-(Number(b.month_number)||0));
+ const userPick=new URLSearchParams(location.search).get('skill');
+ const skill=skills.find(s=>String(s.month_id)===userPick)||skills.find(s=>s.next_step==='revise_project')||skills.find(s=>s.next_step==='submit_project')||skills.find(s=>s.next_step==='quiz')||skills.find(s=>s.next_step!=='earned')||skills[0];
+ el('skillCount').textContent=skills.length+' skills';
+ el('skillOptions').innerHTML=skills.length?skills.map(s=>{const a=getNext(s);return '<div class="task"><div><strong>Month '+esc(s.month_number)+' · '+esc(s.title)+'</strong><p>'+esc(labels[s.next_step]||'Open the roadmap')+' · Best quiz: '+(s.best_score==null?'Not attempted':esc(s.best_score)+'%')+'</p></div><button type="button" class="btn soft" data-skill="'+esc(s.month_id)+'" aria-current="false">View steps</button></div>'}).join(''):'<div class="empty">No published monthly skills found for this course. Open its roadmap for more details.</div>';
+ document.querySelectorAll('[data-skill]').forEach(b=>b.addEventListener('click',()=>{const current=skills.find(s=>String(s.month_id)===b.dataset.skill);if(current){drawStep(current);el('journeySteps').scrollIntoView({behavior:'smooth',block:'start'});}}));
+ if(skill)drawStep(skill);else{el('stepTitle').textContent='No skills available';el('stepDescription').textContent='Check the course roadmap for updates.';el('journeySteps').replaceChildren();el('primaryActions').innerHTML='<a class="btn" href="/programs.html">View all roadmaps</a>';}
+}
+async function load(){
+ const auth=await db.auth.getUser();
+ if(auth.error)throw Error(auth.error.message);
+ if(!auth.data?.user){el('message').innerHTML='<div class="card"><h2>Sign in to see your learning journey</h2><p>This page only shows verified progress from your own student account. You can explore public courses without signing in.</p><div class="actions"><a href="/platform.html#dashboard" class="btn">Sign in / Register</a><a href="/programs.html" class="btn soft">Explore courses</a></div></div>';return;}
+ const result=await db.rpc('iac_student_learning_snapshot');if(result.error)throw Error(result.error.message);
+ state=result.data||{};const programs=(state.programs||[]).filter(enrolled);
+ if(!programs.length){el('message').innerHTML='<div class="card"><h2>Your first step: choose a course</h2><p>No active enrollment is showing in your account yet. Explore a roadmap and request enrollment to start tracking progress.</p><a class="btn" href="/programs.html">Explore courses</a></div>';return;}
+ el('message').textContent='';el('courseSelect').replaceChildren();programs.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.title;el('courseSelect').append(o)});
+ const initial=new URLSearchParams(location.search).get('program');
+ const found=programs.find(p=>String(p.id)===initial||p.slug===initial)||programs[0];
+ el('courseSelect').value=found.id;el('courseSelect').addEventListener('change',()=>drawCourse(el('courseSelect').value));
+ el('content').classList.remove('hidden');drawCourse(found.id);
+}
+load().catch(error=>{el('message').innerHTML='<div class="card"><h2>Learning journey unavailable</h2><p>We could not load your private progress. Please try again from the dashboard.</p><a class="btn" href="/my-learning.html">Open dashboard</a></div>';console.error(error)});
+</script></body></html>
