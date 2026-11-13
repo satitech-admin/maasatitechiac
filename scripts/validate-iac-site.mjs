@@ -84,6 +84,12 @@ const assistantJs=fs.readFileSync('assistant.html','utf8');
 if(!assistantJs.includes("client.rpc('iac_staff_respond_ticket'"))errors.push('Staff replies in Student Support must use the atomic staff RPC');
 if(assistantJs.includes("client.from('iac_support_tickets').update("))errors.push('Student Support must not perform separate staff status updates');
 if(!mentorJs.includes('pendingRefresh'))errors.push('Mentor ticket filters must queue refreshes while loading');
+// Acceptance diagnostics must be read-only; neither the browser nor CI should fabricate proof.
+const acceptanceSource=fs.readFileSync('account-acceptance.html','utf8');
+for(const unsafe of [".insert(", ".update(", ".upsert(", ".delete(", "db.auth.updateUser(", "db.auth.signUp(", "db.auth.signInWithPassword("]){
+ if(acceptanceSource.includes(unsafe))errors.push('Account acceptance diagnostics must stay read-only: '+unsafe);
+}
+if(!acceptanceSource.includes("lastReport=['Maa Sati IAC — private account readiness result'"))errors.push('Account diagnostic must build a user-redacted report');
 const platformJs=fs.readFileSync('platform.html','utf8');
 if(!platformJs.includes('<option value="" selected disabled>Choose student type</option>'))errors.push('Student type must require explicit signup selection');
 if(!platformJs.includes('mentorNav.hidden=true'))errors.push('Staff navigation must be hidden after logout');
