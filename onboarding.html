@@ -125,7 +125,7 @@ $('staffRequest').onsubmit=async e=>{
 };
 async function requestReset(email){
  try{
-  checked(await db.auth.resetPasswordForEmail(email,{redirectTo:IAC_AUTH_ORIGIN+'/onboarding.html#reset'}));
+  checked(await db.auth.resetPasswordForEmail(email,{redirectTo:IAC_AUTH_ORIGIN+'/onboarding.html'}));
   notice('If this email has a registered account, a password reset link will be sent.');
  }catch(error){notice(error.message,true)}
 }
