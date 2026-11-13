@@ -22,7 +22,7 @@ for (const pathname of paths) {
   console.log('PASS', pathname, 'HTTP 200 with configured headers');
 }
 // Private pages may serve their public HTML shell, but must never be indexed or cached.
-for (const pathname of ['/profile.html', '/mentor-operations.html', '/launch.html']) {
+for (const pathname of ['/profile.html', '/mentor-operations.html', '/launch.html', '/account-acceptance.html']) {
   const url = new URL(pathname, base);
   const response = await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(15000) });
   if (response.status !== 200) {
