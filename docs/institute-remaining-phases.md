@@ -19,6 +19,15 @@ Updated 2026-11-13. Scope: existing institute website and learner platform (not 
 - New operations navigation appears for staff on the institute learning portal; review page links back to operations.
 - Remaining operational acceptance: sign in with real verified staff role and real student ticket, verify reply, update, notification delivery and closed-ticket behavior. Currently no real support tickets or active skill submissions to exercise.
 
+## Final Launch Preparation — source and deployment configuration implemented
+- 14 personal/admin pages now declare `noindex,nofollow`; six public routes appear in `sitemap.xml` and `robots.txt`.
+- `vercel.json` adds baseline headers without breaking inline scripts or external Supabase clients with a premature Content Security Policy.
+- Automatic static checks in `scripts/validate-launch-readiness.mjs` validate private indexing, public sitemap destinations, headers and client-side secret signatures.
+- An opt-in `scripts/verify-public-http.mjs` probe checks real HTTPS page accessibility and headers; GitHub Actions only executes it when the owner manually requests public verification.
+- The release/operations handover is documented in `docs/final-launch-handover-2026-11-13.md`.
+- Owner activation remains blocked: at the latest check the database had 3 registered accounts, 1 email-confirmed account, **0 admin staff roles**, **0 active enrollments**; the specifically configured founder identity was not yet confirmed.
+- Latest Vercel production build is READY; deployment protection is still enabled and `live=false`. This is NOT a public launch.
+
 ## Two major phases still remaining after this milestone
 1. **Complete integrated QA & security.** Real student-to-mentor-to-verified-credential flow; responsive/mobile/accessibility checks; data privacy, payment and login verification; resolve defects found.
 2. **Public launch & handover.** Configure safe public Vercel access, validate production domain and SSL, verify communications, finalize operations guide/backups/monitoring and obtain release sign-off.
