@@ -34,6 +34,7 @@ button,.linkbutton{cursor:pointer;font:inherit;font-size:12px;font-weight:800;pa
 </main>
 <script type="module">
 import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
+const IAC_AUTH_ORIGIN='https://maasatitechiac.vercel.app';
 const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const $=id=>document.getElementById(id);
 const safe=value=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]||'&#39;'));
@@ -124,7 +125,7 @@ $('staffRequest').onsubmit=async e=>{
 };
 async function requestReset(email){
  try{
-  checked(await db.auth.resetPasswordForEmail(email,{redirectTo:location.origin+'/onboarding.html#reset'}));
+  checked(await db.auth.resetPasswordForEmail(email,{redirectTo:IAC_AUTH_ORIGIN+'/onboarding.html#reset'}));
   notice('If this email has a registered account, a password reset link will be sent.');
  }catch(error){notice(error.message,true)}
 }
