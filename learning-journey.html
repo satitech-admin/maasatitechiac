@@ -36,6 +36,8 @@ const enrolled=p=>['active','completed'].includes(p.enrollment_status);
 const skillLink=(s,action)=>'/programs.html?program='+safe(s.program_slug)+'&skill='+safe(s.month_id)+'&action='+action;
 const badgeLink=s=>'/skill-badge.html?code='+safe(s.certificate_code);
 function getNext(s){
+ const ownPractice=checkpoints.get(String(s.month_id))||{};
+ if(s.next_step==='quiz'&&!(ownPractice.lesson_read&&ownPractice.practice_done))return {title:'Start lesson & practice',url:skillLink(s,'learn')};
  if(s.next_step==='earned'&&s.certificate_code)return {title:'View earned badge',url:badgeLink(s)};
  if(s.next_step==='submit_project'||s.next_step==='revise_project')return {title:s.next_step==='revise_project'?'Improve your project':'Submit your project',url:skillLink(s,'project')};
  if(s.next_step==='quiz')return {title:'Take skill quiz',url:skillLink(s,'quiz')};
@@ -50,7 +52,7 @@ function stageStates(s){
  const practice=checkpoints.get(String(s.month_id))||{};
  const states=[Boolean(practice.lesson_read&&practice.practice_done),passed,submitted,reviewed,badge]; // Self-reported practice, not verified skill completion.
  const step=s.next_step||'enroll';
- let nextIndex=step==='quiz'?1:['submit_project','revise_project'].includes(step)?2:step==='mentor_review'?3:step==='credential_review'?4:step==='earned'?-1:0;
+ let nextIndex=step==='quiz'&&!states[0]?0:step==='quiz'?1:['submit_project','revise_project'].includes(step)?2:step==='mentor_review'?3:step==='credential_review'?4:step==='earned'?-1:0;
  return states.map((done,i)=>done?'done':i===nextIndex?'next':i===0?'available':'waiting');
 }
 function drawStep(s){
@@ -67,9 +69,9 @@ function drawStep(s){
   ['Mentor review','Wait for the instructor to verify the project.'],
   ['Earn credential','Open a badge only after official approval.']
  ];
- el('journeySteps').innerHTML=steps.map(([title,description],i)=>'<article class="step" data-status="'+statuses[i]+'"><span class="num">'+(statuses[i]==='done'?'✓':i+1)+'</span><strong>'+title+'</strong><p>'+description+'</p><span class="small">'+(statuses[i]==='done'?(i===0?'Self-reported':'Verified'):statuses[i]==='next'?'Your next step':statuses[i]==='available'?'Ready to learn':'Not finished')+'</span></article>').join('');
+ el('journeySteps').innerHTML=steps.map(([title,description],i)=>'<article class="step" data-status="'+statuses[i]+'"><span class="num">'+(statuses[i]==='done'?'✓':i+1)+'</span><strong>'+title+'</strong><p>'+description+'</p><span class="small">'+(statuses[i]==='done'?(['Self-reported','Quiz passed','Project submitted','Mentor approved','Verified badge'][i]):statuses[i]==='next'?'Your next step':statuses[i]==='available'?'Ready to learn':'Not finished')+'</span></article>').join('');
  const next=getNext(s);
- el('primaryActions').innerHTML='<a class="btn" href="'+esc(next.url)+'">'+esc(next.title)+' →</a><a class="btn soft" href="'+esc(skillLink(s,'roadmap'))+'">Read learning guide</a>'+((s.project_feedback)?'<p class="small" style="width:100%"><strong>Mentor feedback:</strong> '+esc(s.project_feedback)+'</p>':'');
+ el('primaryActions').innerHTML='<a class="btn" href="'+esc(next.url)+'">'+esc(next.title)+' →</a><a class="btn soft" href="'+esc(skillLink(s,'learn'))+'">Read learning guide</a>'+((s.project_feedback)?'<p class="small" style="width:100%"><strong>Mentor feedback:</strong> '+esc(s.project_feedback)+'</p>':'');
  const msg=el('mentorMessage');
  if(s.next_step==='revise_project'){
   msg.classList.remove('hidden');
