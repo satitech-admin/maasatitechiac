@@ -24,6 +24,27 @@ This phase covers beginner onboarding, the learning dashboard, the private guide
 - Its domains currently listed are Vercel subdomains, not an exempt custom public domain. A `READY` deployment therefore does **not** establish public student accessibility.
 - Do not disable SSO, create an indefinite bypass, or publish private administrative material as an automatic side effect of QA. Deployment protection needs deliberate owner configuration before a public launch.
 
+## Security & reliability hardening — 13 November 2026
+
+**Fixed critical project submission blocker.** PostgreSQL did not accept the original project HTTPS URL constraint because a regular expression repetition upper bound of 495 is invalid for PostgreSQL regex. A valid project submission failed with `invalid regular expression: invalid repetition count(s)`. The constraint was replaced with a valid HTTPS-without-whitespace expression plus an explicit 13–503-character length check. Transaction-scoped insertion and editable project URL revision tests now succeed; the temporary submission was rolled back.
+
+**Database integrity guards added and tested.**
+- Support ticket records preserve original owner, subject, category, message and creation timestamp. Staff may update status and update timestamp.
+- Student notification payloads (recipient, title, message, link and source) are immutable. Authenticated owners can still update `read_at`.
+- Project submission owner, skill, ID and initial submission timestamp cannot be changed; real project URL and description can be revised through the existing workflow.
+- Transaction-only rollback tests verified both rejected modifications and allowed status/read/revision operations. No sample records remain.
+
+**Frontend reliability fixes.** Student skill-project submissions, note saves, lesson checkpoints and study preferences now request a returned row instead of reporting success merely because the database returned no error. Support ticket creation, replies and status updates do the same. Site QA script now tests the project-specific checklist is not accidentally inserted into the private note handler.
+
+**Source checks.** 12 central HTML pages were inspected; 18 embedded scripts parsed successfully. All 18 unique internal HTML destinations discovered across these pages exist in the connected GitHub repository. This does not replace browser or role-based acceptance testing.
+
+**Open security advisory items.**
+- Supabase Auth leaked-password protection is currently disabled. Review and enable it in Supabase Auth password-security configuration where the plan supports it: https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
+- Supabase advisor flags some privileged SQL RPCs. `iac_verify_certificate` intentionally permits public masked verification; privileged functions should continue periodic role and business-logic review. Do not broadly revoke the public verification endpoint without testing certificate links.
+- Public Vercel access is still blocked by SSO protection, although the deployment state is READY.
+
+**Current production data:** zero active enrollments, support tickets, notifications and skill projects at the last check. Signed-in student/instructor and actual email/payment/mobile acceptance workflows cannot honestly be called passed until real, authorized participants are available.
+
 ## Not yet validated end-to-end
 - A real, authorized student signing in, enrolling, saving a lesson and practice reflection, passing an assessment, and submitting a working project.
 - An authorized institute admin opening that submission, requesting changes, approving a revised project and confirming certificate verification.
