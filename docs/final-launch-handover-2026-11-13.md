@@ -46,7 +46,7 @@ Date: 13 November 2026
 - Verify confirmation/reset emails, sender reputation, production email links and the configured Auth redirect allowlist. Code uses `/onboarding.html` in confirmation flows.
 - Check actual pricing/payment gateway callbacks and payment acknowledgment before taking real student fees. No claims of successful production payment tests have been made.
 - Establish authorized access to Vercel, GitHub and Supabase; review role separation, backup/recovery plan, database migrations, incident contacts and renewal billing.
-- Owner must approve accurate Privacy Notice / Student Terms, including a policy for children/guardian approvals, retention/deletion and contact details, before open school enrollment.
+- Owner must approve accurate Privacy Notice / Student Terms, including a policy for children/guardian approvals, retention/deletion and contact details, before open school enrollment. An explicitly unapproved first draft is prepared in `docs/launch-legal-copy-owner-review.md`; it is NOT a live legal policy and requires verified operator details and legal review.
 - Run full QA workflow and review **both** GitHub Actions run results and Vercel deployment logs; a Vercel-only green commit status is not proof that the separate GitHub Actions checks ran.
 
 ## Routine operations after launch
