@@ -8,6 +8,7 @@ main{width:min(1130px,calc(100% - 34px));margin:35px auto 85px}.eyebrow{font-siz
 button{font:inherit;font-size:12px;font-weight:800;color:white;background:var(--ink);padding:11px 16px;border:none;border-radius:9px;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}a.link{color:#97553e;font-weight:750}.hidden{display:none!important}.footer{margin-top:50px;text-align:center;color:var(--muted);font-size:11px}
 @media(max-width:820px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:570px){header{flex-direction:column;align-items:flex-start;padding:15px}.grid{grid-template-columns:1fr}.card{padding:17px}}
+.evidence-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:16px}.evidence-card{border:1px solid var(--line);padding:16px;border-radius:13px;background:#fff;min-width:0}.evidence-card h3{font-size:16px;margin:0 0 6px}.evidence-card p{font-size:12px}.evidence-card label{display:block;font-size:11px;font-weight:800;letter-spacing:.02em;margin:10px 0 5px}.evidence-card textarea,.evidence-card select{display:block;width:100%;font:inherit;border:1px solid #b9c5c0;background:#fff;color:var(--ink);padding:10px;border-radius:9px}.evidence-card textarea{min-height:85px;resize:vertical}.evidence-card button{margin-top:12px}.evidence-card button:focus-visible,.evidence-card select:focus-visible,.evidence-card textarea:focus-visible{outline:3px solid #d99479;outline-offset:3px}.evidence-message{display:block;color:var(--good);font-size:12px;margin-top:7px;min-height:18px}.evidence-message.error{color:#9f4231}@media(max-width:700px){.evidence-grid{grid-template-columns:1fr}}
 </style></head><body>
 <header><a href="/"><strong>MAA SATI IAC</strong><small>INSTITUTE OF ADVANCE COMPUTING</small></a><nav><a href="/platform.html">Learning</a><a href="/onboarding.html">Onboarding</a><a href="/analytics.html">Analytics</a></nav></header>
 <main><div class="eyebrow">PRODUCTION OPERATIONS · OWNER-ONLY</div><h1>Launch with <em>confidence.</em></h1>
@@ -19,6 +20,12 @@ button{font:inherit;font-size:12px;font-weight:800;color:white;background:var(--
 <div id="summary" class="grid"></div>
 <div class="card"><div class="row"><h2>Database safety controls</h2><span class="status ok">Measured live</span></div><div id="tech"></div></div>
 <div class="card"><div class="row"><h2>Go-live dependencies</h2><span class="status hold">Owner action / verification needed</span></div><p class="small">External services and full browser flows cannot be marked complete from a database count alone.</p><div id="blockers"></div></div>
+<section class="card" aria-labelledby="acceptanceHeading">
+<div class="row"><h2 id="acceptanceHeading">Launch Acceptance Evidence</h2><span class="status hold" id="acceptanceCount">Not checked</span></div>
+<p class="small">Only authorized institute administrators can record acceptance results. Each result is an <strong>owner-reported attestation</strong>, not an automated website or payment verification. Keep every item Pending until a real authorized test is completed.</p>
+<div id="acceptanceChecklist" class="evidence-grid" aria-live="polite">Loading authorized release checklist…</div>
+<p class="small">The system maintains a timestamped change log. Final public release still requires successful public HTTPS access and real learner acceptance testing.</p>
+</section>
 <div class="card"><h2>Readiness test steps</h2><div id="manual"></div></div>
 </section>
 <div class="footer">Maa Sati IAC · Security audit data visible to verified institute administrators only. Last checked: <span id="time">Not yet</span></div>
@@ -40,6 +47,74 @@ const required=[
  ['Issue and verify one genuine certificate','Complete an approved program, generate PDF, scan verification QR and test revocation.'],
  ['Adopt legal privacy, child safeguarding and deletion process','Publish actual institute policy, validate guardian procedures and test account data rights.']
 ];
+
+const acceptanceGates=[
+ ['founder_email','Founder account','Founder has confirmed institute email and verified the administrator role in the actual login.'],
+ ['auth_recovery','Login, verification & recovery','Test signup email, signin, logout, password reset and confirmed redirect URL.'],
+ ['guardian_consent','School guardian permission','Verify guardian identity/consent and blocked school enrollment until genuine approval.'],
+ ['student_enrollment','Real learner enrollment','Check authorized enrollment, private lesson access and isolation between two student accounts.'],
+ ['learner_credential','Quiz → project → verified certificate','With real student work, verify quiz score, project review, badge, certificate QR and revocation.'],
+ ['support_notices','Staff support & notifications','Test a real support ticket, mentor reply, notification and student inbox delivery.'],
+ ['payment_test','Payment gateway and receipts','Check provider test mode, signed webhook, captured payment, refund/duplicate events and enrollment.'],
+ ['course_recording','Live class content & recordings','Publish a real lesson/recording and verify enrolled/non-enrolled access.'],
+ ['ai_tutor','Learning AI assistant','Test server-side AI credentials, source-grounded answers, safety and spending limits.'],
+ ['mobile_accessibility','Mobile & keyboard usability','Test narrow screens, form validation, focus, navigation and accessibility checks.'],
+ ['public_https','Public domain, DNS, HTTPS','Confirm owner-approved public access and successful automated public HTTP smoke test.'],
+ ['legal_privacy','Privacy and student safeguarding','Review actual privacy, retention, guardian rights, account deletion and support policy.']
+];
+async function loadAcceptance(){
+ const list=$('acceptanceChecklist'),count=$('acceptanceCount');
+ try{
+  const result=await db.from('iac_launch_acceptance')
+    .select('gate_key,state,evidence_note,reviewed_at').order('gate_key');
+  if(result.error)throw Error(result.error.message);
+  const byKey=new Map((result.data||[]).map(x=>[x.gate_key,x]));
+  const verified=acceptanceGates.filter(x=>byKey.get(x[0])?.state==='owner_verified').length;
+  const blocked=acceptanceGates.filter(x=>byKey.get(x[0])?.state==='blocked').length;
+  count.textContent=verified+'/'+acceptanceGates.length+' owner-reported checks · '+blocked+' blocked';
+  count.className='status '+(blocked?'hold':verified===acceptanceGates.length?'ok':'warn');
+  list.innerHTML=acceptanceGates.map(([key,title,help],i)=>{
+   const data=byKey.get(key)||{},state=data.state||'pending',note=data.evidence_note||'';
+   const selected=value=>state===value?' selected':'';
+   const saved=data.reviewed_at?'Last recorded '+new Date(data.reviewed_at).toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}):'Not yet recorded';
+   return '<form class="evidence-card" data-gate="'+escapeValue(key)+'">'
+    +'<span class="small">RELEASE CHECK '+(i+1)+' / '+acceptanceGates.length+'</span>'
+    +'<h3>'+escapeValue(title)+'</h3><p>'+escapeValue(help)+'</p>'
+    +'<label for="gate-status-'+key+'">Owner-reported result</label>'
+    +'<select id="gate-status-'+key+'" name="state" required>'
+    +'<option value="pending"'+selected('pending')+'>Pending — not tested</option>'
+    +'<option value="blocked"'+selected('blocked')+'>Blocked — issue found</option>'
+    +'<option value="owner_verified"'+selected('owner_verified')+'>Owner-verified — real test completed</option>'
+    +'</select><label for="gate-note-'+key+'">Evidence / blocker note (15+ characters for checked or blocked)</label>'
+    +'<textarea id="gate-note-'+key+'" name="note" maxlength="1500" placeholder="Write what was tested, result, date, and where the evidence can be reviewed.">'+escapeValue(note)+'</textarea>'
+    +'<div class="small">'+escapeValue(saved)+'</div><button type="submit">Save this check</button>'
+    +'<span class="evidence-message" role="status" aria-live="polite"></span></form>';
+  }).join('');
+  list.querySelectorAll('form[data-gate]').forEach(form=>form.addEventListener('submit',async event=>{
+   event.preventDefault();
+   const key=form.dataset.gate,button=form.querySelector('button[type="submit"]'),
+    message=form.querySelector('.evidence-message'),
+    state=form.querySelector('select[name="state"]').value,
+    note=form.querySelector('textarea[name="note"]').value.trim();
+   message.textContent='';message.classList.remove('error');
+   if(state!=='pending'&&note.length<15){message.textContent='Add at least 15 characters explaining the test or blocker.';message.classList.add('error');return;}
+   if(state==='owner_verified'&&!confirm('Confirm this real-world test was completed and you reviewed its evidence? This is an owner attestation, not automated verification.'))return;
+   button.disabled=true;message.textContent='Saving…';
+   try{
+    const response=await db.rpc('iac_save_launch_acceptance',{p_key:key,p_state:state,p_note:note});
+    if(response.error)throw Error(response.error.message);
+    await loadAcceptance();
+    const savedForm=list.querySelector('form[data-gate="'+key+'"]');
+    if(savedForm){const m=savedForm.querySelector('.evidence-message');m.textContent='Saved to private launch audit.';}
+   }catch(error){message.textContent='Not saved: '+(error.message||'Try again');message.classList.add('error');}
+   finally{button.disabled=false;}
+  }));
+ }catch(error){
+  list.textContent='Unable to load the private acceptance checklist: '+(error.message||'Please refresh');
+  count.textContent='Not verified';count.className='status hold';
+ }
+}
+
 async function refresh(){
  try{
  const identity=await db.auth.getUser();
@@ -69,6 +144,7 @@ async function refresh(){
  ];
  $('tech').innerHTML=checks.map(x=>check(x[0],x[1],x[2])).join('');
  $('blockers').innerHTML=required.map((x,i)=>'<div class="item"><h3>'+(i+1)+'. '+escapeValue(x[0])+'</h3><p>'+escapeValue(x[1])+'</p></div>').join('');
+ await loadAcceptance();
  $('manual').innerHTML=[
   check('Verified founder account activated',(counts.admins||0)>0,'At least one authorized administrator account must be active.'),
   check('Real student academic account',(counts.student_profiles||0)>0,'Count alone does not prove a completed authentication test.'),
