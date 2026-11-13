@@ -5,11 +5,13 @@ on:
     paths:
       - '*.html'
       - 'scripts/validate-iac-site.mjs'
+      - 'scripts/test-learning-stages.mjs'
       - '.github/workflows/iac-learning-qa.yml'
   pull_request:
     paths:
       - '*.html'
       - 'scripts/validate-iac-site.mjs'
+      - 'scripts/test-learning-stages.mjs'
       - '.github/workflows/iac-learning-qa.yml'
   workflow_dispatch:
 permissions:
@@ -23,3 +25,5 @@ jobs:
         run: node --version
       - name: Check page scripts and navigation
         run: node scripts/validate-iac-site.mjs
+      - name: Test learner progress states
+        run: node scripts/test-learning-stages.mjs
