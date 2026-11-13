@@ -4,7 +4,7 @@ import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 
 const pages=['index.html','programs.html','start-here.html','onboarding.html',
-  'my-learning.html','learning-journey.html','skill-review.html','profile.html'];
+  'my-learning.html','learning-journey.html','study-plan.html','skill-review.html','profile.html'];
 const errors=[];
 let checkedScripts=0,checkedLinks=0;
 for(const page of pages){
@@ -34,6 +34,7 @@ const check=(file,fragments)=>{
 };
 check('programs.html',['iac_lesson_checkpoints','lessonCheckpointForm','practice_reflection','check_original','iac_skill_project_submissions','iac_skill_notes']);
 check('learning-journey.html',['iac_student_learning_snapshot','iac_lesson_checkpoints','Start lesson & practice']);
+check('study-plan.html',['iac_student_learning_snapshot','iac_study_preferences','iac_lesson_checkpoints','days_per_week']);
 check('skill-review.html',['iac_is_admin','iac_review_skill_project','Approval checks (required)']);
 check('my-learning.html',['iac_student_learning_snapshot','iac_student_quiz_history']);
 console.log('Checked '+pages.length+' pages, '+checkedScripts+' inline scripts, '+checkedLinks+' internal routes');
