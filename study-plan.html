@@ -39,7 +39,7 @@ function render(){
  const selected=remaining.find(x=>x.next_step==='revise_project')||remaining.find(x=>x.next_step==='submit_project')||remaining.find(x=>x.next_step==='quiz')||remaining.find(x=>x.next_step==='mentor_review')||remaining[0];
  $('planPace').textContent=days+' days · '+mins+' min/day';
  if(!selected){
-  $('planTitle').textContent='All published skills earned';
+  $('planTitle').textContent=own.length?'All published skills earned':'No published skill checkpoints yet';
   $('focus').textContent='Your current enrolled program has no pending published skills. Review your achievements or ask your mentor about the next step.';
   $('daysList').innerHTML='<div class="empty">There are no pending skills to plan right now. View your dashboard for verified achievements.</div>';
   return;
