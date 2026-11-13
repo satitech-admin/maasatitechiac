@@ -4,12 +4,15 @@
 <style>
 :root{--paper:#f4f1eb;--white:#fffdf9;--ink:#17212b;--muted:#66747a;--line:#d9d5cc;--green:#286949;--coral:#bd6044}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}header{background:var(--ink);color:white}header .wrap{display:flex;align-items:center;justify-content:space-between;padding:16px 0;gap:16px;flex-wrap:wrap}header a{color:inherit;text-decoration:none;font-weight:750}header small{display:block;opacity:.75;font-size:10px}nav{display:flex;gap:15px;flex-wrap:wrap;font-size:12px}.wrap{width:min(1120px,calc(100% - 32px));margin:auto}main{padding:35px 0 75px}.eyebrow{color:var(--coral);font-weight:850;font-size:11px;letter-spacing:.13em}h1{font-size:clamp(34px,5vw,55px);letter-spacing:-.05em;line-height:1.1;margin:10px 0}h2{font-size:22px;letter-spacing:-.02em;margin:0 0 10px}h3{font-size:16px;margin:0 0 5px}p{color:var(--muted);margin:5px 0 14px}.card{padding:23px;background:var(--white);border:1px solid var(--line);border-radius:17px;margin:18px 0;box-shadow:0 10px 30px #17212b08}.row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.metric{background:#fff;border:1px solid var(--line);border-radius:13px;padding:17px}.metric b{display:block;font-size:29px;letter-spacing:-1px}.metric small{color:var(--muted)}.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;min-height:42px;border:1px solid var(--ink);background:var(--ink);border-radius:9px;color:#fff;text-decoration:none;font-weight:750;font-size:12px;cursor:pointer}.btn.secondary{background:transparent;border-color:#a9b6ad;color:var(--ink)}.btn:disabled{opacity:.45;cursor:default}.toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.toolbar label{display:block;font-weight:750;font-size:12px}.toolbar select{border:1px solid #b5c3b9;background:white;border-radius:9px;font:inherit;padding:10px 12px;min-width:170px}.ticket{padding:17px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}.ticket:last-child{border:0}.pill{display:inline-flex;padding:5px 10px;border-radius:100px;background:#e8eeea;font-weight:800;font-size:11px;color:#3d6050}.ticket p{font-size:12px}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.status{min-height:20px;font-size:12px;color:var(--green);font-weight:750}.status.error{color:#ad4136}.hidden{display:none!important}.ticket textarea{width:100%;min-height:88px;font:inherit;padding:10px;border:1px solid #b8c5bd;border-radius:9px;resize:vertical}.ticket select{font:inherit;padding:10px;border-radius:9px;border:1px solid #b8c5bd;background:white}.ticket label{display:block;font-size:12px;font-weight:800;margin:10px 0 6px}.reply{background:#f1f4ef;border-radius:9px;padding:10px 12px;margin:8px 0;font-size:12px}.empty{border-radius:11px;background:#eef2ed;padding:17px;color:#42604c}.fine{font-size:12px;color:var(--muted)}a:focus-visible,button:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #dea47b;outline-offset:3px}footer{border-top:1px solid var(--line);padding:19px 0;text-align:center;color:var(--muted);font-size:11px}
 @media(max-width:780px){.grid,.metrics{grid-template-columns:1fr}main{padding-top:24px}.card{padding:16px}.toolbar select{min-width:0;width:100%}.toolbar>div{width:100%}}
+.announce-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.announce-fields label,#announcementForm>label{font-size:12px;font-weight:800;display:block;margin:10px 0}.announce-fields select,.announce-fields input,#announcementText{display:block;font:inherit;width:100%;border-radius:9px;padding:11px;background:#fff;border:1px solid #bac8be;margin-top:7px}#announcementText{min-height:100px;resize:vertical}.announcement-item{padding:12px 0;border-bottom:1px solid var(--line)}@media(max-width:720px){.announce-fields{grid-template-columns:1fr}}
 </style></head><body>
 <header><div class="wrap"><a href="/">MAA SATI IAC<small>INSTITUTE OF ADVANCE COMPUTING</small></a><nav aria-label="Staff navigation"><a href="/platform.html#admin">Admin Portal</a><a href="/skill-review.html">Skill Reviews</a><a href="/assistant.html">Student Support</a><a href="/curriculum-admin.html">Curriculum</a></nav></div></header>
 <main class="wrap"><span class="eyebrow">PRIVATE INSTITUTE WORKSPACE</span><h1>Mentor Operations</h1><p>One clear view of student support and project reviews. Only verified institute staff can access records; issuing skill certificates requires administrator approval in the secure Skill Review page.</p>
 <div id="notice" role="status" aria-live="polite"></div><section id="authGate" class="card">Checking staff access…</section>
 <div id="workspace" class="hidden">
 <div class="metrics" aria-label="Operational totals"><div class="metric"><b id="openCount">—</b><small>Open / in-progress tickets</small></div><div class="metric"><b id="resolvedCount">—</b><small>Resolved / closed tickets</small></div><div class="metric"><b id="pendingCount">—</b><small>Skill projects awaiting review</small></div></div>
+<section class="card hidden" id="announcements"><div class="row"><div><h2>Course Announcements</h2><p>Admin-only in-app messages to enrolled students. No WhatsApp, SMS or emails are sent.</p></div><span class="pill">Administrator only</span></div>
+<form id="announcementForm"><div class="announce-fields"><label>Published course<select id="announcementCourse" required></select></label><label>Title<input id="announcementTitle" minlength="5" maxlength="120" required placeholder="Saturday HTML practical"></label></div><label>Message<textarea id="announcementText" minlength="15" maxlength="700" required placeholder="Write session details and instructions."></textarea></label><div class="actions"><button class="btn" id="sendAnnouncement" type="submit">Review & send in-app notice</button><span id="announcementStatus" role="status" aria-live="polite" class="status"></span></div></form><h3 style="margin-top:22px">Recent announcements</h3><div id="announcementHistory" class="fine">Loading…</div></section>
 <div class="grid">
 <section class="card"><div class="row"><div><h2>Student Support Queue</h2><p class="fine">Oldest tickets first. Reply and update status from the same screen.</p></div><button class="btn secondary" id="refresh" type="button">Refresh</button></div>
 <div class="toolbar"><div><label for="statusFilter">Ticket status</label><select id="statusFilter"><option value="active">Open + In progress</option><option value="open">Open</option><option value="in_progress">In progress</option><option value="resolved">Resolved</option><option value="closed">Closed</option><option value="all">All tickets</option></select></div></div>
@@ -116,13 +119,49 @@ async function loadTickets(reset=true){
  }catch(error){notice(error.message,true)}
  finally{loading=false;$('loadMore').disabled=false}
 }
+async function loadAnnouncementHistory(){
+ const res=await db.from('iac_course_announcements').select('title,body,created_at,delivered_count').order('created_at',{ascending:false}).limit(8);
+ if(res.error)throw Error(res.error.message);
+ const host=$('announcementHistory');host.replaceChildren();
+ if(!(res.data||[]).length){host.textContent='No announcements sent yet.';return;}
+ for(const item of res.data){
+  const section=document.createElement('div');section.className='announcement-item';
+  const h=document.createElement('strong');h.textContent=item.title;
+  const p=document.createElement('p');p.className='fine';p.textContent=safeDate(item.created_at)+' · '+item.delivered_count+' enrolled accounts';
+  const body=document.createElement('p');body.textContent=item.body;
+  section.append(h,p,body);host.append(section);
+ }
+}
+async function loadAnnouncements(){
+ const permission=await db.rpc('iac_is_admin');if(permission.error||permission.data!==true)return;
+ const courses=await db.from('iac_courses').select('id,title').eq('published',true).order('title');
+ if(courses.error)throw Error(courses.error.message);
+ const select=$('announcementCourse');select.replaceChildren();
+ for(const c of courses.data||[]){const o=document.createElement('option');o.value=c.id;o.textContent=c.title;select.append(o);}
+ if(!(courses.data||[]).length){$('sendAnnouncement').disabled=true;$('announcementStatus').textContent='No published courses found.';}
+ $('announcements').classList.remove('hidden');await loadAnnouncementHistory();
+}
+$('announcementForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const course=$('announcementCourse').value,title=$('announcementTitle').value.trim(),message=$('announcementText').value.trim();
+ if(!course||title.length<5||title.length>120||message.length<15||message.length>700){$('announcementStatus').textContent='Check the course, title, and message.';return;}
+ if(!confirm('Send this in-app notice to enrolled students in the selected course? This cannot be undone.'))return;
+ const btn=$('sendAnnouncement');btn.disabled=true;$('announcementStatus').textContent='Sending…';
+ try{
+  const res=await db.rpc('iac_send_course_announcement',{p_course:course,p_title:title,p_message:message});
+  if(res.error)throw Error(res.error.message);
+  $('announcementStatus').textContent='Sent to '+res.data.delivered+' enrolled student accounts.';
+  $('announcementForm').reset();await loadAnnouncementHistory();
+ }catch(err){$('announcementStatus').textContent='Not sent: '+err.message}
+ finally{btn.disabled=false}
+});
 async function start(){
  const [auth,permission]=await Promise.all([db.auth.getUser(),db.rpc('iac_is_staff')]);
  if(auth.error||!auth.data?.user||permission.error||permission.data!==true){
   $('authGate').innerHTML='<h2>Verified institute staff access required</h2><p>Student tickets and review queues are confidential. Sign in as an authorized institute team member.</p><a class="btn" href="/platform.html#dashboard">Sign in</a>';return;
  }
  staffUser=auth.data.user;$('authGate').classList.add('hidden');$('workspace').classList.remove('hidden');
- await updateMetrics();await loadTickets(true);
+ await updateMetrics();await Promise.all([loadTickets(true),loadAnnouncements()]);
 }
 $('statusFilter').addEventListener('change',()=>loadTickets(true));
 $('refresh').addEventListener('click',async()=>{await updateMetrics();await loadTickets(true)});
