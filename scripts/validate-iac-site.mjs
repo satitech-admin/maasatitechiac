@@ -90,6 +90,19 @@ for(const unsafe of [".insert(", ".update(", ".upsert(", ".delete(", "db.auth.up
  if(acceptanceSource.includes(unsafe))errors.push('Account acceptance diagnostics must stay read-only: '+unsafe);
 }
 if(!acceptanceSource.includes("lastReport=['Maa Sati IAC — private account readiness result'"))errors.push('Account diagnostic must build a user-redacted report');
+for(const key of ["['guardian','Guardian eligibility'","['badge','Verified skill badge'","['certificate','Certificate authenticity'"]){
+ if(!acceptanceSource.includes(key))errors.push('Missing real-user acceptance check: '+key);
+}
+if(!acceptanceSource.includes("db.from('iac_guardian_consents')")||!acceptanceSource.includes('verified_at'))
+ errors.push('Guardian acceptance must verify the approved record, not a self-declared checkbox');
+if(!acceptanceSource.includes("db.rpc('iac_verify_certificate',{p_code:cert.certificate_code})"))
+ errors.push('Certificate authenticity must be verified with the server RPC');
+if(!acceptanceSource.includes("r.data?.badges")||!acceptanceSource.includes('iac_student_learning_snapshot'))
+ errors.push('Skill badges must derive from server-issued, unrevoked snapshot');
+if(!acceptanceSource.includes('[email]')||!acceptanceSource.includes('[account-id]'))
+ errors.push('Copied diagnostic errors must redact private identity data');
+if(acceptanceSource.includes("'certificate_code'"))
+ errors.push('Acceptance diagnostic must not expose student certificate codes directly in result text');
 // A published quiz may expose prompts/options, never the private answer key or explanation.
 const quizClient=fs.readFileSync('programs.html','utf8');
 if(!quizClient.includes("db.from('iac_mock_questions').select('id,prompt,options,sort_order')"))
