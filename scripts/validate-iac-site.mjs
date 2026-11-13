@@ -48,7 +48,12 @@ if(noteHandler.includes('check_original')||noteHandler.includes('values.get('))e
 if(!projectHandler.includes('check_original')||!projectHandler.includes(".select('id').single()"))errors.push('Project submit lacks checklist or persisted-result verification');
 const mentorJs=fs.readFileSync('mentor-operations.html','utf8');
 if(!mentorJs.includes("iac_is_staff")||!mentorJs.includes("iac_is_admin"))errors.push('Missing staff and admin access controls');
-if(!mentorJs.includes("db.from('iac_support_tickets').update")||!mentorJs.includes(".select('id').single()"))errors.push('Support status change does not verify persisted result');
+if(!mentorJs.includes("db.rpc('iac_staff_respond_ticket'"))errors.push('Mentor ticket replies and status changes must use the atomic staff RPC');
+if(mentorJs.includes("db.from('iac_support_tickets').update(")||mentorJs.includes("db.from('iac_support_replies').insert("))errors.push('Mentor operations must not split support ticket writes into separate database calls');
+const assistantJs=fs.readFileSync('assistant.html','utf8');
+if(!assistantJs.includes("client.rpc('iac_staff_respond_ticket'"))errors.push('Staff replies in Student Support must use the atomic staff RPC');
+if(assistantJs.includes("client.from('iac_support_tickets').update("))errors.push('Student Support must not perform separate staff status updates');
+if(!mentorJs.includes('pendingRefresh'))errors.push('Mentor ticket filters must queue refreshes while loading');
 const learningJs=fs.readFileSync('learning-journey.html','utf8');
 if(!learningJs.includes('iac_student_learning_snapshot')||!learningJs.includes('badge_awarded'))errors.push('Learning journey lost verified backend provenance');
 
