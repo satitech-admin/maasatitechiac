@@ -17,7 +17,7 @@ main{width:min(1100px,calc(100% - 32px));margin:35px auto 70px}.eyebrow{font-wei
  <div class="card"><div class="row"><div><h2>Choose your course</h2><p class="hint">Only your active or completed enrollments can show private learning progress.</p></div><a href="/programs.html" class="btn soft">Explore all courses</a></div><label class="eyelabel" for="courseSelect">My course</label><select id="courseSelect" aria-label="Select enrolled course"></select></div>
  <section class="card" aria-labelledby="stepTitle"><div class="row"><div><div class="eyebrow">CURRENT SKILL</div><h2 id="stepTitle">Your next learning step</h2><p id="stepDescription">Follow the numbered journey below.</p></div><span id="badgeStatus" class="status">In progress</span></div>
  <div class="step-grid" id="journeySteps" aria-label="Five learning stages"></div>
- <div class="actions" id="primaryActions"></div>
+ <div class="actions" id="primaryActions"></div><div id="mentorMessage" class="hidden" role="status" aria-live="polite"></div>
  </section>
  <section class="card" aria-labelledby="skillsTitle"><div class="row"><div><h2 id="skillsTitle">Your monthly skills</h2><p class="hint">Choose a skill below to see its real status and next action.</p></div><span id="skillCount" class="status"></span></div><div class="stack" id="skillOptions"></div></section>
  <section class="card"><h2>What do these statuses mean?</h2><div class="stack"><p><strong>Quiz pending:</strong> Learn the topic, then answer the skill assessment.</p><p><strong>Project to submit:</strong> Your assessment is passed; submit your own working project.</p><p><strong>Mentor review:</strong> An authorized reviewer must check the work before a badge is issued.</p><p><strong>Changes requested:</strong> Improve and resubmit using the feedback shown in your account.</p><p><strong>Badge earned:</strong> Your verified credential can be opened and shared.</p></div></section>
@@ -69,6 +69,13 @@ function drawStep(s){
  el('journeySteps').innerHTML=steps.map(([title,description],i)=>'<article class="step" data-status="'+statuses[i]+'"><span class="num">'+(statuses[i]==='done'?'✓':i+1)+'</span><strong>'+title+'</strong><p>'+description+'</p><span class="small">'+(statuses[i]==='done'?'Verified':statuses[i]==='next'?'Your next step':statuses[i]==='available'?'Ready to learn':'Not finished')+'</span></article>').join('');
  const next=getNext(s);
  el('primaryActions').innerHTML='<a class="btn" href="'+esc(next.url)+'">'+esc(next.title)+' →</a><a class="btn soft" href="'+esc(skillLink(s,'roadmap'))+'">Read learning guide</a>'+((s.project_feedback)?'<p class="small" style="width:100%"><strong>Mentor feedback:</strong> '+esc(s.project_feedback)+'</p>':'');
+ const msg=el('mentorMessage');
+ if(s.next_step==='revise_project'){
+  msg.classList.remove('hidden');
+  msg.innerHTML='<div class="empty" style="margin-top:14px"><strong>Your mentor requested changes</strong><p>Read the feedback above, fix the project, test the link again, and choose Improve your project to resubmit. Your badge is not earned until approval.</p></div>';
+ } else if(s.next_step==='mentor_review'||s.next_step==='credential_review'){
+  msg.classList.remove('hidden');msg.innerHTML='<div class="empty" style="margin-top:14px"><strong>Review in progress</strong><p>You have already submitted this step. You can continue learning another topic while the institute reviews it.</p></div>';
+ }else{msg.classList.add('hidden');msg.replaceChildren();}
  document.querySelectorAll('[data-skill]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.skill===String(s.month_id))));
 }
 function drawCourse(id){
