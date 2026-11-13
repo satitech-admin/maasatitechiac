@@ -27,7 +27,7 @@ label{display:block;font-size:12px;font-weight:700}.footer{font-size:12px;color:
 <p>Pay for an enrolled Maa Sati IAC course or school program in Indian Rupees. Payments are processed by Razorpay and checked against the official enrollment record before access is granted.</p>
 <div class="notice">Course fees shown are monthly prices, not a one-time full-course fee. Monthly recurring billing is not configured yet, so course checkout stays disabled even after merchant activation. Institute will enable secure installment/renewal tracking before collecting recurring fees.</div>
 <div id="status" role="status" aria-live="polite"></div>
-<section id="profile"></section>
+<section id="profile"></section><div id="eligibility" class="notice" role="status" aria-live="polite">Payment eligibility is checked after login.</div>
 <section><h2>My eligible enrollments</h2><div id="enrollments" class="grid"></div></section>
 <section><h2>School program registrations</h2><div id="events" class="grid"></div></section>
 <section><h2>My payment history</h2><div id="history"></div></section>
@@ -42,11 +42,11 @@ const supabase=createClient(SB,KEY);
 const $=id=>document.getElementById(id);
 const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 const format=(v)=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:2}).format(v/100);
-let sessionUser=null,ready=false,items={courses:[],events:[]};
+let sessionUser=null,ready=false,eligibilityReady=false,items={courses:[],events:[]};
 function note(message,error=false){$('status').innerHTML='<div class="notice'+(error?' error':'')+'">'+escapeHtml(message)+'</div>'}
 function card(title,description,fee,status,button,kind,id){
  const price=Number.isInteger(fee)&&fee>=100?format(fee)+(kind==='course'?' / month':''):'Fee not published';
- const allowed=ready&&kind!=='course'&&Number.isInteger(fee)&&fee>=100&&status==='pending';
+ const allowed=ready&&eligibilityReady&&kind!=='course'&&Number.isInteger(fee)&&fee>=100&&status==='pending';
  return '<article class="card"><span class="pill'+(status==='pending'?' warn':'')+'">'+escapeHtml(status)+'</span><h3>'+escapeHtml(title)+'</h3><p class="muted">'+escapeHtml(description||'')+'</p><div class="row"><strong class="price">'+escapeHtml(price)+'</strong><button class="pay" data-kind="'+kind+'" data-id="'+escapeHtml(id)+'" '+(allowed?'':'disabled')+'>'+ (allowed?'Pay securely':kind==='course'?'Monthly billing pending':'Unavailable') +'</button></div></article>';
 }
 async function call(action,data={}){
@@ -70,6 +70,7 @@ function loadCheckout(){
 }
 async function pay(kind,id,button){
  if(!sessionUser){location.href='/platform.html';return}
+ if(!eligibilityReady){note('Finish student onboarding and required guardian verification before payment.',true);return}
  button.disabled=true;
  try {
   note('Preparing your verified payment order…');
@@ -97,6 +98,8 @@ async function pay(kind,id,button){
 async function refresh(){
  const {data:{user},error:authError}=await supabase.auth.getUser();
  if(authError||!user){
+  eligibilityReady=false;
+  $('eligibility').textContent='Sign in to check program payment eligibility.';
   $('profile').innerHTML='<div class="card"><h3>Student sign-in required</h3><p>Register or log in using the same account as your course enrollment.</p><a class="button" href="/platform.html#dashboard">Sign in at Learning Portal</a></div>';
   $('enrollments').innerHTML='<div class="card muted">Sign in to view your course requests.</div>';
   $('events').innerHTML='<div class="card muted">Sign in to view your school registrations.</div>';
@@ -105,13 +108,32 @@ async function refresh(){
  sessionUser=user;
  $('profile').innerHTML='<div class="card row"><div><strong>'+escapeHtml(user.email)+'</strong><div class="muted">Authenticated student account</div></div><button class="outline" id="reload">Refresh status</button></div>';
  $('reload').onclick=()=>refresh();
- const [courses,events,enrolls,registrations,staff]=await Promise.all([
+ const [courses,events,enrolls,registrations,staff,studentProfile,guardianConsent]=await Promise.all([
   supabase.from('iac_courses').select('id,title,summary,fee_paise').eq('published',true).order('title'),
   supabase.from('iac_events').select('id,title,kind,fee_paise').eq('published',true),
   supabase.from('iac_enrollments').select('course_id,status').eq('user_id',user.id),
   supabase.from('iac_event_registrations').select('event_id').eq('user_id',user.id),
-  supabase.from('iac_staff_roles').select('role').eq('user_id',user.id).maybeSingle()
- ]);
+  supabase.from('iac_staff_roles').select('role').eq('user_id',user.id).maybeSingle(),
+  supabase.from('iac_profiles').select('student_level').eq('id',user.id).maybeSingle(),
+  supabase.from('iac_guardian_consents').select('status').eq('student_id',user.id).maybeSingle()
+ ]); 
+ eligibilityReady=false;
+ let eligibilityMessage='Student eligibility could not be verified. Open Onboarding and contact support.';
+ if(!studentProfile.error&&!guardianConsent.error){
+  const level=studentProfile.data?.student_level;
+  if(level==='college'){eligibilityReady=true;eligibilityMessage='A college student profile is available. Checkout still needs an eligible registration and active payment provider.';}
+  else if(level==='school'&&guardianConsent.data?.status==='approved'){eligibilityReady=true;eligibilityMessage='Verified guardian consent recorded. Checkout also requires a registered eligible program.';}
+  else if(level==='school')eligibilityMessage='Guardian approval is required before checkout. Open Account & Onboarding to submit or check permission.';
+  else eligibilityMessage='Choose a valid school/college learner type through institute onboarding before payment.';
+ }
+ const eligibilityBanner=$('eligibility');
+ eligibilityBanner.className='notice'+(eligibilityReady?'':' error');
+ eligibilityBanner.textContent=eligibilityMessage;
+ if(!eligibilityReady){
+  const link=document.createElement('a');link.href='/onboarding.html';link.textContent=' Go to Onboarding';
+  link.style.marginLeft='8px';link.style.fontWeight='800';eligibilityBanner.append(link);
+ }
+
  const response=await call('availability').catch(()=>({configured:false}));
  ready=!!response.configured;
  if(!ready)note('Razorpay merchant activation is pending. Checkout is disabled until API keys are configured.',true);
