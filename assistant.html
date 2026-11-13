@@ -37,10 +37,10 @@ async function loadTickets(){
    event.preventDefault();const btn=form.querySelector('button');btn.disabled=true;
    try{
     const data=new FormData(form);
-    const answer=await client.from('iac_support_replies').insert({ticket_id:form.dataset.ticket,sender_id:user.id,message:String(data.get('message')||'').trim()});
+    const answer=await client.from('iac_support_replies').insert({ticket_id:form.dataset.ticket,sender_id:user.id,message:String(data.get('message')||'').trim()}).select('id').single();
     if(answer.error)throw answer.error;
     if(staff&&data.get('status')){
-     const updated=await client.from('iac_support_tickets').update({status:String(data.get('status')),updated_at:new Date().toISOString()}).eq('id',form.dataset.ticket);
+     const updated=await client.from('iac_support_tickets').update({status:String(data.get('status')),updated_at:new Date().toISOString()}).eq('id',form.dataset.ticket).select('id').single();
      if(updated.error)throw updated.error;
     }
     notice('Reply saved successfully.');await loadTickets();
