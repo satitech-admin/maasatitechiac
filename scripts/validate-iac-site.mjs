@@ -45,7 +45,7 @@ for(const shortName of privatePages){
   if(!rule?.headers?.some(h=>h.key==='Cache-Control'&&h.value.includes('no-store')))errors.push(file+': missing no-store Cache-Control');
 }
 const siteMap=fs.readFileSync('sitemap.xml','utf8');
-for(const entry of siteMap.matchAll(/<loc>[^<]*<\\/loc>/g)){
+for(const entry of siteMap.matchAll(new RegExp('<loc>[^<]*</loc>', 'g'))){
   const url=entry[0].slice(5,-6);
   try{
     const path=new URL(url).pathname;
