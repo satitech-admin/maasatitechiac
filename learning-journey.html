@@ -47,10 +47,10 @@ function stageStates(s){
  const badge=Boolean(s.badge_awarded&&s.certificate_code),passed=Boolean(s.quiz_passed);
  const submitted=Boolean(s.project_status&& !['not_submitted','not submitted','none'].includes(s.project_status));
  const reviewed=badge||['approved','accepted'].includes(s.project_status);
- const states=[true,passed,submitted,reviewed,badge];
+ const states=[false,passed,submitted,reviewed,badge]; // Lesson viewing isn't recorded; do not claim completion.
  const step=s.next_step||'enroll';
  let nextIndex=step==='quiz'?1:['submit_project','revise_project'].includes(step)?2:step==='mentor_review'?3:step==='credential_review'?4:step==='earned'?-1:0;
- return states.map((done,i)=>done?'done':i===nextIndex?'next':'waiting');
+ return states.map((done,i)=>done?'done':i===nextIndex?'next':i===0?'available':'waiting');
 }
 function drawStep(s){
  selectedSkill=s;const statuses=stageStates(s);
@@ -66,7 +66,7 @@ function drawStep(s){
   ['Mentor review','Wait for the instructor to verify the project.'],
   ['Earn credential','Open a badge only after official approval.']
  ];
- el('journeySteps').innerHTML=steps.map(([title,description],i)=>'<article class="step" data-status="'+statuses[i]+'"><span class="num">'+(statuses[i]==='done'?'✓':i+1)+'</span><strong>'+title+'</strong><p>'+description+'</p><span class="small">'+(statuses[i]==='done'?'Completed':statuses[i]==='next'?'Your next step':'Not finished')+'</span></article>').join('');
+ el('journeySteps').innerHTML=steps.map(([title,description],i)=>'<article class="step" data-status="'+statuses[i]+'"><span class="num">'+(statuses[i]==='done'?'✓':i+1)+'</span><strong>'+title+'</strong><p>'+description+'</p><span class="small">'+(statuses[i]==='done'?'Verified':statuses[i]==='next'?'Your next step':statuses[i]==='available'?'Ready to learn':'Not finished')+'</span></article>').join('');
  const next=getNext(s);
  el('primaryActions').innerHTML='<a class="btn" href="'+esc(next.url)+'">'+esc(next.title)+' →</a><a class="btn soft" href="'+esc(skillLink(s,'roadmap'))+'">Read learning guide</a>'+((s.project_feedback)?'<p class="small" style="width:100%"><strong>Mentor feedback:</strong> '+esc(s.project_feedback)+'</p>':'');
  document.querySelectorAll('[data-skill]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.skill===String(s.month_id))));
