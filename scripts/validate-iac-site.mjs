@@ -90,6 +90,15 @@ for(const unsafe of [".insert(", ".update(", ".upsert(", ".delete(", "db.auth.up
  if(acceptanceSource.includes(unsafe))errors.push('Account acceptance diagnostics must stay read-only: '+unsafe);
 }
 if(!acceptanceSource.includes("lastReport=['Maa Sati IAC — private account readiness result'"))errors.push('Account diagnostic must build a user-redacted report');
+// A published quiz may expose prompts/options, never the private answer key or explanation.
+const quizClient=fs.readFileSync('programs.html','utf8');
+if(!quizClient.includes("db.from('iac_mock_questions').select('id,prompt,options,sort_order')"))
+  errors.push('Quiz client must request only safe question columns (not answer explanations)');
+if(!quizClient.includes("db.rpc('iac_submit_mock_quiz'"))
+  errors.push('Post-submission quiz feedback must come from the server scoring RPC');
+const adminQuizClient=fs.readFileSync('curriculum-admin.html','utf8');
+if(!adminQuizClient.includes('iac_admin_add_quiz_question'))
+  errors.push('Quiz authoring must use the protected admin RPC');
 const platformJs=fs.readFileSync('platform.html','utf8');
 if(!platformJs.includes('<option value="" selected disabled>Choose student type</option>'))errors.push('Student type must require explicit signup selection');
 if(!platformJs.includes('mentorNav.hidden=true'))errors.push('Staff navigation must be hidden after logout');
