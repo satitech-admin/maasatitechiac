@@ -49,3 +49,9 @@ Recent decisions appear in the private launch audit history. The database automa
 
 ## Release rule
 Consider a public launch **accepted only after** all required checks are documented with real evidence, the actual public HTTPS smoke test succeeds, security and privacy checks pass for real accounts, and the project owner explicitly approves the release. The dashboard does not automatically disable Vercel SSO or publish a site.
+
+## Deployment quota observation — 13 November 2026
+
+The source for the acceptance-history display and regression checks was committed to `main`; latest GitHub Actions validation succeeded. Vercel production was still serving an earlier READY build when this was checked. A new Git-backed production deployment attempt was rejected with **402 `api-deployments-free-per-day`** (daily deployment quota reached). No deployment was created by that attempt. An authenticated Vercel CLI fallback is not available in the current working environment.
+
+**Do not mark the latest acceptance-history UI as deployed** until a later Vercel deployment reports a Git SHA that contains the `launch.html` audit-history change. Owner may resolve the Vercel usage limit from their project/team dashboard and then run the intended production deployment. This quota issue is separate from the pre-existing SSO public-access block.
