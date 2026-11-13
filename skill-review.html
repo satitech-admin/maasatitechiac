@@ -49,7 +49,7 @@ async function review(button){
  const approve=button.hasAttribute('data-approve'),id=button.getAttribute(approve?'data-approve':'data-reject');
  const feedback=el('feedback-'+id)?.value.trim()||'';
  if(!approve&&feedback.length<12){notice('Explain requested changes in at least 12 characters.',true);return}
- if(approve&&!Array.from(el('checks-'+id)?.querySelectorAll('input[type=checkbox]')||[]).every(x=>x.checked)){notice('Complete all three approval checks before issuing a badge.',true);return;}
+ if(approve&&(()=>{const checks=el('checks-'+id)?.querySelectorAll('input[type=checkbox]');return !checks||checks.length!==3||![...checks].every(x=>x.checked)})()){notice('Complete all three approval checks before issuing a badge.',true);return;}
  if(!confirm(approve?'Confirm you inspected the actual working project? Approval will issue an official verified badge and certificate.':'Return project to student with feedback?'))return;
  button.disabled=true;
  try{
