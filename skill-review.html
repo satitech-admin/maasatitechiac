@@ -9,7 +9,7 @@
 <main><div class="eyebrow">AUTHENTIC STUDENT ASSESSMENT · ADMIN ONLY</div><h1>Review work.<br><em>Recognize skills.</em></h1>
 <p>Skill credentials must represent real evidence. Review a student's submitted repository, project functionality and implementation. The database verifies approved enrollment and an actual 100% skill-quiz result before issuing the unique Maa Sati IAC badge and certificate.</p><div id="notice" role="status" aria-live="polite"></div>
 <div id="authGate" class="card">Checking authorized account…</div>
-<div id="workspace" class="hidden"><div class="row"><h2>Project submissions awaiting review</h2><button id="refresh" type="button" class="secondary">Refresh submissions</button></div><div class="grid"><section class="card"><h2>Pending review</h2><div id="pending"></div></section><section class="card"><h2>Recent decisions</h2><div id="recent"></div></section></div><div class="badge">🏅 Approval issues a unique skill certificate + digital badge, records the verified milestone and makes it available in the student's profile. Never approve a link without testing the project.</div></div>
+<div id="workspace" class="hidden"><div class="row"><h2>Project submissions awaiting review</h2><button id="refresh" type="button" class="secondary">Refresh submissions</button></div><div class="grid"><section class="card"><h2>Pending review</h2><p class="small" id="pendingCounter" aria-live="polite"></p><div id="pending"></div><button id="morePending" type="button" class="secondary hidden">Load more pending projects</button></section><section class="card"><h2>Recent decisions</h2><div id="recent"></div></section></div><div class="badge">🏅 Approval issues a unique skill certificate + digital badge, records the verified milestone and makes it available in the student's profile. Never approve a link without testing the project.</div></div>
 </main><script type="module">
 import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
 const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
@@ -17,7 +17,9 @@ const el=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g
 const checked=r=>{if(r.error)throw Error(r.error.message);return r.data};
 function notice(message,error=false){el('notice').innerHTML='<div class="notice'+(error?' error':'')+'">'+esc(message)+'</div>'}
 function safeUrl(s){try{const url=new URL(s);return url.protocol==='https:'?url.href:'#'}catch{return '#'}}
-let currentAdmin=null;
+let currentAdmin=null,reviewPage=0,reviewTotal=0,reviewCard=null;
+const reviewFields="id,month_id,user_id,project_url,description,status,instructor_feedback,submitted_at,reviewed_at";
+const pendingBatch=page=>db.from("iac_skill_project_submissions").select(reviewFields,{count:"exact"}).eq("status","pending").order("submitted_at",{ascending:true}).range(page*50,page*50+49);
 async function load(){
  const [auth,permission]=await Promise.all([db.auth.getUser(),db.rpc('iac_is_admin')]);
  if(auth.error||!auth.data.user||permission.error||permission.data!==true){
@@ -28,22 +30,40 @@ async function load(){
  await refresh();
 }
 async function refresh(){
- const [sub,monthly,program,profiles]=await Promise.all([
-  db.from('iac_skill_project_submissions').select('id,month_id,user_id,project_url,description,status,instructor_feedback,submitted_at,reviewed_at').order('submitted_at',{ascending:false}).limit(120),
+ const [sub,decisions,monthly,program,profiles]=await Promise.all([
+  pendingBatch(0),
+  db.from('iac_skill_project_submissions').select(reviewFields).neq('status','pending').order('reviewed_at',{ascending:false}).limit(25),
   db.from('iac_program_months').select('id,program_id,month_number,title'),
   db.from('iac_programs').select('id,title'),
   db.from('iac_profiles').select('id,full_name').limit(500)
  ]);
- const recs=checked(sub),months=new Map(checked(monthly).map(x=>[x.id,x])),names=new Map(checked(program).map(x=>[x.id,x.title])),students=new Map(checked(profiles).map(x=>[x.id,x.full_name]));
+ const recs=checked(sub).concat(checked(decisions)),months=new Map(checked(monthly).map(x=>[x.id,x])),names=new Map(checked(program).map(x=>[x.id,x.title])),students=new Map(checked(profiles).map(x=>[x.id,x.full_name]));
  const card=s=>{
   const m=months.get(s.month_id),label=(names.get(m?.program_id)||'Course')+' · Month '+(m?.month_number||'?')+' · '+(m?.title||'Skill');
   return '<div class="item"><h3>'+esc(label)+'</h3><p class="small">Student: '+esc(students.get(s.user_id)||'Student account')+' · '+new Date(s.submitted_at).toLocaleDateString('en-IN')+'</p><p><a href="'+esc(safeUrl(s.project_url))+'" target="_blank" rel="noopener noreferrer">'+esc(s.project_url)+'</a></p><p>'+esc(s.description)+'</p>'+(s.status==='pending'?'<label for="feedback-'+esc(s.id)+'" class="small">Review notes (required if requesting changes)</label><textarea id="feedback-'+esc(s.id)+'" placeholder="Functionality tested, skills demonstrated, code review observations, or requested improvements"></textarea><div class="review-checks" id="checks-'+esc(s.id)+'"><strong>Approval checks (required)</strong><label><input type="checkbox" data-check="demo"> I opened and tested the working HTTPS link</label><label><input type="checkbox" data-check="work"> I reviewed the project against the skill requirements</label><label><input type="checkbox" data-check="original"> I checked the student explanation and evidence</label></div><div class="actions"><button data-approve="'+esc(s.id)+'">Approve project + issue badge</button><button data-reject="'+esc(s.id)+'" class="bad">Request changes</button></div>':'<div class="small"><strong>Status:</strong> '+esc(s.status)+'</div>'+(s.instructor_feedback?'<p class="small">Feedback: '+esc(s.instructor_feedback)+'</p>':''))+'</div>';
  };
+ reviewCard=card;reviewPage=0;reviewTotal=Number(sub.count??checked(sub).length);
  const pending=recs.filter(x=>x.status==='pending');
  el('pending').innerHTML=pending.length?pending.map(card).join(''):'<p class="small">No pending project reviews. Student project submissions will appear here after enrolled learners pass their skill assessments.</p>';
  const recent=recs.filter(x=>x.status!=='pending').slice(0,25);
  el('recent').innerHTML=recent.length?recent.map(card).join(''):'<p class="small">No decisions recorded yet.</p>';
+ el('pendingCounter').textContent='Showing '+pending.length+' of '+reviewTotal+' pending projects (oldest first).';
+ el('morePending').classList.toggle('hidden',pending.length>=reviewTotal);
  document.querySelectorAll('[data-approve],[data-reject]').forEach(button=>button.onclick=()=>review(button));
+}
+async function loadMorePending(){
+ if(!reviewCard)return;
+ const button=el('morePending');button.disabled=true;button.textContent='Loading…';
+ try{
+  const next=reviewPage+1;
+  const response=await pendingBatch(next);const incoming=checked(response);
+  if(!incoming.length){button.classList.add('hidden');return;}
+  el('pending').insertAdjacentHTML('beforeend',incoming.map(reviewCard).join(''));
+  reviewPage=next;reviewTotal=Number(response.count??reviewTotal);
+  el('pendingCounter').textContent='Showing '+((reviewPage*50)+incoming.length)+' of '+reviewTotal+' pending projects (oldest first).';
+  button.classList.toggle('hidden',((reviewPage*50)+incoming.length)>=reviewTotal);
+  document.querySelectorAll('[data-approve],[data-reject]').forEach(b=>b.onclick=()=>review(b));
+ }catch(e){notice(e.message,true)}finally{button.disabled=false;button.textContent='Load more pending projects';}
 }
 async function review(button){
  const approve=button.hasAttribute('data-approve'),id=button.getAttribute(approve?'data-approve':'data-reject');
@@ -60,5 +80,6 @@ async function review(button){
  }catch(error){notice(error.message,true)}finally{button.disabled=false}
 }
 el('refresh').onclick=()=>refresh().catch(e=>notice(e.message,true));
+el('morePending').onclick=loadMorePending;
 load().catch(e=>notice(e.message,true));
 </script></body></html>
