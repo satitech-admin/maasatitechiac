@@ -44,7 +44,7 @@ html{scroll-padding-top:18px}#today,#skills,#courses,#quizResults,#badges{scroll
 import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
 const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
 const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]||'&#39;'));
-let snapshot=null,quizPage=0,quizTotal=0,quizItems=[];
+let snapshot=null,quizPage=0,quizTotal=0,quizItems=[],filtersInitialized=false;
 const labels={
  enroll:['Enrollment needed','Apply for course enrollment'],
  quiz:['Quiz to complete','Take the skill quiz'],
@@ -97,7 +97,8 @@ function render(){
  const previousProgram=$('programFilter').value,previousStatus=$('statusFilter').value;
  $('programFilter').innerHTML='<option value="all">All four programs</option>'+programs.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.title)+'</option>').join('');
  $('programFilter').value=[...$('programFilter').options].some(o=>o.value===previousProgram)?previousProgram:mine.length===1?mine[0].id:'all';
- $('statusFilter').value=previousStatus|| (mine.length?'enrolled':'all');
+ $('statusFilter').value=filtersInitialized?previousStatus:(mine.length?'enrolled':'all');
+ filtersInitialized=true;
  $('quizHistory').innerHTML='<div class="empty">Loading real quiz scores…</div>';
  $('badgeList').innerHTML=badges.length?badges.map(b=>'<div class="badge"><strong>🏅 '+esc(b.title)+'</strong><p class="small">'+esc(b.program_title)+' · Month '+b.month_number+' · Earned '+time(b.awarded_at)+'</p><div class="actions"><a class="button secondary" href="/skill-badge.html?code='+encodeURIComponent(b.code)+'">View / Share Badge</a><a class="button secondary" href="/certificate.html?code='+encodeURIComponent(b.code)+'">Certificate PDF</a></div></div>').join(''):'<div class="empty">No earned badges yet. A quiz pass and a mentor-approved real project are both required.</div>';
  filterSkills();
