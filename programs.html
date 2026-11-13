@@ -175,7 +175,7 @@ async function saveLessonCheckpoint(event){
  if(v.has('practice_done')&&reflection.length<15){show('Write at least 15 characters about what you practised before marking it done.',true);return;}
  const data={user_id:user.id,month_id:month,lesson_read:v.has('lesson_read'),practice_done:v.has('practice_done'),practice_reflection:reflection,updated_at:new Date().toISOString()};
  const button=f.querySelector('button');button.disabled=true;
- try{checked(await db.from('iac_lesson_checkpoints').upsert(data,{onConflict:'user_id,month_id'}));lessonCheckpoints.set(month,data);show('Your personal lesson/practice checklist is saved. Quiz and badge verification remain separate.');}
+ try{checked(await db.from('iac_lesson_checkpoints').upsert(data,{onConflict:'user_id,month_id'}).select('month_id').single());lessonCheckpoints.set(month,data);show('Your personal lesson/practice checklist is saved. Quiz and badge verification remain separate.');}
  catch(err){show(err.message,true)}finally{button.disabled=false;}
 }
 async function saveStudentNote(event){
@@ -184,7 +184,7 @@ async function saveStudentNote(event){
  if(value.length<1||value.length>3000){show('Write a short note (up to 3000 characters) before saving.',true);return;}
  const button=f.querySelector('button');button.disabled=true;
  try{
-  checked(await db.from('iac_skill_notes').upsert({user_id:user.id,month_id:id,content:value,updated_at:new Date().toISOString()},{onConflict:'user_id,month_id'}));
+  checked(await db.from('iac_skill_notes').upsert({user_id:user.id,month_id:id,content:value,updated_at:new Date().toISOString()},{onConflict:'user_id,month_id'}).select('month_id').single());
   skillNotes.set(id,value);show('Your private notes were saved to this skill.');
  }catch(e){show(e.message,true)}finally{button.disabled=false;}
 }
@@ -215,8 +215,8 @@ async function submitSkillProject(event){
  const button=f.querySelector('button');button.disabled=true;
  try{
   let result;
-  if(prior){result=await db.from('iac_skill_project_submissions').update({project_url:url,description,status:'pending',reviewed_at:null,reviewed_by:null,instructor_feedback:null}).eq('id',prior.id).eq('user_id',user.id);}
-  else result=await db.from('iac_skill_project_submissions').insert({month_id:month,user_id:user.id,project_url:url,description});
+  if(prior){result=await db.from('iac_skill_project_submissions').update({project_url:url,description,status:'pending',reviewed_at:null,reviewed_by:null,instructor_feedback:null}).eq('id',prior.id).eq('user_id',user.id).select('id').single();}
+  else result=await db.from('iac_skill_project_submissions').insert({month_id:month,user_id:user.id,project_url:url,description}).select('id').single();
   checked(result);await loadSkillState();renderMonths();
   show('Project submitted for real mentor review. Your skill badge will be issued only after approval.');
  }catch(err){button.disabled=false;show(err.message,true)}
