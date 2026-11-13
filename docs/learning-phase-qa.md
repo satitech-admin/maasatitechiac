@@ -17,6 +17,11 @@ This phase covers beginner onboarding, the learning dashboard, the private guide
 - Local route inventory: 15 unique .html targets among the eight main pages, all verified to exist in GitHub.
 - Vercel production deployments for these commits reported READY.
 
+## Production reachability blocker
+- Vercel's current project settings show `ssoProtection.enabled = true`, `deploymentType = all_except_custom_domains`, and `live = false`.
+- Its domains currently listed are Vercel subdomains, not an exempt custom public domain. A `READY` deployment therefore does **not** establish public student accessibility.
+- Do not disable SSO, create an indefinite bypass, or publish private administrative material as an automatic side effect of QA. Deployment protection needs deliberate owner configuration before a public launch.
+
 ## Not yet validated end-to-end
 - A real, authorized student signing in, enrolling, saving a lesson and practice reflection, passing an assessment, and submitting a working project.
 - An authorized institute admin opening that submission, requesting changes, approving a revised project and confirming certificate verification.
