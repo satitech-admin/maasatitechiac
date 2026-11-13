@@ -64,3 +64,14 @@ Source and deployment checks performed on the live-connected repository/project:
 
 ### Open security configuration
 Supabase advisor reported leaked-password protection disabled; enable/check this in Supabase Auth settings if available. Keep actual certificate and payment approvals governed by backend policies.
+
+
+## Read-only account acceptance diagnostic — 13 November 2026
+
+A new private `account-acceptance.html` page is committed to GitHub. It is designed for an actual authenticated student/mentor to run without modifying enrollments, grades, awards, notifications or roles. It checks current session, verified email, profile classification, enrolled programs, access to private checkpoints, real quiz attempts, project submissions, notification inbox and staff role. Missing evidence is labeled **Pending** rather than falsely passed.
+
+- Link from `/my-learning.html`, `/mentor-operations.html` and the owner `/launch.html` dashboard.
+- Privacy safeguards: `X-Robots-Tag: noindex`, `Cache-Control: private, no-store`, no account email/name in copied results.
+- GitHub Actions regression checks validate the new page, its private cache/index headers, page routes and read-only implementation.
+- This **source milestone is not proof of public deployment or real account test success**. Verify the production commit SHA after Vercel's quota issue is resolved.
+- Authorized user action: sign in with a genuinely verified account, run the checks, copy the redacted summary, and attach real supporting evidence in the administrator Launch Acceptance Tracker. Never use fictional test grades or certificates to bypass pending release gates.
