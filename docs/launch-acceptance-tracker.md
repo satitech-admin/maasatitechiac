@@ -55,3 +55,14 @@ Consider a public launch **accepted only after** all required checks are documen
 The source for the acceptance-history display and regression checks was committed to `main`; latest GitHub Actions validation succeeded. Vercel production was still serving an earlier READY build when this was checked. A new Git-backed production deployment attempt was rejected with **402 `api-deployments-free-per-day`** (daily deployment quota reached). No deployment was created by that attempt. An authenticated Vercel CLI fallback is not available in the current working environment.
 
 **Do not mark the latest acceptance-history UI as deployed** until a later Vercel deployment reports a Git SHA that contains the `launch.html` audit-history change. Owner may resolve the Vercel usage limit from their project/team dashboard and then run the intended production deployment. This quota issue is separate from the pre-existing SSO public-access block.
+
+
+## Account self-test workflow — source implemented
+
+The `account-acceptance.html` diagnostic complements the admin-only 12-gate acceptance tracker. It is read-only, and any account owner may use it **after** being able to access the site and sign in. A signed-in user can check identity verification, account profile, enrolled courses, lesson checkpoints, quiz attempts, real project records, notification inbox access and assigned staff role. Each outcome is explicitly PASS, PENDING or ERROR. A copied plain-text result excludes email addresses and account IDs.
+
+A green checkpoint-access test proves only that the signed-in user can query their own records; it **does not** prove course completion or cross-account privacy. The real mentor/staff and guardian flow still needs separate authorized tests. The diagnostic does not record or issue certificates, approve grades, accept payments or mark owner acceptance gates as verified.
+
+User acceptance steps: activate founder email, test one adult learner and one school student with real guardian permission, complete a genuine quiz/project workflow, then run the diagnostic as each authorized account and document the results in `/launch.html`.
+
+**Deploy caveat:** Vercel's last observed production SHA predates this page. GitHub Actions passing does not mean the new page is publicly reachable. A later successful production deployment and an owner-approved public-access configuration are mandatory.
