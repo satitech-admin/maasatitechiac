@@ -31,7 +31,7 @@ const el=id=>document.getElementById(id);
 const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const safe=x=>encodeURIComponent(String(x??''));
 const labels={enroll:'Enrollment required',quiz:'Take the skill quiz',submit_project:'Submit your project',mentor_review:'Waiting for mentor review',revise_project:'Make project changes',credential_review:'Credential review in progress',earned:'Verified badge earned'};
-let state=null,program=null,selectedSkill=null;
+let state=null,program=null,selectedSkill=null,checkpoints=new Map();
 const enrolled=p=>['active','completed'].includes(p.enrollment_status);
 const skillLink=(s,action)=>'/programs.html?program='+safe(s.program_slug)+'&skill='+safe(s.month_id)+'&action='+action;
 const badgeLink=s=>'/skill-badge.html?code='+safe(s.certificate_code);
@@ -47,7 +47,8 @@ function stageStates(s){
  const badge=Boolean(s.badge_awarded&&s.certificate_code),passed=Boolean(s.quiz_passed);
  const submitted=Boolean(s.project_status&& !['not_submitted','not submitted','none'].includes(s.project_status));
  const reviewed=badge||['approved','accepted'].includes(s.project_status);
- const states=[false,passed,submitted,reviewed,badge]; // Lesson viewing isn't recorded; do not claim completion.
+ const practice=checkpoints.get(String(s.month_id))||{};
+ const states=[Boolean(practice.lesson_read&&practice.practice_done),passed,submitted,reviewed,badge]; // Self-reported practice, not verified skill completion.
  const step=s.next_step||'enroll';
  let nextIndex=step==='quiz'?1:['submit_project','revise_project'].includes(step)?2:step==='mentor_review'?3:step==='credential_review'?4:step==='earned'?-1:0;
  return states.map((done,i)=>done?'done':i===nextIndex?'next':i===0?'available':'waiting');
@@ -60,13 +61,13 @@ function drawStep(s){
  el('badgeStatus').textContent=badge?'Verified badge earned':s.next_step==='mentor_review'?'Awaiting review':s.next_step==='revise_project'?'Changes requested':'In progress';
  el('badgeStatus').className='status '+(badge?'good':s.next_step==='mentor_review'||s.next_step==='revise_project'?'pending':'');
  const steps=[
-  ['Read the lesson','Open your topic guide and practice the examples.'],
+  ['Study & practice','Read the topic and try the exercise. Save your own checklist in the course.'],
   ['Pass the quiz','Meet the required score for your skill assessment.'],
   ['Submit project','Share your own working project and explanation.'],
   ['Mentor review','Wait for the instructor to verify the project.'],
   ['Earn credential','Open a badge only after official approval.']
  ];
- el('journeySteps').innerHTML=steps.map(([title,description],i)=>'<article class="step" data-status="'+statuses[i]+'"><span class="num">'+(statuses[i]==='done'?'✓':i+1)+'</span><strong>'+title+'</strong><p>'+description+'</p><span class="small">'+(statuses[i]==='done'?'Verified':statuses[i]==='next'?'Your next step':statuses[i]==='available'?'Ready to learn':'Not finished')+'</span></article>').join('');
+ el('journeySteps').innerHTML=steps.map(([title,description],i)=>'<article class="step" data-status="'+statuses[i]+'"><span class="num">'+(statuses[i]==='done'?'✓':i+1)+'</span><strong>'+title+'</strong><p>'+description+'</p><span class="small">'+(statuses[i]==='done'?(i===0?'Self-reported':'Verified'):statuses[i]==='next'?'Your next step':statuses[i]==='available'?'Ready to learn':'Not finished')+'</span></article>').join('');
  const next=getNext(s);
  el('primaryActions').innerHTML='<a class="btn" href="'+esc(next.url)+'">'+esc(next.title)+' →</a><a class="btn soft" href="'+esc(skillLink(s,'roadmap'))+'">Read learning guide</a>'+((s.project_feedback)?'<p class="small" style="width:100%"><strong>Mentor feedback:</strong> '+esc(s.project_feedback)+'</p>':'');
  const msg=el('mentorMessage');
@@ -93,7 +94,11 @@ async function load(){
  if(auth.error)throw Error(auth.error.message);
  if(!auth.data?.user){el('message').innerHTML='<div class="card"><h2>Sign in to see your learning journey</h2><p>This page only shows verified progress from your own student account. You can explore public courses without signing in.</p><div class="actions"><a href="/platform.html#dashboard" class="btn">Sign in / Register</a><a href="/programs.html" class="btn soft">Explore courses</a></div></div>';return;}
  const result=await db.rpc('iac_student_learning_snapshot');if(result.error)throw Error(result.error.message);
- state=result.data||{};const programs=(state.programs||[]).filter(enrolled);
+ state=result.data||{};
+ const cp=await db.from('iac_lesson_checkpoints').select('month_id,lesson_read,practice_done').eq('user_id',auth.data.user.id);
+ if(cp.error)throw Error(cp.error.message);
+ checkpoints=new Map((cp.data||[]).map(x=>[String(x.month_id),x]));
+ const programs=(state.programs||[]).filter(enrolled);
  if(!programs.length){el('message').innerHTML='<div class="card"><h2>Your first step: choose a course</h2><p>No active enrollment is showing in your account yet. Explore a roadmap and request enrollment to start tracking progress.</p><a class="btn" href="/programs.html">Explore courses</a></div>';return;}
  el('message').textContent='';el('courseSelect').replaceChildren();programs.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.title;el('courseSelect').append(o)});
  const initial=new URLSearchParams(location.search).get('program');
