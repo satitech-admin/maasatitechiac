@@ -3,12 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 
-const pages=['index.html','about.html','analytics.html','assistant.html','certificate.html',
+const pages=['account-acceptance.html','index.html','about.html','analytics.html','assistant.html','certificate.html',
   'curriculum-admin.html','fees.html','founder.html','launch.html','learning-journey.html',
   'mentor-operations.html','my-learning.html','onboarding.html','payments.html',
   'platform.html','profile.html','programs.html','skill-badge.html','skill-review.html',
   'start-here.html','study-plan.html'];
-const privatePages=['analytics','assistant','certificate','curriculum-admin','founder','launch','learning-journey',
+const privatePages=['account-acceptance','analytics','assistant','certificate','curriculum-admin','founder','launch','learning-journey',
   'mentor-operations','my-learning','onboarding','payments','profile','skill-badge','skill-review','study-plan'];
 const errors=[];
 let checkedScripts=0,checkedLinks=0;
@@ -66,6 +66,7 @@ check('study-plan.html',['iac_student_learning_snapshot','iac_study_preferences'
 check('mentor-operations.html',['iac_is_staff','iac_is_admin','iac_support_tickets','iac_support_replies','iac_skill_project_submissions','iac_send_course_announcement','iac_course_announcements']);
 check('skill-review.html',['iac_is_admin','iac_review_skill_project','Approval checks (required)']);
 check('my-learning.html',['iac_student_learning_snapshot','iac_student_quiz_history']);
+check('account-acceptance.html',['db.auth.getUser()','iac_student_learning_snapshot','iac_student_quiz_history','iac_is_staff','iac_is_admin','iac_notifications','iac_skill_project_submissions','No grades, credentials, payment or account permissions are modified']);
 check('launch.html',['iac_launch_readiness','iac_launch_acceptance','iac_launch_acceptance_audit','iac_save_launch_acceptance','owner_verified','acceptanceHistory']);
 // Guard against past regressions: project-only checkbox validation must never run on student notes.
 const programsJs=fs.readFileSync('programs.html','utf8');
