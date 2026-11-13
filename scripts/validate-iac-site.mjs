@@ -35,7 +35,7 @@ const check=(file,fragments)=>{
 check('programs.html',['iac_lesson_checkpoints','lessonCheckpointForm','practice_reflection','check_original','iac_skill_project_submissions','iac_skill_notes']);
 check('learning-journey.html',['iac_student_learning_snapshot','iac_lesson_checkpoints','Start lesson & practice']);
 check('study-plan.html',['iac_student_learning_snapshot','iac_study_preferences','iac_lesson_checkpoints','days_per_week']);
-check('mentor-operations.html',['iac_is_staff','iac_support_tickets','iac_support_replies','iac_skill_project_submissions']);
+check('mentor-operations.html',['iac_is_staff','iac_is_admin','iac_support_tickets','iac_support_replies','iac_skill_project_submissions','iac_send_course_announcement','iac_course_announcements']);
 check('skill-review.html',['iac_is_admin','iac_review_skill_project','Approval checks (required)']);
 check('my-learning.html',['iac_student_learning_snapshot','iac_student_quiz_history']);
 console.log('Checked '+pages.length+' pages, '+checkedScripts+' inline scripts, '+checkedLinks+' internal routes');
