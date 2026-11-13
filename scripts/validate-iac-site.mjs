@@ -66,6 +66,7 @@ check('study-plan.html',['iac_student_learning_snapshot','iac_study_preferences'
 check('mentor-operations.html',['iac_is_staff','iac_is_admin','iac_support_tickets','iac_support_replies','iac_skill_project_submissions','iac_send_course_announcement','iac_course_announcements']);
 check('skill-review.html',['iac_is_admin','iac_review_skill_project','Approval checks (required)']);
 check('my-learning.html',['iac_student_learning_snapshot','iac_student_quiz_history']);
+check('launch.html',['iac_launch_readiness','iac_launch_acceptance','iac_launch_acceptance_audit','iac_save_launch_acceptance','owner_verified','acceptanceHistory']);
 // Guard against past regressions: project-only checkbox validation must never run on student notes.
 const programsJs=fs.readFileSync('programs.html','utf8');
 const sliceBetween=(str,first,last)=>{const a=str.indexOf(first),b=str.indexOf(last,a+first.length);return a<0||b<a?'':str.slice(a,b)};
