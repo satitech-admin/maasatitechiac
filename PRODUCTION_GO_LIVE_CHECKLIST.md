@@ -75,3 +75,14 @@ A new private `account-acceptance.html` page is committed to GitHub. It is desig
 - GitHub Actions regression checks validate the new page, its private cache/index headers, page routes and read-only implementation.
 - This **source milestone is not proof of public deployment or real account test success**. Verify the production commit SHA after Vercel's quota issue is resolved.
 - Authorized user action: sign in with a genuinely verified account, run the checks, copy the redacted summary, and attach real supporting evidence in the administrator Launch Acceptance Tracker. Never use fictional test grades or certificates to bypass pending release gates.
+
+
+## Quiz security & scoring repair — 13 November 2026
+
+- The original 184 public question records had answer explanations stored in their row, but **direct anonymous SELECT was blocked by missing SQL grants** at the time of the audit. This also blocked legitimate quiz loading; it should not be described as a confirmed anonymous data breach.
+- All 184 explanations were transferred to protected `iac_mock_answer_keys`; the public question explanation column is now empty and constrained to stay empty. Anonymous/authenticated browsers can query only `id, quiz_id, sort_order, prompt, options` on published questions.
+- `iac_submit_mock_quiz` returns those private explanations only after the backend validates and scores an actual submission.
+- Corrected an ambiguous `id` variable in `iac_admin_add_quiz_question` that prevented verified administrators from adding quiz questions.
+- Rollback-only integration tests passed for existing quiz submissions and for creating a 3-question draft → publishing → student submission → post-submit feedback. No synthetic test records remain.
+- **Release gate unchanged:** real student/verified founder browser acceptance testing is still pending; Vercel project SSO protection is still on. See `docs/quiz-privacy-and-authoring-qa.md` for details.
+
