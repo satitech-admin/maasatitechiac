@@ -21,4 +21,18 @@ for (const pathname of paths) {
   }
   console.log('PASS', pathname, 'HTTP 200 with configured headers');
 }
-console.log('Public HTTP smoke checks passed. Signed-in enrollment and staff acceptance tests remain separate.');
+// Private pages may serve their public HTML shell, but must never be indexed or cached.
+for (const pathname of ['/profile.html', '/mentor-operations.html', '/launch.html']) {
+  const url = new URL(pathname, base);
+  const response = await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(15000) });
+  if (response.status !== 200) {
+    throw new Error('Private HTML shell inaccessible: ' + pathname + ' responded HTTP ' + response.status);
+  }
+  const robots = response.headers.get('x-robots-tag') || '';
+  const cache = response.headers.get('cache-control') || '';
+  if (!robots.includes('noindex') || !cache.includes('no-store')) {
+    throw new Error('Missing private indexing/cache headers on ' + pathname);
+  }
+  console.log('PASS', pathname, 'private noindex/no-store headers');
+}
+console.log('Public HTTPS smoke checks passed. Signed-in enrollment and staff acceptance tests remain separate.');
