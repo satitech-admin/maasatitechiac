@@ -98,14 +98,12 @@ async function loadTickets(reset=true){
     if(selection.value==='closed'&&ticket.status!=='resolved'&&ticket.status!=='closed'){notice('Resolve the ticket before closing it.',true);return}
     send.disabled=true;statusOnly.disabled=true;
     try{
-     if(sendReply){
-      const result=await db.from('iac_support_replies').insert({ticket_id:ticket.id,sender_id:staffUser.id,message:response.value.trim()}).select('id').single();
-      if(result.error)throw Error(result.error.message);
-     }
-     if(selection.value&&selection.value!==ticket.status){
-      const result=await db.from('iac_support_tickets').update({status:selection.value,updated_at:new Date().toISOString()}).eq('id',ticket.id).select('id').single();
-      if(result.error)throw Error(result.error.message);
-     }
+     const result=await db.rpc('iac_staff_respond_ticket',{
+      p_ticket:ticket.id,
+      p_message:sendReply?response.value.trim():null,
+      p_status:selection.value||null
+     });
+     if(result.error)throw Error(result.error.message);
      notice(sendReply?'Reply saved.':'Status saved.');await updateMetrics();await loadTickets(true);
     }catch(e){notice('Could not save: '+e.message,true);send.disabled=false;statusOnly.disabled=false}
    }
