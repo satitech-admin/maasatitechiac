@@ -41,3 +41,26 @@ This page is intended for the **verified founder/admin only**. It uses `iac_laun
 
 ## Production policy
 Do NOT claim fully launched, 100% tested, production-certified or real payment ready based only on a successful Vercel build. Keep payment checkout disabled without provider credentials and real fee configuration. Do not fabricate user/student records to make dashboards appear populated.
+
+
+## Launch hardening update — 13 November 2026
+
+Source and deployment checks performed on the live-connected repository/project:
+
+- 21 main HTML pages, 26 embedded scripts, and 200 internal routes passed automated checks in the GitHub Actions QA workflow.
+- 15 private student/staff/administration pages now receive `X-Robots-Tag: noindex, nofollow, noarchive` and `Cache-Control: private, no-store, max-age=0` in addition to existing page-level noindex metadata. These headers help prevent search indexing and caching; they do **not** replace login permissions or database RLS.
+- `robots.txt` / `sitemap.xml` list only the six established public institute routes. Public pages were not placed under private noindex headers.
+- The existing opt-in `scripts/verify-public-http.mjs` tests public HTTPS access. Do not run or declare it passed as launch acceptance until deployment protection and the domain are intentionally configured.
+- At the 13 November audit, Vercel reported deployment `READY` but project `live: false` and SSO protection enabled on Vercel subdomains. The `maasatitechiac.vercel.app` domain itself was verified in Vercel, but public reachability remains blocked.
+- Supabase had zero active student enrollments and no real projects/certificates. Real student, instructor, guardian, password recovery and payment acceptance are still pending.
+
+### Owner release sequence (no bypass)
+1. Choose a public production domain and determine whether Vercel's project-wide SSO protection should remain for preview deployments only. Preserve protection for internal previews and admin functions where possible.
+2. Verify domain ownership, DNS/SSL, and public HTTPS response using the opt-in smoke test. Keep API keys and private data out of static web assets.
+3. Verify Supabase Auth production Site URL, redirect allowlist, registration email delivery and recovery with authorized users.
+4. Test one real enrolled adult learner and one guardian-approved school learner, with appropriate staff approval, quiz/project workflow and genuine certificate issuance.
+5. Test support notices, fee/payment confirmation, mobile layout, keyboard navigation and anonymous authorization failures.
+6. Only after these checks are green: obtain launch approval and update the project status from **deployment ready** to **production accepted**.
+
+### Open security configuration
+Supabase advisor reported leaked-password protection disabled; enable/check this in Supabase Auth settings if available. Keep actual certificate and payment approvals governed by backend policies.
