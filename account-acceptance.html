@@ -44,10 +44,13 @@ const cases=[
  ['account','Authenticated session','A valid session must be present.'],
  ['email','Email verification','The account email must be confirmed by the email owner.'],
  ['profile','Learner profile','A complete student type and profile must be available.'],
+ ['guardian','Guardian eligibility','School learners require genuine, recorded guardian approval.'],
  ['enrollment','Active enrollment','An authorized active or completed course enrollment must be visible.'],
  ['progress','Private lesson progress API','Check whether personal lesson checkpoints can be read securely.'],
  ['quiz','Real quiz attempts','Look for actually saved quiz attempts, not fabricated scores.'],
  ['project','Real project submissions','Look for a project submitted by this account.'],
+ ['badge','Verified skill badge','Only active mentor-approved achievements qualify.'],
+ ['certificate','Certificate authenticity','Validate the account’s genuine unrevoked certificate through the official verification API.'],
  ['notifications','Notification inbox','Check whether the private inbox can be queried and if alerts exist.'],
  ['staff','Institute team access','Check whether the account has a verified staff/admin role.']
 ];
@@ -94,6 +97,28 @@ async function run(){
    else if(!['college','school'].includes(r.data.student_level))status('profile','pending','Student type needs institute guidance before enrollment.');
    else status('profile','pass','A student profile with a declared learner type exists. School learners still require separately verified guardian approval.');
   });
+  await runCheck('guardian',async()=>{
+   const p=await db.from('iac_profiles').select('student_level').eq('id',user.id).maybeSingle();
+   if(p.error)throw Error(p.error.message);
+   if(p.data?.student_level==='college'){
+    status('guardian','pass','A declared college profile does not require school guardian approval. Age/student identity remains a separate real-world check.');
+    return;
+   }
+   if(p.data?.student_level!=='school'){
+    status('guardian','pending','Choose a valid school or college student type during onboarding first.');
+    return;
+   }
+   const consent=await db.from('iac_guardian_consents')
+     .select('status,verified_by,verified_at').eq('student_id',user.id).maybeSingle();
+   if(consent.error)throw Error(consent.error.message);
+   if(consent.data?.status==='approved'&&consent.data.verified_by&&consent.data.verified_at)
+    status('guardian','pass','Institute-approved guardian consent is recorded. Guardian identity verification still needs real-world acceptance.');
+   else if(consent.data?.status==='rejected')
+    status('guardian','pending','Guardian request was rejected. Contact institute support before registering.');
+   else if(consent.data?.status==='pending')
+    status('guardian','pending','Guardian request is awaiting verified institute approval.');
+   else status('guardian','pending','Submit a guardian verification request through Onboarding before enrollment or payment.');
+  });
   await runCheck('enrollment',async()=>{
    const r=await db.rpc('iac_student_learning_snapshot');
    if(r.error)throw Error(r.error.message);
@@ -118,6 +143,28 @@ async function run(){
    const count=Number(r.count||0);
    status('project',count>0?'pass':'pending',count>0?count+' submitted project record(s) visible. Mentor approval must be verified separately.':'No skill project submission saved yet.');
   });
+  await runCheck('badge',async()=>{
+   const r=await db.rpc('iac_student_learning_snapshot');
+   if(r.error)throw Error(r.error.message);
+   const count=Array.isArray(r.data?.badges)?r.data.badges.length:0;
+   status('badge',count>0?'pass':'pending',count>0
+    ?count+' currently valid server-issued skill badge(s) listed for this account.'
+    :'No verified skill badge earned yet. Passing a quiz alone never issues a badge.');
+  });
+  await runCheck('certificate',async()=>{
+   const owned=await db.from('iac_certificates')
+    .select('certificate_code,revoked').eq('recipient_id',user.id).eq('revoked',false)
+    .order('issued_at',{ascending:false}).limit(1);
+   if(owned.error)throw Error(owned.error.message);
+   const cert=owned.data?.[0];
+   if(!cert){status('certificate','pending','No active certificate issued to this account yet.');return;}
+   const check=await db.rpc('iac_verify_certificate',{p_code:cert.certificate_code});
+   if(check.error)throw Error(check.error.message);
+   const valid=Array.isArray(check.data)&&check.data.length===1&&check.data[0]?.valid===true;
+   status('certificate',valid?'pass':'fail',valid
+    ?'An official, unrevoked certificate passed the public authenticity check. Code and recipient details remain private.'
+    :'An issued certificate did not pass official verification. Contact the institute administrator.');
+  });
   await runCheck('notifications',async()=>{
    const r=await db.from('iac_notifications').select('id',{count:'exact',head:true}).eq('user_id',user.id);
    if(r.error)throw Error(r.error.message);
@@ -129,7 +176,7 @@ async function run(){
    if(s.error||a.error)throw Error(s.error?.message||a.error?.message);
    if(a.data===true)status('staff','pass','Verified institute administrator role found.');
    else if(s.data===true)status('staff','pass','Verified institute staff role found. Credential approvals remain admin-controlled.');
-   else status('staff','pending','Standard learner account: staff privileges not granted (normal for students).');
+   else status('staff','pass','Standard learner permissions confirmed: no staff or administrator access was granted.');
   });
   const successes=[...results.values()].filter(x=>x.state==='pass').length;
   const pending=[...results.values()].filter(x=>x.state==='pending').length;
