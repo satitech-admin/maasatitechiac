@@ -3,8 +3,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 
-const pages=['index.html','programs.html','start-here.html','onboarding.html',
-  'my-learning.html','learning-journey.html','study-plan.html','skill-review.html','mentor-operations.html','profile.html'];
+const pages=['index.html','about.html','analytics.html','assistant.html','certificate.html',
+  'curriculum-admin.html','fees.html','founder.html','launch.html','learning-journey.html',
+  'mentor-operations.html','my-learning.html','onboarding.html','payments.html',
+  'platform.html','profile.html','programs.html','skill-badge.html','skill-review.html',
+  'start-here.html','study-plan.html'];
+const privatePages=['analytics','assistant','certificate','curriculum-admin','launch','learning-journey',
+  'mentor-operations','my-learning','onboarding','payments','profile','skill-badge','skill-review','study-plan'];
 const errors=[];
 let checkedScripts=0,checkedLinks=0;
 for(const page of pages){
@@ -14,7 +19,7 @@ for(const page of pages){
   const scriptRx=/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi;
   for(const match of html.matchAll(scriptRx)){
     const attributes=match[1],src=match[2];
-    if(/\bsrc\s*=/.test(attributes)||!src.trim())continue;
+    if(/\bsrc\s*=/.test(attributes)||!src.trim()||/\btype\s*=\s*["'](?:application\/ld\+json|application\/json|text\/plain)["']/i.test(attributes))continue;
     const mode=/\btype\s*=\s*["']module["']/i.test(attributes)?'module':'commonjs';
     const result=spawnSync(process.execPath,['--check','--input-type='+mode],{input:src,encoding:'utf8',maxBuffer:1024*1024*4});
     checkedScripts++;
@@ -27,6 +32,29 @@ for(const page of pages){
     checkedLinks++;
   }
 }
+// Protect private pages from search indexing and browser/CDN persistence.
+const config=JSON.parse(fs.readFileSync('vercel.json','utf8'));
+const globalHeaders=(config.headers||[]).find(h=>h.source==='/(.*)');
+if(!globalHeaders||!globalHeaders.headers?.some(h=>h.key==='X-Content-Type-Options'&&h.value==='nosniff'))errors.push('Missing global content-type protection');
+for(const shortName of privatePages){
+  const file=shortName+'.html';
+  const html=fs.readFileSync(file,'utf8');
+  if(!/<meta\\s+name=["']robots["'][^>]*noindex/i.test(html))errors.push(file+': missing noindex metadata');
+  const rule=(config.headers||[]).find(h=>h.source==='/'+file);
+  if(!rule?.headers?.some(h=>h.key==='X-Robots-Tag'&&h.value.includes('noindex')))errors.push(file+': missing private X-Robots-Tag');
+  if(!rule?.headers?.some(h=>h.key==='Cache-Control'&&h.value.includes('no-store')))errors.push(file+': missing no-store Cache-Control');
+}
+const siteMap=fs.readFileSync('sitemap.xml','utf8');
+for(const entry of siteMap.matchAll(/<loc>[^<]*<\\/loc>/g)){
+  const url=entry[0].slice(5,-6);
+  try{
+    const path=new URL(url).pathname;
+    if(privatePages.some(name=>path==='/'+name+'.html'))errors.push('Private page was listed in sitemap: '+path);
+    if(path!=='/'&&!fs.existsSync(path.slice(1)))errors.push('Sitemap points to missing page: '+path);
+  }catch{errors.push('Invalid sitemap URL: '+url)}
+}
+if(!fs.readFileSync('robots.txt','utf8').includes('Sitemap:'))errors.push('Missing sitemap reference in robots.txt');
+
 const check=(file,fragments)=>{
  if(!fs.existsSync(file))return;
  const text=fs.readFileSync(file,'utf8');
