@@ -8,7 +8,7 @@ const pages=['index.html','about.html','analytics.html','assistant.html','certif
   'mentor-operations.html','my-learning.html','onboarding.html','payments.html',
   'platform.html','profile.html','programs.html','skill-badge.html','skill-review.html',
   'start-here.html','study-plan.html'];
-const privatePages=['analytics','assistant','certificate','curriculum-admin','launch','learning-journey',
+const privatePages=['analytics','assistant','certificate','curriculum-admin','founder','launch','learning-journey',
   'mentor-operations','my-learning','onboarding','payments','profile','skill-badge','skill-review','study-plan'];
 const errors=[];
 let checkedScripts=0,checkedLinks=0;
