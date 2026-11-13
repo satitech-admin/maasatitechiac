@@ -66,3 +66,19 @@ A green checkpoint-access test proves only that the signed-in user can query the
 User acceptance steps: activate founder email, test one adult learner and one school student with real guardian permission, complete a genuine quiz/project workflow, then run the diagnostic as each authorized account and document the results in `/launch.html`.
 
 **Deploy caveat:** Vercel's last observed production SHA predates this page. GitHub Actions passing does not mean the new page is publicly reachable. A later successful production deployment and an owner-approved public-access configuration are mandatory.
+
+
+## Expanded read-only learner acceptance — 13 November 2026
+
+The `account-acceptance.html` diagnostic now shows **12 checks** instead of nine: authenticated account, email verification, declared student profile, verified school guardian permission, actual enrollment, checkpoint access, quiz attempts, project submissions, current valid skill badges, official certificate authenticity, notification visibility and correct learner/staff role separation.
+
+Important behavior:
+- A school learner sees **Pending** until the institute's consent record is approved with reviewer and verification timestamp. An ordinary college learner does not require school guardian approval, though self-declared status does not substitute for independent identity verification.
+- Badge eligibility is based on the private `iac_student_learning_snapshot` result containing current **non-revoked** badges. Merely viewing lessons or submitting a project never earns a badge.
+- A certificate is only counted after the signed-in recipient can read their own active certificate and `iac_verify_certificate` returns `valid=true`. Certificate codes, recipient names and email are **not included** in the copied summary.
+- Standard learner permissions are shown as an expected PASS when they have **no staff/admin role**; this does not imply they qualify for a mentor role.
+- Error-message copies redact email addresses, UUIDs and links. The client performs only reads and verification RPCs, never issues credentials or mutates enrolment.
+- Database rollback-only integration tests passed for signed-in learner access to a genuinely issued test course certificate, official validation, a distinct signed-in non-admin account being unable to read that certificate, and revoked certificate validation returning false. Every synthetic account fixture/certificate was rolled back.
+- GitHub automated QA checks all new acceptance cases and read-only behavior; real student/mentor browser sign-off still requires owner-controlled verified accounts.
+
+**Launch result remains pending:** no active enrollments, real badges/certificates or owner-verified launch checks were found at the latest database inspection. The production build is READY but the site remains SSO protected and `live=false`.
