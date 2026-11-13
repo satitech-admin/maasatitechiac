@@ -68,7 +68,7 @@ function render(){
   article.append(pill,heading,descriptionNode,outcome);container.append(article);
  }
 }
-function failure(error){return(error?.message||'Request failed').replace(/[\r\n]+/g,' ').slice(0,160)}
+function failure(error){return String(error?.message||'Request failed').replace(/[\r\n]+/g,' ').replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi,'[account-id]').replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,'[email]').replace(/https?:\/\/[^\s"']+/gi,'[link]').slice(0,160)}
 async function runCheck(key,fn){
  try{await fn()}catch(error){status(key,'fail','Could not verify: '+failure(error))}
  render();
