@@ -86,6 +86,17 @@ if(!mentorJs.includes('pendingRefresh'))errors.push('Mentor ticket filters must 
 const platformJs=fs.readFileSync('platform.html','utf8');
 if(!platformJs.includes('<option value="" selected disabled>Choose student type</option>'))errors.push('Student type must require explicit signup selection');
 if(!platformJs.includes('mentorNav.hidden=true'))errors.push('Staff navigation must be hidden after logout');
+// Production auth email links must not point back to random protected Vercel preview URLs.
+const authOrigin='https://maasatitechiac.vercel.app';
+const onboardingJs=fs.readFileSync('onboarding.html','utf8');
+for(const [filename,html] of [['platform.html',platformJs],['onboarding.html',onboardingJs]]){
+ if(!html.includes("const IAC_AUTH_ORIGIN='"+authOrigin+"'"))errors.push(filename+': missing canonical auth email origin');
+ if(html.includes("location.origin+'/onboarding.html"))errors.push(filename+': unsafe current-origin auth callback');
+}
+if(!platformJs.includes("sb.auth.resend({type:'signup'"))errors.push('Missing email-verification resend action');
+if(!platformJs.includes('data-action="resend-confirmation"'))errors.push('Missing resend button in login dialog');
+if(!platformJs.includes("emailRedirectTo:IAC_AUTH_ORIGIN+'/onboarding.html'"))errors.push('Signup email callback is not canonical');
+if(!onboardingJs.includes("redirectTo:IAC_AUTH_ORIGIN+'/onboarding.html'"))errors.push('Password recovery callback must match canonical signup destination');
 const learningJs=fs.readFileSync('learning-journey.html','utf8');
 if(!learningJs.includes('iac_student_learning_snapshot')||!learningJs.includes('badge_awarded'))errors.push('Learning journey lost verified backend provenance');
 
