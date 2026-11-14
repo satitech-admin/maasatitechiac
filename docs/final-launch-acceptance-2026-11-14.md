@@ -30,3 +30,22 @@ The Vercel deployment may report `READY` even while the project is `live: false`
 7. Export the private release summary and complete owner sign-off only after evidence and independent public access checks are complete.
 
 **Important:** This document is a technical handover, not a declaration of production readiness.
+
+## Founder activation — next safe operation
+
+The registration and founder-role bootstrap flow is already implemented. A founder's administration permissions are granted only after a successful email confirmation and an authenticated session; there is no manual SQL backdoor or unverified role grant.
+
+**For the person who owns the founder mailbox:**
+
+1. Sign in to the Vercel project/team first if its deployment protection still blocks the institute `vercel.app` domain. Deployment protection does not mean the public site has launched.
+2. Open `https://maasatitechiac.vercel.app/platform.html#dashboard`, choose **Sign in / Register**, enter the **existing registered account email**, and use **Resend verification email**. Do not create a duplicate account. This email action runs only through the actual website and the mailbox owner.
+3. Check Inbox, Promotions and Spam; open the newest verification link. The callback must arrive at `https://maasatitechiac.vercel.app/onboarding.html`. Supabase Auth's Site URL and redirect allowlist must include the actual callback.
+4. Sign in again with the verified account and open `/onboarding.html`. The app calls the securely restricted `iac_claim_founder_admin` RPC; only the configured, email-confirmed founder identity can claim admin access.
+5. Open `/account-acceptance.html` and run the read-only account check. Then open `/launch.html` and record **real-world** acceptance evidence in its owner-only checklist.
+6. If the verification message never arrives, inspect Supabase Authentication email/template settings, SMTP sender, quotas and Auth logs, without exposing an OTP, password, magic link or access token.
+
+**Development and security validation:** the signin UI now provides specific recovery instructions on the `email_not_confirmed` error. The onboarding page no longer fails completely for ordinary students if the founder-claim RPC has a transient error. A transaction-only negative test verified an unconfirmed founder account cannot activate the administrator role. No confirmation emails were sent by the development tools.
+
+**Keep private:** do not publish the founder email address, registered-user list, confirmation state, or unredacted account acceptance results in public release notes.
+
+The real email owner must complete inbox verification themselves. Until then, do not claim admin activation or final public launch.
