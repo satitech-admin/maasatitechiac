@@ -92,7 +92,7 @@ function openModal(html){modalRoot.innerHTML=`<div class="modalback"><div class=
 function authModal(mode='login'){
 const signup=mode==='signup';openModal(`<div class="modalhead"><h2>${signup?'Create your real student account':'Sign in to Maa Sati IAC'}</h2><button class="close" data-action="close-modal" aria-label="Close">×</button></div><p class="lead">${signup?'Access is protected by email verification and student-specific permissions.':'Your enrollments, lessons and certificates are stored securely.'}</p><form data-form="${signup?'signup':'login'}">
 ${signup?`<label class="field-label">Full name<input class="input" name="full_name" minlength="2" maxlength="120" required></label><label class="field-label">Student type<select class="select" name="student_level" required><option value="" selected disabled>Choose student type</option><option value="school">School student (Class 9–12)</option><option value="college">College student</option><option value="other">Other / ask institute for enrollment guidance</option></select></label><label class="field-label">School / college<input class="input" name="school_or_college" maxlength="140"></label><label class="field-label">Class / year<input class="input" name="class_or_year" maxlength="40"></label><label class="field-label"><input type="checkbox" name="guardian_ok" required> I agree to the platform terms. I understand that school/minor enrollment needs separately verified guardian consent before access.</label>`:''}
-<label class="field-label">Email<input class="input" type="email" name="email" autocomplete="email" required></label><label class="field-label">Password<input class="input" type="password" minlength="8" name="password" autocomplete="${signup?'new-password':'current-password'}" required></label><button type="submit" class="action">${signup?'Create account':'Sign in'}</button><p class="status" role="status"></p></form>${signup?'':`<div class="lead"><button type="button" class="outline" data-action="resend-confirmation">Resend verification email</button><p class="status" data-confirmation-status role="status" aria-live="polite">Use the email address in the sign-in field above. The link returns to the main IAC site.</p></div>`}<p class="lead"><button data-action="${signup?'open-login':'open-signup'}" class="outline">${signup?'Already registered? Sign in':'New student? Register'}</button></p>`)}
+<label class="field-label">Email<input class="input" type="email" name="email" autocomplete="email" required></label><label class="field-label">Password<input class="input" type="password" minlength="8" name="password" autocomplete="${signup?'new-password':'current-password'}" required></label><button type="submit" class="action">${signup?'Create account':'Sign in'}</button><p class="status" role="status"></p></form>${signup?'':`<div class="lead"><button type="button" class="outline" data-action="resend-confirmation">Resend verification email</button><p class="status" data-confirmation-status role="status" aria-live="polite">Already registered but cannot sign in? Enter the original account email above, then select Resend verification email. Open the newest link from Inbox or Spam before trying again.</p></div>`}<p class="lead"><button data-action="${signup?'open-login':'open-signup'}" class="outline">${signup?'Already registered? Sign in':'New student? Register'}</button></p>`)}
 const closeModal=()=>modalRoot.innerHTML='';
 
 async function render(){const current=(location.hash.replace('#','')||'courses').split('?')[0];route=current;const epoch=++renderEpoch;
@@ -224,7 +224,19 @@ else if(name==='upload-recording'){
 else if(name==='create-assignment'){if(!isStaff())throw Error('Instructor authorization required');err(await q('assignments').insert({course_id:g('course_id'),title:g('title'),instructions:g('instructions')}));flash('Assignment published.');await render();}
 else if(name==='grade-submission'){if(!isStaff())throw Error('Instructor authorization required');err(await q('submissions').update({grade:g('grade')===''?null:Number(g('grade')),feedback:g('feedback')}).eq('id',g('submission_id')));flash('Student evaluation saved.');await render();}
 else if(name==='issue-certificate'){if(!isAdmin())throw Error('Only admins may issue certificates.');const data=err(await sb.rpc('iac_issue_certificate',{p_user:g('p_user'),p_type:g('p_type'),p_program:g('p_program'),p_course:g('p_course')||null,p_event:g('p_event')||null}));flash('Issued certificate: '+data);await render();}
-}catch(error){showError(error);const st=form.querySelector('.status');if(st)st.textContent=error.message||String(error)}finally{if(submit){submit.disabled=false;submit.textContent=name==='login'?'Sign in':name==='signup'?'Create account':'Save / submit'}}});
+}catch(error){
+ const st=form.querySelector('.status');
+ const needsEmailConfirmation=name==='login'&&(
+  error?.code==='email_not_confirmed'||/email (?:is )?not confirmed|confirm your email/i.test(String(error?.message||''))
+ );
+ if(needsEmailConfirmation){
+  if(st){st.textContent='Your registered email still needs verification. Use Resend verification email below with the same address, check Inbox and Spam, open the new confirmation link, then sign in again.';st.setAttribute('role','alert');}
+  modalRoot.querySelector('[data-action="resend-confirmation"]')?.focus();
+ }else{
+  showError(error);
+  if(st)st.textContent=error.message||String(error);
+ }
+}finally{if(submit){submit.disabled=false;submit.textContent=name==='login'?'Sign in':name==='signup'?'Create account':'Save / submit'}}});
 
 window.addEventListener('hashchange',render);
 (async()=>{try{await refreshUser();const health=await q('courses').select('id',{count:'exact',head:true});if(health.error)throw health.error;await render()}catch(e){app.innerHTML=empty('Secure platform is temporarily unavailable.');showError(e)}})();
