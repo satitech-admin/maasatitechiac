@@ -38,6 +38,18 @@ check(['sameorigin', 'deny'].includes(headerMap.get('x-frame-options')?.toLowerC
   'Missing anti-framing response header');
 check(!JSON.stringify(conf).includes('service_role'), 'Never include service-role credentials in static config');
 
+const launchHtml=read('launch.html');
+check(launchHtml.includes('id="releaseDecision"')&&launchHtml.includes('id="releaseReasons"'),
+  'Owner-only launch release gate is missing');
+check(launchHtml.includes("db.rpc('iac_launch_readiness')")&&launchHtml.includes("db.from('iac_launch_acceptance')"),
+  'Release gate must use authenticated production readiness and owner acceptance evidence');
+check(launchHtml.includes('NOT independently approved for public launch')&&launchHtml.includes('Not launched'),
+  'Release gate must never equate owner attestations with independent public launch approval');
+check(launchHtml.includes("navigator.clipboard.writeText(latestReleaseSummary)"),
+  'Owner release summary export is unavailable');
+check(!launchHtml.includes("latestReleaseSummary=[...")||launchHtml.includes('No student names, emails, private notes or secrets included.'),
+  'Release summary may contain sensitive student details');
+
 const robots = read('robots.txt');
 const xml = read('sitemap.xml');
 check(robots.includes('Sitemap: https://maasatitechiac.vercel.app/sitemap.xml'),
