@@ -137,8 +137,12 @@ for(const [filename,html] of [['platform.html',platformJs],['onboarding.html',on
 }
 if(!platformJs.includes("sb.auth.resend({type:'signup'"))errors.push('Missing email-verification resend action');
 if(!platformJs.includes('data-action="resend-confirmation"'))errors.push('Missing resend button in login dialog');
+if(!platformJs.includes("error?.code==='email_not_confirmed'"))errors.push('Unverified login must show email resend guidance');
+if(!platformJs.includes("querySelector('[data-action=\"resend-confirmation\"]')"))errors.push('Unverified login should focus the email resend action');
 if(!platformJs.includes("emailRedirectTo:IAC_AUTH_ORIGIN+'/onboarding.html'"))errors.push('Signup email callback is not canonical');
 if(!onboardingJs.includes("redirectTo:IAC_AUTH_ORIGIN+'/onboarding.html'"))errors.push('Password recovery callback must match canonical signup destination');
+if(onboardingJs.includes("checked(await db.rpc('iac_claim_founder_admin'))"))errors.push('Founder claim failure must not break normal learner onboarding');
+if(!onboardingJs.includes('const founderClaim=await db.rpc(\'iac_claim_founder_admin\')'))errors.push('Missing founder role activation check in onboarding');
 const learningJs=fs.readFileSync('learning-journey.html','utf8');
 if(!learningJs.includes('iac_student_learning_snapshot')||!learningJs.includes('badge_awarded'))errors.push('Learning journey lost verified backend provenance');
 
