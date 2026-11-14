@@ -63,7 +63,8 @@ async function load(){
   }));
  }
  $('workspace').classList.remove('hidden');$('guest').classList.add('hidden');
- checked(await db.rpc('iac_claim_founder_admin'));
+ // An unavailable founder role claim must not block ordinary student onboarding.
+ const founderClaim=await db.rpc('iac_claim_founder_admin');
  const [p,staff,guardian,requests]=await Promise.all([
  db.from('iac_profiles').select('*').eq('id',currentUser.id).maybeSingle(),
  db.from('iac_staff_roles').select('role').eq('user_id',currentUser.id).maybeSingle(),
@@ -81,7 +82,12 @@ async function load(){
  if(consent){$('guardianName').value=consent.guardian_name;$('guardianEmail').value=consent.guardian_email}
  $('myStaffRequest').innerHTML=staffRequests.length?staffRequests.map(x=>'<div class="item">'+safe(x.requested_role)+' at '+safe(x.institution)+' '+pill(x.status)+' <small>'+displayDate(x.created_at)+'</small></div>').join(''):listEmpty('No staff role requested yet.');
  $('adminArea').classList.toggle('hidden',role!=='admin');
- if(role==='admin')await loadAdmin();
+ if(role==='admin'){
+  if(founderClaim.data===true)notice('Verified founder administrator access is active. You can now open Launch Acceptance and review private release checks.');
+  await loadAdmin();
+ }else if(founderClaim.error){
+  notice('Account settings loaded, but administrator role checks are temporarily unavailable. Your student access is unaffected.',true);
+ }
 }
 async function loadAdmin(){
  const [apps,consents,people,audit]=await Promise.all([
