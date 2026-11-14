@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 
 const read = file => fs.readFileSync(file, 'utf8');
 const privatePages = [
-  'account-acceptance.html', 'my-learning.html', 'learning-journey.html', 'study-plan.html',
+  'account-acceptance.html', 'owner-register.html', 'my-learning.html', 'learning-journey.html', 'study-plan.html',
   'profile.html', 'analytics.html', 'onboarding.html', 'assistant.html',
   'payments.html', 'certificate.html', 'skill-badge.html',
   'curriculum-admin.html', 'founder.html', 'mentor-operations.html', 'skill-review.html'
