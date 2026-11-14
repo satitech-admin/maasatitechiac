@@ -126,8 +126,9 @@ const providerOrderIndex=paymentServer.indexOf('const order=await rz("orders"');
 if(eligibilityIndex<0||providerOrderIndex<0||eligibilityIndex>providerOrderIndex)
  errors.push('Razorpay eligibility must precede provider order creation');
 const ownerJs=fs.readFileSync('owner-register.html','utf8');
-if(!ownerJs.includes("OWNER_EMAIL='satitechinfo@gmail.com'"))errors.push('Founder registration must use the authorized institute email only');
+if(!ownerJs.includes("OWNER_EMAIL='www.satitechinfo@gmail.com'"))errors.push('Founder registration must use the authorized institute email only');
 if(!ownerJs.includes('db.auth.signInWithOtp('))errors.push('Founder registration must use email-based verification');
+if(!ownerJs.includes('www.satitechinfo@gmail.com')||ownerJs.includes("OWNER_EMAIL='satitechinfo@gmail.com'"))errors.push('Founder registration must not use prior mailbox');
 if(!ownerJs.includes("emailRedirectTo:CALLBACK")||!ownerJs.includes("CALLBACK='https://maasatitechiac.vercel.app/onboarding.html'"))errors.push('Founder confirmation callback must use canonical onboarding');
 if(!ownerJs.includes("db.rpc('iac_claim_founder_admin')"))errors.push('Founder portal must claim role through restricted backend RPC');
 if(!ownerJs.includes('user.email_confirmed_at'))errors.push('Founder portal must check verified mailbox before role claim');
