@@ -35,7 +35,7 @@ input{font:inherit;display:block;width:100%;border:1px solid #9fb9b1;border-radi
 <h1>Founder account.<br>Securely activated.</h1>
 <p class="lead">Register with your official institute mailbox. You do not need to share a password or an OTP with anyone—not even institute support.</p>
 <div class="list">
-<div class="step"><span class="dot">1</span><div><b>Request your secure email link</b><p>A sign-in link or one-time code will be delivered to the institute email below.</p></div></div>
+<div class="step"><span class="dot">1</span><div><b>Request your secure email link</b><p>Your institute mailbox can receive a sign-in link or one-time code once email delivery is correctly configured.</p></div></div>
 <div class="step"><span class="dot">2</span><div><b>Open it in your own inbox</b><p>Verification proves you can access the authorized mailbox. New accounts are created only through the identity provider.</p></div></div>
 <div class="step"><span class="dot">3</span><div><b>Activate Founder Administration</b><p>The verified account can claim its authorized role on Onboarding and then review the private Launch Dashboard.</p></div></div>
 </div>
@@ -45,7 +45,7 @@ input{font:inherit;display:block;width:100%;border:1px solid #9fb9b1;border-radi
 <div class="eyebrow">FOUNDER SIGNUP / SIGN-IN</div>
 <h2>Verify institute ownership</h2>
 <p class="small">This setup is limited to the configured founder mailbox.</p>
-<span class="mail">satitechinfo@gmail.com</span>
+<span class="mail">www.satitechinfo@gmail.com</span>
 <div class="actions">
 <button id="sendLink" type="button">Send secure login link</button>
 </div>
@@ -57,13 +57,13 @@ input{font:inherit;display:block;width:100%;border:1px solid #9fb9b1;border-radi
 </div>
 <div id="status"></div>
 <div class="actions" style="margin-top:20px"><a class="button ghost" href="/onboarding.html">Continue to Onboarding</a></div>
-<p class="small">If the email doesn't arrive, check Spam and the institute's Supabase SMTP settings. Email delivery is not guaranteed until the sender is configured and tested.</p>
+<p class="small">Email delivery help: Check Inbox, Spam and Promotions. Supabase's default email sender may only deliver to authorized project-team addresses. Configure a custom SMTP provider under Supabase Authentication before using this with new founder or student mailboxes. Depending on the configured template, the email can contain a secure link rather than a six-digit code; use the link when present.</p>
 </section>
 </main>
 <footer>Maa Sati IAC · Secure founder registration · Verified email required · Never share your login link, OTP or password.</footer>
 <script type="module">
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.119.0';
-const OWNER_EMAIL='satitechinfo@gmail.com';
+const OWNER_EMAIL='www.satitechinfo@gmail.com';
 const CALLBACK='https://maasatitechiac.vercel.app/onboarding.html';
 const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const $=id=>document.getElementById(id);
@@ -91,7 +91,7 @@ $('sendLink').addEventListener('click',async()=>{
    options:{emailRedirectTo:CALLBACK,shouldCreateUser:true,data:{full_name:'Institute Founder',student_level:'other'}}
   });
   if(error)throw error;
-  message('If email delivery is enabled, a sign-in link or code has been requested for the official mailbox. Check Inbox and Spam, then open the newest link.');
+  message('The institute requested a secure login email. Check the exact inbox for www.satitechinfo@gmail.com, including Spam. Use the newest verification link if the email contains a link instead of a six-digit code. If nothing arrives, an SMTP sender or permitted-recipient configuration may be missing.');
  }catch(error){message('Unable to request the login email. Check Supabase Auth email delivery and try again. '+String(error?.message||''),true);}
  finally{button.disabled=false;}
 });
