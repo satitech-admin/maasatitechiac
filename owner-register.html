@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#142f38">
+<meta name="description" content="Secure email verification and founder activation for Maa Sati IAC.">
+<title>Founder Registration | Maa Sati IAC</title>
+<style>
+:root{color-scheme:light;--dark:#142f38;--ink:#182c32;--muted:#60717b;--line:#d7e1e0;--accent:#d09b56;--mint:#b6e6d2;--paper:#f5f8f6}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 10% 5%,#dbebe2 0,transparent 35%),linear-gradient(140deg,#f5f8f6,#eff4ef);color:var(--ink);font:15px/1.55 system-ui,-apple-system,Segoe UI,sans-serif}
+header{background:var(--dark);color:white;padding:18px max(20px,calc((100% - 1050px)/2));display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap}header a{color:inherit;text-decoration:none;font-weight:700}header small{display:block;font-size:10px;letter-spacing:1.3px;opacity:.75}
+header nav{display:flex;gap:17px;flex-wrap:wrap;font-size:13px}
+main{width:min(1060px,calc(100% - 36px));margin:54px auto 80px;display:grid;grid-template-columns:1.05fr .95fr;gap:24px;align-items:start}
+.eyebrow{font-size:11px;font-weight:850;letter-spacing:2px;color:#8b612d}h1{font-size:clamp(34px,5vw,62px);line-height:1.08;letter-spacing:-2px;margin:13px 0 20px}h2{font-size:22px;margin:0 0 13px}p{color:var(--muted);margin:9px 0 16px}.lead{font-size:18px;max-width:540px}.list{display:grid;gap:12px;margin-top:25px}.step{display:flex;gap:12px;align-items:flex-start}.dot{display:grid;place-items:center;flex:none;width:29px;height:29px;background:var(--dark);color:white;border-radius:50%;font-weight:800;font-size:12px}.step b{display:block}.step p{margin:2px 0;font-size:13px}
+.card{background:white;border:1px solid var(--line);border-radius:19px;padding:28px;box-shadow:0 20px 60px #15322a10}.mail{display:block;border:1px solid #c1d5cf;background:#f0f7f4;border-radius:12px;padding:13px;margin:14px 0 21px;overflow-wrap:anywhere;font-weight:750;letter-spacing:.2px}.note{background:#f8f2e8;border-radius:11px;padding:12px 14px;font-size:12px;color:#755b3c;margin:16px 0}.small{font-size:12px;color:var(--muted)}
+button,.button{font:inherit;font-weight:750;display:inline-flex;justify-content:center;align-items:center;gap:8px;border-radius:10px;padding:13px 16px;border:1px solid var(--dark);background:var(--dark);color:white;text-decoration:none;cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}button.ghost,.button.ghost{background:white;color:var(--dark)}button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #ddab6d;outline-offset:3px}
+input{font:inherit;display:block;width:100%;border:1px solid #9fb9b1;border-radius:10px;padding:12px;margin:8px 0 13px}label{font-weight:700;font-size:13px}
+.actions{display:flex;gap:10px;flex-wrap:wrap}.actions>button{flex:1;min-width:170px}
+#message{min-height:36px;color:#245847;font-size:13px;margin-top:15px}#message.error{color:#ad3d30}#status{margin-top:14px;font-size:13px}
+.hidden{display:none!important}footer{text-align:center;padding:0 20px 35px;font-size:12px;color:var(--muted)}
+@media(max-width:780px){main{grid-template-columns:1fr;margin-top:32px}.card{padding:20px}h1{letter-spacing:-1px}}
+</style>
+</head>
+<body>
+<header>
+<a href="/"><strong>MAA SATI IAC</strong><small>INSTITUTE OF ADVANCE COMPUTING</small></a>
+<nav><a href="/">Home</a><a href="/platform.html#dashboard">Student login</a><a href="/onboarding.html">Account setup</a></nav>
+</header>
+<main>
+<section>
+<div class="eyebrow">PRIVATE INSTITUTE ACCESS</div>
+<h1>Founder account.<br>Securely activated.</h1>
+<p class="lead">Register with your official institute mailbox. You do not need to share a password or an OTP with anyone—not even institute support.</p>
+<div class="list">
+<div class="step"><span class="dot">1</span><div><b>Request your secure email link</b><p>A sign-in link or one-time code will be delivered to the institute email below.</p></div></div>
+<div class="step"><span class="dot">2</span><div><b>Open it in your own inbox</b><p>Verification proves you can access the authorized mailbox. New accounts are created only through the identity provider.</p></div></div>
+<div class="step"><span class="dot">3</span><div><b>Activate Founder Administration</b><p>The verified account can claim its authorized role on Onboarding and then review the private Launch Dashboard.</p></div></div>
+</div>
+<div class="note">The website is currently protected by Vercel SSO. If an access screen appears, sign in to the authorized Vercel team first. This page does not remove public-site protection.</div>
+</section>
+<section class="card">
+<div class="eyebrow">FOUNDER SIGNUP / SIGN-IN</div>
+<h2>Verify institute ownership</h2>
+<p class="small">This setup is limited to the configured founder mailbox.</p>
+<span class="mail">satitechinfo@gmail.com</span>
+<div class="actions">
+<button id="sendLink" type="button">Send secure login link</button>
+</div>
+<div id="message" role="status" aria-live="polite">No verification link requested yet.</div>
+<div id="otpArea">
+<label for="otp">Received a 6-digit email code instead?</label>
+<input id="otp" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" minlength="6" maxlength="6" placeholder="Enter code from your own email">
+<button class="ghost" id="verifyCode" type="button">Verify email code</button>
+</div>
+<div id="status"></div>
+<div class="actions" style="margin-top:20px"><a class="button ghost" href="/onboarding.html">Continue to Onboarding</a></div>
+<p class="small">If the email doesn't arrive, check Spam and the institute's Supabase SMTP settings. Email delivery is not guaranteed until the sender is configured and tested.</p>
+</section>
+</main>
+<footer>Maa Sati IAC · Secure founder registration · Verified email required · Never share your login link, OTP or password.</footer>
+<script type="module">
+import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.119.0';
+const OWNER_EMAIL='satitechinfo@gmail.com';
+const CALLBACK='https://maasatitechiac.vercel.app/onboarding.html';
+const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const $=id=>document.getElementById(id);
+function message(text,error=false){const node=$('message');node.textContent=text;node.classList.toggle('error',error);}
+async function checkAccess(){
+ const response=await db.auth.getUser();
+ if(response.error){message('Unable to read your session. Sign in from your email link or retry.',true);return;}
+ const user=response.data.user;
+ if(!user){$('status').textContent='Founder activation pending: verify the login link from your official inbox.';return;}
+ if(String(user.email||'').toLowerCase()!==OWNER_EMAIL){
+  $('status').textContent='Another account is signed in. Sign out from the student portal, then use the authorized founder email.';
+  return;
+ }
+ if(!user.email_confirmed_at){$('status').textContent='This email still needs verification. Use the latest inbox link before continuing.';return;}
+ const claim=await db.rpc('iac_claim_founder_admin');
+ if(claim.error||claim.data!==true){$('status').textContent='Email verified. Founder role could not be activated; open Account setup or contact institute administration.';return;}
+ $('status').textContent='Founder admin access activated for your verified account. Continue to Onboarding or open the private Launch Dashboard.';
+ message('Verified founder session is ready.');
+}
+$('sendLink').addEventListener('click',async()=>{
+ const button=$('sendLink');button.disabled=true;message('Requesting a secure sign-in email…');
+ try{
+  const {error}=await db.auth.signInWithOtp({
+   email:OWNER_EMAIL,
+   options:{emailRedirectTo:CALLBACK,shouldCreateUser:true,data:{full_name:'Institute Founder',student_level:'other'}}
+  });
+  if(error)throw error;
+  message('If email delivery is enabled, a sign-in link or code has been requested for the official mailbox. Check Inbox and Spam, then open the newest link.');
+ }catch(error){message('Unable to request the login email. Check Supabase Auth email delivery and try again. '+String(error?.message||''),true);}
+ finally{button.disabled=false;}
+});
+$('verifyCode').addEventListener('click',async()=>{
+ const code=$('otp').value.trim();
+ if(!/^[0-9]{6}$/.test(code)){message('Enter the six-digit code received in your email.',true);return;}
+ const button=$('verifyCode');button.disabled=true;message('Checking email verification code…');
+ try{
+  const {error}=await db.auth.verifyOtp({email:OWNER_EMAIL,token:code,type:'email'});
+  if(error)throw error;
+  $('otp').value='';message('Email code accepted. Checking founder permissions…');
+  await checkAccess();
+ }catch(error){message('Code not accepted. Please use the latest email and verify that it has not expired.',true);}
+ finally{button.disabled=false;}
+});
+checkAccess().catch(()=>message('Founder status unavailable. Try reloading after your email has been verified.',true));
+</script>
+</body>
+</html>
