@@ -140,6 +140,11 @@ if(!ownerJs.includes('user.email_confirmed_at'))errors.push('Founder portal must
 const platformJs=fs.readFileSync('platform.html','utf8');
 if(!platformJs.includes('<option value="" selected disabled>Choose student type</option>'))errors.push('Student type must require explicit signup selection');
 if(!platformJs.includes('mentorNav.hidden=true'))errors.push('Staff navigation must be hidden after logout');
+if(!platformJs.includes("const canApproveEnrollment=id=>learnerLevel(id)==='college'"))errors.push('Admin enrollment UI lost guardian-eligibility check');
+if(!platformJs.includes("approvedGuardians.some(g=>g.student_id===id)"))errors.push('Admin UI must read approved guardian records');
+if(!platformJs.includes("isAdmin()&&canApproveEnrollment(x.user_id)?btn('Approve'"))errors.push('School enrollment approval must stay hidden without guardian verification');
+if(!platformJs.includes("if(!Array.isArray(rows)||rows.length===0)"))errors.push('Admin updates must reject zero-row write responses');
+
 // Production auth email links must not point back to random protected Vercel preview URLs.
 const authOrigin='https://maasatitechiac.vercel.app';
 const onboardingJs=fs.readFileSync('onboarding.html','utf8');
