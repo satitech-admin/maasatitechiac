@@ -125,6 +125,11 @@ const eligibilityIndex=paymentServer.indexOf('admin.rpc("iac_guardian_ready"');
 const providerOrderIndex=paymentServer.indexOf('const order=await rz("orders"');
 if(eligibilityIndex<0||providerOrderIndex<0||eligibilityIndex>providerOrderIndex)
  errors.push('Razorpay eligibility must precede provider order creation');
+const founderHtml=fs.readFileSync('founder.html','utf8');
+if(!founderHtml.includes("const EMAIL='www.satitechinfo@gmail.com'"))errors.push('Founder console must reference the activated institute mailbox');
+if(founderHtml.includes("const EMAIL='nikhilbaraskar551@gmail.com'"))errors.push('Founder console contains stale founder identity');
+if(founderHtml.includes("emailRedirectTo:location.origin+'/onboarding.html'"))errors.push('Founder email callback must not use preview origin');
+if(!founderHtml.includes('href="/launch.html"')||!founderHtml.includes('href="/account-acceptance.html"'))errors.push('Founder operations must link to release and acceptance');
 const ownerJs=fs.readFileSync('owner-register.html','utf8');
 if(!ownerJs.includes("OWNER_EMAIL='www.satitechinfo@gmail.com'"))errors.push('Founder registration must use the authorized institute email only');
 if(!ownerJs.includes('db.auth.signInWithOtp('))errors.push('Founder registration must use email-based verification');
