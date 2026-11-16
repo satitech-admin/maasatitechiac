@@ -49,6 +49,15 @@ check(launchHtml.includes("navigator.clipboard.writeText(latestReleaseSummary)")
   'Owner release summary export is unavailable');
 check(!launchHtml.includes("latestReleaseSummary=[...")||launchHtml.includes('No student names, emails, private notes or secrets included.'),
   'Release summary may contain sensitive student details');
+check(launchHtml.includes("db.rpc('iac_course_content_readiness')"),
+  'Founder launch screen must include the private read-only course content audit');
+check(launchHtml.includes('recording_to_fix') && launchHtml.includes('id="courseContentSummary"'),
+  'Catalog readiness must show missing recording lesson titles and counts');
+check(launchHtml.includes("latestCatalog?.ready===true"),
+  'Owner release gate must remain blocked when published catalog lacks course materials');
+check(launchHtml.includes('/platform.html#admin') && launchHtml.includes('Upload private lesson video'),
+  'Missing recording action must link to the existing private lesson upload form');
+
 
 const robots = read('robots.txt');
 const xml = read('sitemap.xml');
