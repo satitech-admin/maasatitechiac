@@ -40,7 +40,7 @@ button.ghost{font-size:11px;background:transparent;border:1px solid #adb4b5;colo
 <div class="two section"><div class="card"><div class="row"><h2 id="coursesTitle">My course progress</h2><span id="courseCount" class="badge"></span></div><div id="courses"></div></div>
 <div class="card"><div class="row"><h2>Upcoming live classes</h2><span class="badge">IST</span></div><div id="classes"></div></div></div>
 <div class="two section"><div class="card"><h2>Assignment deadlines & results</h2><div id="assignments"></div></div>
-<div class="card"><div class="row"><h2>My notifications</h2><button id="markAll" type="button" class="ghost">Mark all read</button></div><p class="muted">New class, assignment, grade and enrollment updates appear here when recorded by the institute.</p><div class="inbox" id="notifications"></div></div></div>
+<div class="card"><div class="row"><h2>My notifications</h2><button id="markAll" type="button" class="ghost">Mark all read</button></div><p class="muted">In-app updates recorded by the institute. Email, SMS and push delivery are separate services and are not implied here.</p><div class="row" style="margin:12px 0;align-items:center;gap:10px"><label for="notificationFilter" class="muted">Show <select id="notificationFilter" style="padding:8px;border:1px solid #bbb;border-radius:8px"><option value="all">All alerts</option><option value="unread">Unread only</option></select></label><span id="notificationSummary" class="badge" role="status" aria-live="polite">Checking alerts…</span></div><p id="notificationChecked" class="muted" aria-live="polite">Not refreshed yet.</p><div class="inbox" id="notifications"></div></div></div>
 <div class="card section" id="staffPanel" hidden><div class="row"><div><div class="eyebrow">INSTRUCTOR / MANAGEMENT VIEW</div><h2>Institute academic reporting</h2></div><button type="button" id="exportCsv" class="outline">Export course summary CSV</button></div><p class="muted">Real aggregate metrics. No student names are included in the downloadable summary.</p><div id="staffMetrics" class="cards"></div><div id="staffCourses"></div></div>
 </div>
 <div class="footer">Maa Sati IAC · Academic records are protected by student-specific access permissions · No invented achievements or attendance</div>
@@ -58,6 +58,7 @@ const empty=msg=>'<div class="empty">'+escapeHTML(msg)+'</div>';
 const fmtGrade=v=>v==null?'—':String(v)+'%';
 const link=path=>(/^\/(platform\.html|analytics\.html|assistant\.html|certificate\.html)([?#][a-zA-Z0-9_=&-]+)?$/.test(path||''))?path:'#';
 let currentUser=null,staff=false,staffSummary=null;
+let notificationRows=[];
 const checked=result=>{if(result.error)throw new Error(result.error.message);return result.data;};
 async function load(){
  get('refresh').disabled=true;
@@ -90,12 +91,27 @@ async function load(){
  get('classes').innerHTML=classes.length?classes.map(c=>'<div class="item"><div class="item-title">'+escapeHTML(c.title)+'</div><small>'+stamp(c.starts_at)+' · '+val(c.duration_minutes)+' minutes · '+escapeHTML(names.get(c.course_id)||'Enrolled course')+'</small><a class="inline" href="/platform.html#dashboard">Join details in My Learning</a></div>').join(''):empty('No upcoming classes scheduled for your accessible courses.');
  const submitted=new Map(submissions.map(x=>[x.assignment_id,x]));
  get('assignments').innerHTML=assignments.length?assignments.slice(0,12).map(a=>{const s=submitted.get(a.id);return '<div class="item"><div class="item-title">'+escapeHTML(a.title)+'</div><small>'+escapeHTML(names.get(a.course_id)||'Course')+' · '+(a.due_at?stamp(a.due_at):'No deadline set')+'</small>'+(s?'<span class="badge">'+(s.grade!=null?'Graded '+fmtGrade(s.grade):'Submitted')+'</span>':'<span class="badge warn">Pending submission</span>')+'</div>'}).join(''):empty('No assignments available for your current enrollments.');
+ notificationRows=notifications;
  get('markAll').disabled=!notifications.some(n=>!n.read_at);
- get('notifications').innerHTML=notifications.length?notifications.map(n=>'<div class="notification'+(n.read_at?'':' unread')+'"><div class="ntext"><strong>'+escapeHTML(n.title)+'</strong><p>'+escapeHTML(n.message)+'</p><small>'+stamp(n.created_at)+' · '+escapeHTML(n.category)+'</small><div><a href="'+escapeHTML(link(n.target_url))+'">View related page</a></div></div>'+(n.read_at?'':'<button class="ghost markOne" data-id="'+escapeHTML(n.id)+'">Read</button>')+'</div>').join(''):empty('No notifications yet. Your instructor’s real course updates will appear here.');
- document.querySelectorAll('.markOne').forEach(b=>b.onclick=async()=>{b.disabled=true;try{checked(await sb.from('iac_notifications').update({read_at:new Date().toISOString()}).eq('id',b.dataset.id).eq('user_id',currentUser.id));await load()}catch(e){alert(e.message,true)}});
+ get('notificationChecked').textContent='Refreshed '+new Date().toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Kolkata'})+' · displaying up to 60 latest alerts.';
+ renderNotifications();
  get('staffPanel').hidden=!staff;
  if(staff)await loadStaff();
  }catch(e){alert(e.message||String(e),true)}finally{get('refresh').disabled=false}
+}
+function renderNotifications(){
+ const mode=get('notificationFilter').value;
+ const unread=notificationRows.filter(n=>!n.read_at).length;
+ const shown=mode==='unread'?notificationRows.filter(n=>!n.read_at):notificationRows;
+ get('notificationSummary').textContent=unread+' unread of '+notificationRows.length+' loaded';
+ get('notifications').innerHTML=shown.length?shown.map(n=>'<div class="notification'+(n.read_at?'':' unread')+'"><div class="ntext"><strong>'+escapeHTML(n.title)+'</strong><p>'+escapeHTML(n.message)+'</p><small>'+stamp(n.created_at)+' · '+escapeHTML(n.category)+'</small><div><a href="'+escapeHTML(link(n.target_url))+'">View related page</a></div></div>'+(n.read_at?'':'<button class="ghost markOne" data-id="'+escapeHTML(n.id)+'">Read</button>')+'</div>').join(''):empty(mode==='unread'?'No unread alerts among the 60 most recently loaded.':'No in-app notifications yet.');
+ document.querySelectorAll('.markOne').forEach(b=>b.onclick=async()=>{
+  b.disabled=true;
+  try{
+   checked(await sb.from('iac_notifications').update({read_at:new Date().toISOString()}).eq('id',b.dataset.id).eq('user_id',currentUser.id));
+   await load();
+  }catch(e){alert(e.message,true);b.disabled=false;}
+ });
 }
 async function loadStaff(){
  staffSummary=checked(await sb.rpc('iac_academic_analytics'));
@@ -114,6 +130,7 @@ async function loadStaff(){
  ((a.by_course||[]).length?(a.by_course||[]).map(c=>'<div class="course"><div class="row"><strong>'+escapeHTML(c.title)+'</strong><span class="badge">'+val(c.active)+' active · '+val(c.completed)+' finished</span></div><div class="muted">'+val(c.enrollments)+' total enrollments · '+val(c.lesson_completions)+' completed lessons · '+val(c.submissions)+' submissions</div><div class="bar"><div class="bar-fill" style="width:'+Math.round(val(c.enrollments)?val(c.completed)/val(c.enrollments)*100:0)+'%"></div></div></div>').join(''):empty('No published course statistics.'));
 }
 get('refresh').onclick=load;
+get('notificationFilter').addEventListener('change',renderNotifications);
 get('markAll').onclick=async()=>{if(!currentUser)return;get('markAll').disabled=true;try{checked(await sb.from('iac_notifications').update({read_at:new Date().toISOString()}).eq('user_id',currentUser.id).is('read_at',null));await load();alert('Notifications marked read.')}catch(e){alert(e.message,true)}};
 get('exportCsv').onclick=()=>{
  if(!staff||!staffSummary)return;
