@@ -6,8 +6,8 @@ The institute payment gateway uses Razorpay India, not Stripe. The deployed paym
 1. Create/verify the institute's own Razorpay merchant account at https://dashboard.razorpay.com and complete required business/KYC and website verification. Razorpay may require additional documents and approval.
 2. In the Supabase project `ylobnofwmryltbzdtkla`, set Edge Function secrets: `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`. Store secrets ONLY in Supabase Edge Function secrets, never in the website, HTML, GitHub or ChatGPT. Use TEST credentials for test transactions first, then LIVE credentials after successful verification.
 3. In Razorpay Dashboard -> Webhooks, register `https://ylobnofwmryltbzdtkla.supabase.co/functions/v1/iac-razorpay/webhook`, subscribe to `payment.captured`, and use the **same webhook secret** as the Supabase secret. The webhook verifies the HMAC-SHA256 signature of raw payload bytes and deduplicates events.
-4. Set automatic capture/confirm it is enabled, and test captured-payment status, declined payments, duplicate webhooks and retry behavior. Only captured payments activate course enrollment.
-5. Sign into the IAC platform with authorized founder/admin account and set official INR fees on `https://maasatitechiac.vercel.app/payments.html`. Prices are deliberately NULL until the institute sets them. No price is inferred for the four college courses. For school events, create a real published event and set its actual fee.
+4. Set automatic capture/confirm it is enabled, and test captured-payment status, declined payments, duplicate webhooks and retry behavior. Only captured, verified payments may activate an eligible enrollment **after** a proper monthly renewal/expiry system is built. The existing handler deliberately refuses new course payment orders.
+5. Sign into the IAC platform with authorized founder/admin account and review official INR prices on `https://maasatitechiac.vercel.app/payments.html`. **Current configured monthly course prices (verified 16 Nov 2026): Web/App Development ₹1,499 each and Data Science/Artificial Intelligence ₹2,000 each. These are monthly prices, not full-course fees.** For school events, publish the genuine event and set its actual fee.
 6. Students first register/request enrollment, then use their own login on the payments page. Server calculates amounts from the database, creates the Razorpay Order, validates callback HMAC, fetches payment's captured state and matches amount/currency/order before granting access.
 7. Reconcile first live transaction against Razorpay Dashboard, verify enrollment activated exactly once and generate payment/fee receipts as applicable.
 
@@ -20,7 +20,7 @@ The institute payment gateway uses Razorpay India, not Stripe. The deployed paym
 
 ## Safety and limitations
 - No merchant secrets are configured via this repository; without them checkout fails closed with a 503.
-- Fees for the four courses and all events are currently not published; setting a price is an explicit admin decision.
-- There are no successful orders or test purchases yet. Live payment collection and final end-to-end payment gateway testing therefore remain pending.
+- All four published courses have monthly fee values configured, but **course checkout remains disabled** in both browser and Razorpay Edge Function: a one-month fee must never be treated as automatic full-course payment. Event fees are configured per actual event; none were verified as paid in this inspection.
+- As of 16 November 2026 the production payment-order table had **0 rows**. No captured transactions or real test purchases were confirmed, so merchant activation and end-to-end testing remain pending.
 - A payment return URL or screenshot does not prove capture. Use trusted Razorpay server checks and signed webhooks.
 - Refund/reversal and automated receipt workflows require separate production implementation/testing before refund self-service is advertised.
