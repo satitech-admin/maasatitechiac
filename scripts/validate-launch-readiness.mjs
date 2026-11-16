@@ -49,6 +49,21 @@ check(mentorReviews.includes("db.rpc('iac_is_admin')") &&
   mentorReviews.includes("checks.length!==3"),
   'Mentor project approval requires administrator authorization, actual evidence checks and server-side review');
 
+const certificateVerifier=read('certificate.html');
+check(certificateVerifier.includes("function resetVerification()") &&
+  certificateVerifier.includes("verificationRun++") &&
+  certificateVerifier.includes("run!==verificationRun") &&
+  certificateVerifier.includes("resetVerification();"),
+  'Certificate verifier must reset stale results and ignore outdated registry responses');
+check(certificateVerifier.includes("d.certificate_code||$('code').value.trim()") &&
+  certificateVerifier.includes("setQR(link,run)") &&
+  certificateVerifier.includes("if(run!==verificationRun)return"),
+  'Certificate QR must use the verified registry ID and reject stale async QR generation');
+check(certificateVerifier.includes("sb.rpc('iac_verify_certificate'") &&
+  certificateVerifier.includes(".eq('recipient_id',auth.data.user.id)") &&
+  certificateVerifier.includes("$('download').disabled=false"),
+  'Public certificate verification must preserve owner-only signed PDF download authorization');
+
 const studentAlerts=read('analytics.html');
 check(studentAlerts.includes('id="notificationFilter"') &&
   studentAlerts.includes('id="notificationSummary"') &&
