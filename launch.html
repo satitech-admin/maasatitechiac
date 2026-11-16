@@ -124,8 +124,8 @@ $('downloadRunbook').addEventListener('click',()=>{
   const safe=/^[=+@-]/.test(value)?"'"+value:value;
   return '"'+safe.replace(/"/g,'""')+'"';
  };
- const csv=rows.map(row=>row.map(cell).join(',')).join('\\r\\n');
- const file=new Blob(['\\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+ const csv=rows.map(row=>row.map(cell).join(',')).join('\r\n');
+ const file=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
  const address=URL.createObjectURL(file),link=document.createElement('a');
  link.href=address;link.download='maa-sati-iac-founder-acceptance-runbook.csv';document.body.append(link);link.click();link.remove();
  setTimeout(()=>URL.revokeObjectURL(address),1500);
