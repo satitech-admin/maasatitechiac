@@ -28,6 +28,7 @@ button,.linkbutton{cursor:pointer;font:inherit;font-size:12px;font-weight:800;pa
 <div id="adminArea" class="hidden">
 <div class="card"><h2>Staff approvals · Admin only</h2><div id="staffQueue"></div></div>
 <div class="card"><h2>Guardian approvals · Admin only</h2><p>Approve only after genuinely checking the guardian's authorization. Selecting a verification method is an accountability record, not automated proof.</p><div id="guardianQueue"></div></div>
+<div class="card"><h2>Guardian review audit · Admin only</h2><p class="small">Decisions are admin-attested; notes are private, not independently verified evidence. Never enter OTPs or ID numbers.</p><div id="guardianAuditLog"></div></div>
 <div class="card"><h2>Staff approval audit</h2><div id="auditLog"></div></div>
 </div>
 </section></div></div><div class="foot">Maa Sati IAC · Personal student information is visible only to its owner and authorized staff · Parent permission must be verified before minors join</div>
@@ -90,30 +91,35 @@ async function load(){
  }
 }
 async function loadAdmin(){
- const [apps,consents,people,audit]=await Promise.all([
+ const [apps,consents,people,audit,guardianAudit]=await Promise.all([
  db.from('iac_staff_requests').select('id,applicant_id,requested_role,institution,experience_summary,status,created_at').eq('status','pending').order('created_at',{ascending:true}).limit(100),
  db.from('iac_guardian_consents').select('student_id,guardian_name,guardian_email,status,submitted_at').eq('status','pending').order('submitted_at',{ascending:true}).limit(100),
  db.from('iac_profiles').select('id,full_name,school_or_college').limit(300),
- db.from('iac_staff_access_audit').select('action,occurred_at,subject_user_id').order('occurred_at',{ascending:false}).limit(20)
+ db.from('iac_staff_access_audit').select('action,occurred_at,subject_user_id').order('occurred_at',{ascending:false}).limit(20),
+ db.from('iac_guardian_review_audit').select('student_id,decision,verification_method,evidence_note,reviewed_at').order('reviewed_at',{ascending:false}).limit(20)
  ]);
  const profiles=new Map(checked(people).map(p=>[p.id,p]));
  const applications=checked(apps),guardianList=checked(consents);
  $('staffQueue').innerHTML=applications.length?applications.map(a=>'<div class="item"><strong>'+safe(profiles.get(a.applicant_id)?.full_name||'Applicant')+'</strong><p>'+safe(a.institution)+' · '+safe(a.requested_role)+'</p><p class="small">'+safe(a.experience_summary)+'</p><div class="row"><button data-action="staff-approve" data-id="'+safe(a.id)+'">Approve</button><button class="danger" data-action="staff-reject" data-id="'+safe(a.id)+'">Reject</button></div></div>').join(''):listEmpty('No pending staff applications.');
- $('guardianQueue').innerHTML=guardianList.length?guardianList.map(g=>'<div class="item"><strong>'+safe(profiles.get(g.student_id)?.full_name||'Student')+'</strong><p>'+safe(profiles.get(g.student_id)?.school_or_college||'')+'</p><p class="small">Guardian: '+safe(g.guardian_name)+' · '+safe(g.guardian_email)+'</p><label>Actual verification method<select class="verifyMethod" data-id="'+safe(g.student_id)+'"><option value="">Choose after verification</option><option value="verified_phone">Verified phone</option><option value="verified_school_record">Verified school record</option><option value="in_person">In person</option></select></label><div class="row"><button data-action="guardian-approve" data-id="'+safe(g.student_id)+'">Approve verified consent</button><button class="danger" data-action="guardian-reject" data-id="'+safe(g.student_id)+'">Reject</button></div></div>').join(''):listEmpty('No pending guardian verification requests.');
+ $('guardianQueue').innerHTML=guardianList.length?guardianList.map(g=>'<div class="item"><strong>'+safe(profiles.get(g.student_id)?.full_name||'Student')+'</strong><p>'+safe(profiles.get(g.student_id)?.school_or_college||'')+'</p><p class="small">Guardian: '+safe(g.guardian_name)+' · '+safe(g.guardian_email)+'</p><label>Actual verification method<select class="verifyMethod" data-id="'+safe(g.student_id)+'"><option value="">Choose after verification</option><option value="verified_phone">Verified phone</option><option value="verified_school_record">Verified school record</option><option value="in_person">In person</option></select></label><label for="guardian-note-'+safe(g.student_id)+'">Verification / rejection evidence note (20–800 characters)</label><textarea class="guardianEvidenceNote" data-id="'+safe(g.student_id)+'" id="guardian-note-'+safe(g.student_id)+'" minlength="20" maxlength="800" placeholder="Summarize genuine verification or reason for rejection. Do not add private identifiers."></textarea><div class="row"><button data-action="guardian-approve" data-id="'+safe(g.student_id)+'">Approve verified consent</button><button class="danger" data-action="guardian-reject" data-id="'+safe(g.student_id)+'">Reject</button></div></div>').join(''):listEmpty('No pending guardian verification requests.');
+ $('guardianAuditLog').innerHTML=checked(guardianAudit).length?checked(guardianAudit).map(a=>'<div class="item"><strong>'+safe(profiles.get(a.student_id)?.full_name||'Learner')+' · '+safe(a.decision)+'</strong><p class="small">'+safe(a.verification_method||'No method selected')+' · '+displayDate(a.reviewed_at)+'</p><p class="small">'+safe(a.evidence_note)+'</p></div>').join(''):listEmpty('No guardian review decisions recorded yet.');
  $('auditLog').innerHTML=checked(audit).length?checked(audit).map(a=>'<div class="item"><strong>'+safe(a.action)+'</strong><span class="small"> · '+displayDate(a.occurred_at)+'</span></div>').join(''):listEmpty('No staff access decisions recorded.');
  document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>review(b));
 }
 async function review(button){
  const action=button.dataset.action,id=button.dataset.id,approve=action.endsWith('approve');
- if(!confirm((approve?'Confirm verified approval':'Reject request')+'?'))return;
+ let method='',evidence='';
+ if(action.startsWith('guardian-')){
+  method=document.querySelector('.verifyMethod[data-id="'+id+'"]')?.value||'';
+  evidence=document.querySelector('.guardianEvidenceNote[data-id="'+id+'"]')?.value.trim()||'';
+  if(approve&&!method){notice('Verify consent first and select the actual method.',true);return;}
+  if(evidence.length<20||evidence.length>800){notice('Write a 20–800 character note explaining the actual verification or reason for rejection.',true);return;}
+ }
+ if(!confirm((approve?'Confirm actual verification and decision':'Reject request')+'?'))return;
  button.disabled=true;
  try{
   if(action.startsWith('staff-'))checked(await db.rpc('iac_review_staff_request',{p_request:id,p_approve:approve}));
-  else{
-   const method=document.querySelector('.verifyMethod[data-id="'+id+'"]')?.value||'';
-   if(approve&&!method)throw new Error('Verify consent first and select a real verification method.');
-   checked(await db.rpc('iac_review_guardian_consent',{p_student:id,p_approve:approve,p_method:approve?method:null}));
-  }
+  else checked(await db.rpc('iac_review_guardian_consent',{p_student:id,p_approve:approve,p_method:approve?method:null,p_note:evidence}));
   notice('Approval decision saved.');await load();
  }catch(e){notice(e.message,true)}finally{button.disabled=false}
 }
