@@ -49,6 +49,18 @@ check(mentorReviews.includes("db.rpc('iac_is_admin')") &&
   mentorReviews.includes("checks.length!==3"),
   'Mentor project approval requires administrator authorization, actual evidence checks and server-side review');
 
+const studentAlerts=read('analytics.html');
+check(studentAlerts.includes('id="notificationFilter"') &&
+  studentAlerts.includes('id="notificationSummary"') &&
+  studentAlerts.includes("get('notificationFilter').addEventListener('change',renderNotifications)") &&
+  studentAlerts.includes("notificationRows.filter(n=>!n.read_at)"),
+  'Student in-app inbox must provide an unread filter and counts derived from actual stored notifications');
+check(studentAlerts.includes("sb.from('iac_notifications').update({read_at:new Date().toISOString()})") &&
+  studentAlerts.includes(".eq('user_id',currentUser.id)"),
+  'Notification read updates must remain restricted to the authenticated student');
+check(studentAlerts.includes('Email, SMS and push delivery are separate services'),
+  'In-app notifications must not be represented as independently verified outbound email or SMS');
+
 const studentDashboard=read('my-learning.html');
 check(studentDashboard.includes('id="reviewUpdateList"') &&
   studentDashboard.includes('function renderReviewUpdates(ownSkills)') &&
