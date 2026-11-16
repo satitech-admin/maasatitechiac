@@ -23,6 +23,14 @@ button{font:inherit;font-size:12px;font-weight:800;color:white;background:var(--
 <div class="row"><h2>Current deployment & readiness</h2><button id="reload">Refresh audit</button></div>
 <div id="summary" class="grid"></div>
 <section class="card" aria-labelledby="nextTitle"><h2 id="nextTitle">Founder Next Steps — Real Operations</h2><p class="small">These links take you to actual institute workflows. Database counts show recorded activity, not proof that end-to-end testing is complete.</p><div id="nextWork" class="next-grid" aria-live="polite">Checking next tasks…</div></section>
+<section class="card" aria-labelledby="courseContentTitle" id="courseContentReadiness">
+<div class="row"><h2 id="courseContentTitle">Published Course Content — Real Readiness</h2><span id="courseContentFlag" class="status warn" role="status">Checking…</span></div>
+<p class="small">Private, read-only live audit of all published courses. Counts validate recorded data only; they do not prove lesson videos play or that quiz content is educationally correct.</p>
+<div id="courseContentSummary" class="grid" aria-live="polite"></div>
+<div id="courseContentList" aria-live="polite">Checking published lessons, recordings and assessments…</div>
+<p class="small"><a class="link" href="/curriculum-admin.html">Open Curriculum Studio to upload and link real recordings →</a></p>
+<p class="small">Course prices are monthly rates. Razorpay course checkout is intentionally disabled until secure monthly renewal and merchant acceptance are ready.</p>
+</section>
 <section id="releaseDecision" class="card" aria-labelledby="releaseTitle">
 <div class="row"><h2 id="releaseTitle">Release Decision — Evidence Gate</h2><span id="releaseFlag" class="status hold" role="status" aria-live="polite">HOLD · Not verified</span></div>
 <p class="small">This check combines measured database conditions with owner attestations. It never changes deployment protection or publishes the site, and cannot independently confirm public HTTPS reachability.</p>
@@ -75,7 +83,7 @@ const acceptanceGates=[
  ['public_https','Public domain, DNS, HTTPS','Confirm owner-approved public access and successful automated public HTTP smoke test.'],
  ['legal_privacy','Privacy and student safeguarding','Review actual privacy, retention, guardian rights, account deletion and support policy.']
 ];
-let latestMeasured=null,latestOwnerStates=null,latestReleaseSummary='';
+let latestMeasured=null,latestOwnerStates=null,latestReleaseSummary='',latestCatalog=null;
 function renderReleaseGate(){
  const host=$('releaseReasons'),flag=$('releaseFlag'),copy=$('copyReleaseSummary');
  host.replaceChildren();copy.disabled=true;
@@ -91,7 +99,8 @@ function renderReleaseGate(){
   [Number(counts.issued_certificates||0)>0,'At least one genuine credential must be independently verified.'],
   [tech.notifications_rls===true,'Private notification row-level security must be active.'],
   [tech.guardian_requests_rls===true,'Guardian request row-level security must be active.'],
-  [tech.guardian_enrollment_gate===true,'School guardian enrollment gate must be installed.']
+  [tech.guardian_enrollment_gate===true,'School guardian enrollment gate must be installed.'],
+  [latestCatalog?.ready===true,'All published lessons need valid recording links and all skill quizzes and prices must pass catalog QA.']
  ];
  const pending=acceptanceGates.filter(([key])=>latestOwnerStates.get(key)!=='owner_verified');
  const blockers=measured.filter(([ok])=>!ok).map(([,label])=>label);
@@ -191,6 +200,35 @@ async function loadAcceptance(){
  }
 }
 
+function renderCourseReadiness(data,error){
+ const flag=$('courseContentFlag'),summary=$('courseContentSummary'),list=$('courseContentList');
+ summary.replaceChildren();
+ if(error||!data){
+  flag.textContent='HOLD · Audit unavailable';flag.className='status hold';
+  list.textContent='Private course QA could not be loaded. '+(error||'Refresh to retry.');
+  return;
+ }
+ const t=data.totals||{},courses=Array.isArray(data.courses)?data.courses:[];
+ flag.textContent=data.ready===true?'Measured data ready · verify playback':'HOLD · Recording/content gaps';
+ flag.className='status '+(data.ready===true?'warn':'hold');
+ summary.innerHTML=[
+  number('Published lessons',t.published_lessons||0,'Total available lessons'),
+  number('Missing recordings',t.lessons_missing_recordings||0,'Published lessons needing verified video links'),
+  number('Ready skill quizzes',String(t.ready_quizzes||0)+'/'+String(t.published_skills||0),'At least 3 questions plus complete answer keys'),
+  number('Courses with missing fees',t.courses_missing_prices||0,'Monthly course prices must be checked separately')
+ ].join('');
+ list.innerHTML=courses.length?courses.map(c=>{
+  const missing=Number(c.missing_recordings)||0,lessons=Number(c.published_lessons)||0;
+  const shown=(Array.isArray(c.recording_to_fix)?c.recording_to_fix:[]).slice(0,40);
+  const details=missing?'<details><summary>Show '+missing+' lesson(s) needing recording links</summary>'
+   +'<ul>'+shown.map(item=>'<li>'+escapeValue(item.title||'Untitled lesson')+'</li>').join('')+'</ul></details>':'';
+  return '<article class="item"><div class="row"><h3>'+escapeValue(c.title)+'</h3>'
+   +status(missing===0&&c.quizzes_complete&&c.price_configured,'Data checks passed','Needs action')
+   +'</div><p class="small">'+(lessons-missing)+'/'+lessons+' lessons with recording links · '
+   +escapeValue(c.ready_quizzes)+'/'+escapeValue(c.published_skills)+' quizzes ready · '
+   +(c.price_configured?'Monthly fee configured':'Monthly fee missing')+'</p>'+details+'</article>';
+ }).join(''):'No published course catalog records could be inspected.';
+}
 function renderNextActions(counts){
  const rows=[
   ['Founder admin access',Number(counts.admins||0)>0,'A verified administrator role exists. Keep role management and audit records restricted.','/onboarding.html','Review team and guardian approvals'],
@@ -237,6 +275,12 @@ async function refresh(){
  ];
  $('tech').innerHTML=checks.map(x=>check(x[0],x[1],x[2])).join('');
  $('blockers').innerHTML=required.map((x,i)=>'<div class="item"><h3>'+(i+1)+'. '+escapeValue(x[0])+'</h3><p>'+escapeValue(x[1])+'</p></div>').join('');
+ try{
+  const contentResponse=await db.rpc('iac_course_content_readiness');
+  if(contentResponse.error)throw Error(contentResponse.error.message);
+  latestCatalog=contentResponse.data||null;
+  renderCourseReadiness(latestCatalog,null);
+ }catch(e){latestCatalog=null;renderCourseReadiness(null,e.message||'Unavailable');}
  await loadAcceptance();
  $('manual').innerHTML=[
   check('Verified founder account activated',(counts.admins||0)>0,'At least one authorized administrator account must be active.'),
