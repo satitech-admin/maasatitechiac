@@ -10,13 +10,45 @@
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.119.0';
 const sb=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9',{auth:{persistSession:true,autoRefreshToken:true}});
 const $=id=>document.getElementById(id),s=$('status');
-let selected=null;
+let selected=null,verificationRun=0;
 const params=new URLSearchParams(location.search),initial=params.get('code');if(initial)$('code').value=initial;
 function note(msg,type=''){s.textContent=msg;s.className='status '+type}
+function resetVerification(){
+ selected=null;$('download').disabled=true;$('cert').classList.add('locked');
+ for(const id of ['recipient','program','date','certid','description'])$(id).textContent='';
+ $('qr').replaceChildren();
+}
+$('code').addEventListener('input',()=>{verificationRun++;resetVerification();note('Certificate ID changed. Verify it again against the official registry.');});
 function date(d){return new Date(d).toLocaleDateString('en-IN',{year:'numeric',month:'long',day:'numeric'})}
-function setDisplay(d,owned=false){$('cert').classList.remove('locked');const titles={seminar:'CERTIFICATE OF PARTICIPATION',one_week:'CERTIFICATE OF COMPLETION',course:'CERTIFICATE OF COMPLETION',internship:'INTERNSHIP COMPLETION CERTIFICATE'};$('certTitle').textContent=titles[d.certificate_type]||'CERTIFICATE';$('recipient').textContent=owned?d.recipient_name:(d.recipient_mask||'Verified recipient');$('program').textContent='Program: '+d.program_title;$('date').textContent='Issued: '+date(d.issued_at);$('certid').textContent='Certificate ID: '+(d.certificate_code||$('code').value.trim());$('description').textContent={seminar:'For verified participation in the technology awareness seminar.',one_week:'For successful completion of the training and approved mini project.',course:'For successfully completing the prescribed course and practical learning requirements.',internship:'For successfully completing the verified internship program.'}[d.certificate_type]||'In recognition of the achievement officially recorded by Maa Sati IAC.';setQR(new URL('/certificate.html?code='+encodeURIComponent($('code').value.trim()),location.origin).href)}
-async function setQR(link){try{const qr=await import('https://esm.sh/qrcode@1.5.4');const data=await qr.toDataURL(link,{width:192,margin:0,color:{dark:'#112952',light:'#FFFFFF'}});const img=document.createElement('img');img.src=data;img.alt='QR code to verify certificate';$('qr').replaceChildren(img);}catch{$('qr').textContent='VERIFY ONLINE'}}
-async function verify(){selected=null;$('download').disabled=true;const code=$('code').value.trim();if(!/^MSIAC-[A-Z0-9-]{8,70}$/i.test(code)){note('Enter a valid MSIAC certificate ID.','error');return;}note('Checking official certificate registry…');const {data,error}=await sb.rpc('iac_verify_certificate',{p_code:code});if(error){note('Verification is currently unavailable. Please try again.','error');return}if(!Array.isArray(data)||!data.length){note('Certificate ID not found. No credential exists for this code.','error');return}const publicRecord=data[0];if(!publicRecord.valid){note('This certificate was revoked and is not valid.','error');return}setDisplay(publicRecord);note('Valid certificate. Signed PDF download is restricted to the verified recipient.','ok');const {data:{user}}=await sb.auth.getUser();if(!user)return;const result=await sb.from('iac_certificates').select('certificate_code,certificate_type,program_title,recipient_name,issued_at,revoked,recipient_id').eq('certificate_code',code).eq('recipient_id',user.id).maybeSingle();if(!result.error&&result.data&&!result.data.revoked){selected=result.data;setDisplay(selected,true);$('download').disabled=false;note('Certificate verified and linked to your signed-in account. You can download your signed PDF.','ok');}}
+function setDisplay(d,owned=false){$('cert').classList.remove('locked');const titles={seminar:'CERTIFICATE OF PARTICIPATION',one_week:'CERTIFICATE OF COMPLETION',course:'CERTIFICATE OF COMPLETION',internship:'INTERNSHIP COMPLETION CERTIFICATE'};$('certTitle').textContent=titles[d.certificate_type]||'CERTIFICATE';$('recipient').textContent=owned?d.recipient_name:(d.recipient_mask||'Verified recipient');$('program').textContent='Program: '+d.program_title;$('date').textContent='Issued: '+date(d.issued_at);$('certid').textContent='Certificate ID: '+(d.certificate_code||$('code').value.trim());$('description').textContent={seminar:'For verified participation in the technology awareness seminar.',one_week:'For successful completion of the training and approved mini project.',course:'For successfully completing the prescribed course and practical learning requirements.',internship:'For successfully completing the verified internship program.'}[d.certificate_type]||'In recognition of the achievement officially recorded by Maa Sati IAC.';setQR(new URL('/certificate.html?code='+encodeURIComponent(d.certificate_code||$('code').value.trim()),location.origin).href,verificationRun)}
+async function setQR(link,run){try{const qr=await import('https://esm.sh/qrcode@1.5.4');const data=await qr.toDataURL(link,{width:192,margin:0,color:{dark:'#112952',light:'#FFFFFF'}});if(run!==verificationRun)return;const img=document.createElement('img');img.src=data;img.alt='QR code to verify certificate';$('qr').replaceChildren(img);}catch{if(run===verificationRun)$('qr').textContent='VERIFY ONLINE'}}
+async function verify(){
+ const run=++verificationRun;
+ resetVerification();
+ const code=$('code').value.trim().toUpperCase();
+ if(!/^MSIAC-[A-Z0-9-]{8,70}$/.test(code)){note('Enter a valid MSIAC certificate ID.','error');return;}
+ note('Checking official certificate registry…');
+ try{
+  const {data,error}=await sb.rpc('iac_verify_certificate',{p_code:code});
+  if(run!==verificationRun)return;
+  if(error){note('Verification is currently unavailable. Please try again.','error');return;}
+  if(!Array.isArray(data)||!data.length){note('Certificate ID not found. No credential exists for this code.','error');return;}
+  const publicRecord=data[0];
+  if(!publicRecord.valid){note('This certificate is revoked or invalid.','error');return;}
+  setDisplay(publicRecord);
+  note('Valid certificate. Signed PDF download is restricted to the verified recipient.','ok');
+  const auth=await sb.auth.getUser();
+  if(run!==verificationRun||auth.error||!auth.data?.user)return;
+  const result=await sb.from('iac_certificates')
+   .select('certificate_code,certificate_type,program_title,recipient_name,issued_at,revoked,recipient_id')
+   .eq('certificate_code',code).eq('recipient_id',auth.data.user.id).maybeSingle();
+  if(run!==verificationRun)return;
+  if(!result.error&&result.data&&!result.data.revoked){
+   selected=result.data;setDisplay(selected,true);$('download').disabled=false;
+   note('Certificate verified and linked to your signed-in account. You can download your signed PDF.','ok');
+  }
+ }catch(error){if(run===verificationRun){resetVerification();note('Certificate verification failed. Please retry.','error');}}
+}
 const form=$('verifyForm');form.addEventListener('submit',e=>{e.preventDefault();verify()});
 async function loadJsPdf(){if(window.jspdf?.jsPDF)return window.jspdf.jsPDF;await new Promise((resolve,reject)=>{const el=document.createElement('script');el.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js';el.onload=resolve;el.onerror=reject;document.head.append(el)});return window.jspdf.jsPDF}
 const getImg=src=>new Promise((res,rej)=>{let im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=src});
