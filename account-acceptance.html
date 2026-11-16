@@ -53,6 +53,7 @@ const cases=[
  ['project','Real project submissions','Look for a project submitted by this account.'],
  ['badge','Verified skill badge','Only active mentor-approved achievements qualify.'],
  ['certificate','Certificate authenticity','Validate the account’s genuine unrevoked certificate through the official verification API.'],
+ ['certificate_negative','Invalid certificate rejection','Check that a random non-issued certificate ID cannot be verified as authentic.'],
  ['notifications','Notification inbox','Check whether the private inbox can be queried and if alerts exist.'],
  ['staff','Institute team access','Check whether the account has a verified staff/admin role.']
 ];
@@ -166,6 +167,18 @@ async function run(){
    status('certificate',valid?'pass':'fail',valid
     ?'An official, unrevoked certificate passed the public authenticity check. Code and recipient details remain private.'
     :'An issued certificate did not pass official verification. Contact the institute administrator.');
+  });
+  await runCheck('certificate_negative',async()=>{
+   const randomId=globalThis.crypto?.randomUUID?.();
+   if(!randomId){status('certificate_negative','pending','Secure random ID generation is unavailable in this browser. Use a supported HTTPS browser.');return;}
+   const fabricated='MSIAC-NOTISSUED-'+randomId.replace(/-/g,'').toUpperCase();
+   const r=await db.rpc('iac_verify_certificate',{p_code:fabricated});
+   if(r.error)throw Error(r.error.message);
+   const rows=Array.isArray(r.data)?r.data:[];
+   const accepted=rows.some(row=>row.valid===true);
+   status('certificate_negative',accepted?'fail':'pass',accepted
+    ?'CRITICAL: A randomly generated, non-issued certificate ID was accepted as valid. Do not launch. Investigate registry rules.'
+    :'Registry rejected a randomly generated non-issued certificate ID. This is one negative test, not a complete security audit.');
   });
   await runCheck('notifications',async()=>{
    const r=await db.from('iac_notifications').select('id',{count:'exact',head:true}).eq('user_id',user.id);
