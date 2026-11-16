@@ -49,6 +49,18 @@ check(mentorReviews.includes("db.rpc('iac_is_admin')") &&
   mentorReviews.includes("checks.length!==3"),
   'Mentor project approval requires administrator authorization, actual evidence checks and server-side review');
 
+const studentDashboard=read('my-learning.html');
+check(studentDashboard.includes('id="reviewUpdateList"') &&
+  studentDashboard.includes('function renderReviewUpdates(ownSkills)') &&
+  studentDashboard.includes('renderReviewUpdates(ownSkills);'),
+  'Student dashboard must show current real project review and mentor feedback updates');
+check(studentDashboard.includes("s.project_feedback||''") &&
+  studentDashboard.includes('esc(feedback)') &&
+  studentDashboard.includes("['revise_project','mentor_review','credential_review','earned'].includes(s.next_step)"),
+  'Mentor feedback updates must be escaped and derived from authorized learning snapshot states');
+check(studentDashboard.includes('They are not email or push notifications.'),
+  'Dashboard must clearly distinguish in-app review status from actual outbound notifications');
+
 const studentJourney=read('learning-journey.html');
 check(studentJourney.includes('id="courseOverview"') &&
   studentJourney.includes("['mentor_review','credential_review'].includes(s.next_step)") &&
