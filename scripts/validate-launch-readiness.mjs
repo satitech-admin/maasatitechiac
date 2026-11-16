@@ -38,6 +38,18 @@ check(['sameorigin', 'deny'].includes(headerMap.get('x-frame-options')?.toLowerC
   'Missing anti-framing response header');
 check(!JSON.stringify(conf).includes('service_role'), 'Never include service-role credentials in static config');
 
+const learningRoom=read('platform.html');
+check(learningRoom.includes("q('enrollments').select('status')") &&
+  learningRoom.includes("['active','completed'].includes(own.data?.status)"),
+  'Private lesson room must enforce approved enrollment before reading course content');
+check(learningRoom.includes("createSignedUrl(path,1800)") &&
+  learningRoom.includes('lesson.privateVideoReady') &&
+  learningRoom.includes('<video controls preload="metadata" playsinline'),
+  'Enrolled student lesson videos must use private signed playback and mobile-compatible controls');
+check(learningRoom.includes('lesson.videoError') &&
+  learningRoom.includes('Recording not uploaded yet.'),
+  'Private playback failure and unavailable recording must have visible student states');
+
 const launchHtml=read('launch.html');
 check(launchHtml.includes('id="releaseDecision"')&&launchHtml.includes('id="releaseReasons"'),
   'Owner-only launch release gate is missing');
