@@ -32,6 +32,11 @@ button{font:inherit;font-size:12px;font-weight:800;color:white;background:var(--
 <p class="small"><a class="link" href="/platform.html#admin">Open Admin Workspace → Upload private lesson video (choose course and existing lesson)</a></p>
 <p class="small">Course prices are monthly rates. Razorpay course checkout is intentionally disabled until secure monthly renewal and merchant acceptance are ready.</p>
 </section>
+<section class="card" id="acceptanceRunbook" aria-labelledby="runbookTitle">
+ <div class="row"><div><h2 id="runbookTitle">Founder Acceptance Runbook — Real Tests</h2><p class="small">Run each workflow using genuine authorized accounts. Status comes from the existing private owner-acceptance records; no step is automatically marked as tested.</p></div><button id="downloadRunbook" type="button" disabled>Export test matrix CSV</button></div>
+ <div id="runbookItems" aria-live="polite">Checking founder acceptance records…</div>
+ <p class="small" id="runbookExportStatus" role="status">Export excludes student identities, secret keys and private evidence notes. Mark results only through the audited launch acceptance forms below.</p>
+</section>
 <section id="releaseDecision" class="card" aria-labelledby="releaseTitle">
 <div class="row"><h2 id="releaseTitle">Release Decision — Evidence Gate</h2><span id="releaseFlag" class="status hold" role="status" aria-live="polite">HOLD · Not verified</span></div>
 <p class="small">This check combines measured database conditions with owner attestations. It never changes deployment protection or publishes the site, and cannot independently confirm public HTTPS reachability.</p>
@@ -85,6 +90,48 @@ const acceptanceGates=[
  ['legal_privacy','Privacy and student safeguarding','Review actual privacy, retention, guardian rights, account deletion and support policy.']
 ];
 let latestMeasured=null,latestOwnerStates=null,latestReleaseSummary='',latestCatalog=null;
+const acceptanceRunbook=[
+ ['auth_recovery','Student signup and OTP/recovery','Use a consented account, verify actual inbox delivery, login, logout and password reset.','/account-acceptance.html'],
+ ['guardian_consent','School guardian permission','Prove unapproved school enrollment is blocked and legitimate consent approval is recorded.','/onboarding.html'],
+ ['student_enrollment','Private lessons and account isolation','Verify approved enrollment, signed video playback, and denied access by a second unenrolled student.','/platform.html#admin'],
+ ['learner_credential','Project review to QR certificate','Complete genuine quiz/project review, verify signed PDF and QR, then check a revoked certificate is rejected.','/certificate.html'],
+ ['support_notices','Mentor reply and student inbox','Send a genuine support response, check the student inbox and confirm any email separately.','/mentor-operations.html'],
+ ['payment_test','Safe merchant payment testing','Verify provider test-mode captured/duplicate/refund webhook behavior; do not activate monthly course checkout without renewal handling.','/payments.html'],
+ ['course_recording','Private recording playback','Upload a real recording and verify Android, desktop, expired-link and unenrolled access behavior.','/platform.html#admin'],
+ ['public_https','Approved public HTTPS smoke test','Only after owner approval, verify the intended public URL, HTTPS certificate and unauthenticated public pages.','/account-acceptance.html']
+];
+function renderRunbook(){
+ const host=$('runbookItems'),button=$('downloadRunbook');
+ host.replaceChildren();
+ button.disabled=!latestOwnerStates;
+ if(!latestOwnerStates){host.textContent='Waiting for authenticated owner acceptance records.';return;}
+ for(const [key,title,steps,url] of acceptanceRunbook){
+  const state=latestOwnerStates.get(key)||'pending';
+  const line=document.createElement('div');line.className='item';
+  const heading=document.createElement('h3');heading.textContent=title;
+  const badge=document.createElement('span');badge.className='status '+(state==='owner_verified'?'ok':state==='blocked'?'hold':'warn');
+  badge.textContent=state==='owner_verified'?'Owner attested · requires independent QA':state==='blocked'?'Blocked':'Pending real test';
+  const description=document.createElement('p');description.className='small';description.textContent=steps;
+  const link=document.createElement('a');link.href=url;link.className='link';link.textContent='Open test workflow';
+  line.append(heading,badge,description,link);host.append(line);
+ }
+}
+$('downloadRunbook').addEventListener('click',()=>{
+ if(!latestOwnerStates)return;
+ const rows=[['Test','Instructions','Owner reported state','Workflow URL'],...acceptanceRunbook.map(([key,title,steps,url])=>[title,steps,latestOwnerStates.get(key)||'pending',new URL(url,location.origin).href])];
+ const cell=v=>{
+  const value=String(v);
+  const safe=/^[=+@-]/.test(value)?"'"+value:value;
+  return '"'+safe.replace(/"/g,'""')+'"';
+ };
+ const csv=rows.map(row=>row.map(cell).join(',')).join('\\r\\n');
+ const file=new Blob(['\\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+ const address=URL.createObjectURL(file),link=document.createElement('a');
+ link.href=address;link.download='maa-sati-iac-founder-acceptance-runbook.csv';document.body.append(link);link.click();link.remove();
+ setTimeout(()=>URL.revokeObjectURL(address),1500);
+ $('runbookExportStatus').textContent='Test matrix exported. Reported states are owner attestations, not independent test results.';
+});
+
 function renderReleaseGate(){
  const host=$('releaseReasons'),flag=$('releaseFlag'),copy=$('copyReleaseSummary');
  host.replaceChildren();copy.disabled=true;
@@ -139,6 +186,7 @@ async function loadAcceptance(){
   if(result.error)throw Error(result.error.message);
   const byKey=new Map((result.data||[]).map(x=>[x.gate_key,x]));
   latestOwnerStates=new Map([...byKey].map(([key,value])=>[key,value.state]));
+  renderRunbook();
   renderReleaseGate();
   const history=await db.from('iac_launch_acceptance_audit')
     .select('gate_key,old_state,new_state,changed_at').order('changed_at',{ascending:false}).limit(12);
@@ -197,7 +245,7 @@ async function loadAcceptance(){
  }catch(error){
   list.textContent='Unable to load the private acceptance checklist: '+(error.message||'Please refresh');
   count.textContent='Not verified';count.className='status hold';
-  latestOwnerStates=null;renderReleaseGate();
+  latestOwnerStates=null;renderRunbook();renderReleaseGate();
  }
 }
 
