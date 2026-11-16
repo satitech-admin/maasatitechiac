@@ -28,7 +28,7 @@ button{font:inherit;font-size:12px;font-weight:800;color:white;background:var(--
 <p class="small">Private, read-only live audit of all published courses. Counts validate recorded data only; they do not prove lesson videos play or that quiz content is educationally correct.</p>
 <div id="courseContentSummary" class="grid" aria-live="polite"></div>
 <div id="courseContentList" aria-live="polite">Checking published lessons, recordings and assessments…</div>
-<p class="small"><a class="link" href="/curriculum-admin.html">Open Curriculum Studio to upload and link real recordings →</a></p>
+<p class="small"><a class="link" href="/platform.html#admin">Open Admin Workspace → Upload private lesson video (choose course and existing lesson)</a></p>
 <p class="small">Course prices are monthly rates. Razorpay course checkout is intentionally disabled until secure monthly renewal and merchant acceptance are ready.</p>
 </section>
 <section id="releaseDecision" class="card" aria-labelledby="releaseTitle">
@@ -232,7 +232,7 @@ function renderCourseReadiness(data,error){
 function renderNextActions(counts){
  const rows=[
   ['Founder admin access',Number(counts.admins||0)>0,'A verified administrator role exists. Keep role management and audit records restricted.','/onboarding.html','Review team and guardian approvals'],
-  ['Course catalog & lessons',Number(counts.published_courses||0)>0&&Number(counts.published_lessons||0)>0,'The published catalog contains courses and lessons. Review actual lesson links and content before student access.','/curriculum-admin.html','Open Curriculum Studio'],
+  ['Course catalog & lessons',Number(counts.published_courses||0)>0&&Number(counts.published_lessons||0)>0,'The published catalog contains courses and lessons. Review actual lesson links and content before student access.','/platform.html#admin','Open lesson/video upload workspace'],
   ['Guardian consent test',Number(counts.verified_guardians||0)>0,'Use a real, consented school account and verify the separate guardian approval process.','/onboarding.html','Review guardian permission'],
   ['Real learner enrollment',Number(counts.active_students||0)>0,'Approve a legitimate learner enrollment and verify only that user can access the assigned course.','/platform.html#admin','Open enrollment workspace'],
   ['Project, badge & certificate',Number(counts.issued_certificates||0)>0,'Review authentic learner work, issue a valid certificate and test its verification and revocation.','/skill-review.html','Open project reviews'],
