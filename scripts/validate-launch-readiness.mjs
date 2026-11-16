@@ -38,6 +38,17 @@ check(['sameorigin', 'deny'].includes(headerMap.get('x-frame-options')?.toLowerC
   'Missing anti-framing response header');
 check(!JSON.stringify(conf).includes('service_role'), 'Never include service-role credentials in static config');
 
+const mentorReviews=read('skill-review.html');
+check(mentorReviews.includes('id="reviewSearch"') &&
+  mentorReviews.includes("addEventListener('input',filterPendingReviews)") &&
+  mentorReviews.includes("item.textContent.toLocaleLowerCase().includes(query)") &&
+  mentorReviews.includes("filterPendingReviews();"),
+  'Mentor review page must filter the loaded queue without hiding pending count or disabling pagination');
+check(mentorReviews.includes("db.rpc('iac_is_admin')") &&
+  mentorReviews.includes("db.rpc('iac_review_skill_project'") &&
+  mentorReviews.includes("checks.length!==3"),
+  'Mentor project approval requires administrator authorization, actual evidence checks and server-side review');
+
 const studentJourney=read('learning-journey.html');
 check(studentJourney.includes('id="courseOverview"') &&
   studentJourney.includes("['mentor_review','credential_review'].includes(s.next_step)") &&
