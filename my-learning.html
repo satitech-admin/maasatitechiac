@@ -45,7 +45,7 @@ html{scroll-padding-top:18px}#today,#skills,#courses,#quizResults,#badges{scroll
 import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
 const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
 const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]||'&#39;'));
-let snapshot=null,quizPage=0,quizTotal=0,quizItems=[],filtersInitialized=false;
+let snapshot=null,quizPage=0,quizTotal=0,quizItems=[],filtersInitialized=false,lessonProgress=new Map();
 const labels={
  enroll:['Enrollment needed','Apply for course enrollment'],
  quiz:['Quiz to complete','Take the skill quiz'],
@@ -92,8 +92,9 @@ function render(){
   $('nextStep').innerHTML='<div><div class="eyebrow">YOUR FIRST STEP</div><h2>Explore a course roadmap</h2><p>Preview the skills for free and request enrollment when you want to begin.</p></div><a class="button" href="/programs.html">Choose a roadmap →</a>';
  }
  $('programList').innerHTML=programs.length?programs.map(p=>{
-  const completed=p.badges_earned||0,total=p.total_skills||12,ratio=total?Math.round(completed/total*100):0;
-  return '<div class="program"><div class="row"><div><h3>'+esc(p.title)+'</h3><span class="pill '+(p.enrollment_status==='active'?'ok':'wait')+'">'+esc(p.enrollment_status.replaceAll('_',' '))+'</span></div><a class="button secondary" href="/programs.html?program='+encodeURIComponent(p.slug)+'">Roadmap ↗</a></div><div class="progress" role="progressbar" aria-label="'+esc(p.title)+' verified skill completion" aria-valuenow="'+ratio+'" aria-valuemin="0" aria-valuemax="100"><i style="width:'+ratio+'%"></i></div><p class="small">'+completed+' of '+total+' verified skill badges · '+p.quizzes_passed+' skill quizzes passed · '+p.projects_submitted+' projects submitted</p></div>';
+  const completed=Number(p.badges_earned)||0,total=Number(p.total_skills)||0,ratio=total?Math.min(100,Math.round(completed/total*100)):0;
+  const lesson=lessonProgress.get(p.course_id),lessonMessage=lesson?String(lesson.completed_lessons)+' of '+String(lesson.total_lessons)+' published lessons complete':'Published lessons unlock after enrollment';
+  return '<div class="program"><div class="row"><div><h3>'+esc(p.title)+'</h3><span class="pill '+(p.enrollment_status==='active'?'ok':'wait')+'">'+esc(p.enrollment_status.replaceAll('_',' '))+'</span></div><a class="button secondary" href="/programs.html?program='+encodeURIComponent(p.slug)+'">Roadmap ↗</a></div><div class="progress" role="progressbar" aria-label="'+esc(p.title)+' verified skill completion" aria-valuenow="'+ratio+'" aria-valuemin="0" aria-valuemax="100"><i style="width:'+ratio+'%"></i></div><p class="small">'+completed+' of '+total+' verified skill badges · '+p.quizzes_passed+' skill quizzes passed · '+p.projects_submitted+' projects submitted</p><p class="small">'+esc(lessonMessage)+' · Full-course certificate requires published lessons and verified skill badges.</p></div>';
  }).join(''):'<div class="empty">No published courses available.</div>';
  const previousProgram=$('programFilter').value,previousStatus=$('statusFilter').value;
  $('programFilter').innerHTML='<option value="all">All four programs</option>'+programs.map(p=>'<option value="'+esc(p.id)+'">'+esc(p.title)+'</option>').join('');
@@ -138,8 +139,10 @@ async function load(){
  const auth=await db.auth.getUser();if(!auth.data?.user){
   $('workspace').classList.add('hidden');$('guest').innerHTML='<h2>Sign in to see your real learning progress</h2><p>Your marks, completed skills, submitted projects and certificates are private to your verified account.</p><a class="button" href="/platform.html#dashboard">Sign in / Register</a><a class="button secondary" style="margin-left:7px" href="/programs.html">Explore public roadmaps</a>';return;
  }
- const r=await db.rpc('iac_student_learning_snapshot');
+ const [r,progressResult]=await Promise.all([db.rpc('iac_student_learning_snapshot'),db.rpc('iac_get_progress')]);
  if(r.error)throw Error(r.error.message);
+ if(progressResult.error)throw Error('Published lesson progress unavailable: '+progressResult.error.message);
+ lessonProgress=new Map((progressResult.data||[]).map(x=>[x.course_id,x]));
  snapshot=r.data||{};$('guest').classList.add('hidden');$('workspace').classList.remove('hidden');$('message').innerHTML='';
  render();await loadQuizHistory(1);
 }
