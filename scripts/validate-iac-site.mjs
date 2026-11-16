@@ -144,6 +144,13 @@ if(!platformJs.includes("const canApproveEnrollment=id=>learnerLevel(id)==='coll
 if(!platformJs.includes("approvedGuardians.some(g=>g.student_id===id)"))errors.push('Admin UI must read approved guardian records');
 if(!platformJs.includes("isAdmin()&&canApproveEnrollment(x.user_id)?btn('Approve'"))errors.push('School enrollment approval must stay hidden without guardian verification');
 if(!platformJs.includes("if(!Array.isArray(rows)||rows.length===0)"))errors.push('Admin updates must reject zero-row write responses');
+if(!platformJs.includes("sb.rpc('iac_course_completion_readiness'"))
+ errors.push('Completion button must verify published lessons and mentor-awarded badges through the server');
+if(!platformJs.includes('data-course-complete=')||!platformJs.includes('completeButton.disabled=result.eligible!==true'))
+ errors.push('Incomplete courses must keep completion action disabled');
+if(platformJs.includes("btn('Mark course complete'"))
+ errors.push('Unverified course completion button must not be enabled by default');
+
 if(!platformJs.includes("sb.rpc('iac_review_enrollment'"))errors.push('Admin enrollment decisions must use audited RPC');
 if(!platformJs.includes('data-enrollment-note='))errors.push('Admissions and completion evidence inputs missing');
 if(platformJs.includes("write('enrollments','update'"))errors.push('Direct enrollment updates bypass the evidence audit');
@@ -172,6 +179,12 @@ if(!onboardingJs.includes("db.from('iac_guardian_review_audit')"))
 if(!onboardingJs.includes('evidence.length<20||evidence.length>800'))
  errors.push('Guardian evidence note length validation missing');
 
+const studentDashboard=fs.readFileSync('my-learning.html','utf8');
+if(!studentDashboard.includes("db.rpc('iac_get_progress')"))
+ errors.push('Student dashboard must display RLS-backed published lesson progress');
+const projectReview=fs.readFileSync('skill-review.html','utf8');
+if(!projectReview.includes('feedback.length<20||feedback.length>1500'))
+ errors.push('Mentor certificate review needs written approval evidence');
 const learningJs=fs.readFileSync('learning-journey.html','utf8');
 if(!learningJs.includes('iac_student_learning_snapshot')||!learningJs.includes('badge_awarded'))errors.push('Learning journey lost verified backend provenance');
 
