@@ -6,6 +6,7 @@ on:
       - '*.html'
       - 'scripts/validate-iac-site.mjs'
       - 'scripts/validate-mobile-layout.mjs'
+      - 'scripts/check-mobile-browser.mjs'
       - 'mobile-iac.css'
       - 'mobile-iac.js'
       - 'scripts/test-learning-stages.mjs'
@@ -20,6 +21,7 @@ on:
       - '*.html'
       - 'scripts/validate-iac-site.mjs'
       - 'scripts/validate-mobile-layout.mjs'
+      - 'scripts/check-mobile-browser.mjs'
       - 'mobile-iac.css'
       - 'mobile-iac.js'
       - 'scripts/test-learning-stages.mjs'
@@ -43,12 +45,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Node 22 for browser and source checks
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Node version
         run: node --version
       - name: Check page scripts and navigation
         run: node scripts/validate-iac-site.mjs
       - name: Test mobile layouts and accessible navigation
         run: node scripts/validate-mobile-layout.mjs
+      - name: Headless Chrome real mobile viewport smoke
+        run: node scripts/check-mobile-browser.mjs
       - name: Test learner progress states
         run: node scripts/test-learning-stages.mjs
       - name: Validate public/private launch files
