@@ -49,6 +49,13 @@ check(mentorReviews.includes("db.rpc('iac_is_admin')") &&
   mentorReviews.includes("checks.length!==3"),
   'Mentor project approval requires administrator authorization, actual evidence checks and server-side review');
 
+check(read('account-acceptance.html').includes('id="runProgress"') &&
+  read('account-acceptance.html').includes('function updateRunProgress()') &&
+  read('account-acceptance.html').includes('checkActions[key]') &&
+  read('account-acceptance.html').includes('document.createElement(\'a\')'),
+  'Read-only account acceptance must display progress and actionable workflow links for each check');
+check(read('account-acceptance.html').includes('Pending results are not automatically launch failures.'),
+  'Read-only acceptance checks must distinguish pending account evidence from confirmed test failures');
 const accountAcceptance=read('account-acceptance.html');
 check(accountAcceptance.includes("'certificate_negative','Invalid certificate rejection'") &&
   accountAcceptance.includes("runCheck('certificate_negative'") &&
