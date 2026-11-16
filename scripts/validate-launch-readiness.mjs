@@ -112,6 +112,16 @@ check(learningRoom.includes('lesson.videoError') &&
   learningRoom.includes('Recording not uploaded yet.'),
   'Private playback failure and unavailable recording must have visible student states');
 
+// Founder runbook must remain read-only and display the audited owner-state as an attestation.
+check(read('launch.html').includes('id="acceptanceRunbook"') &&
+  read('launch.html').includes('function renderRunbook()') &&
+  read('launch.html').includes('latestOwnerStates.get(key)') &&
+  read('launch.html').includes('renderRunbook();'),
+  'Founder runbook must derive statuses from existing audited owner acceptance records');
+check(read('launch.html').includes('maa-sati-iac-founder-acceptance-runbook.csv') &&
+  read('launch.html').includes('Owner reported state') &&
+  read('launch.html').includes('Owner attested · requires independent QA'),
+  'Founder runbook CSV must not claim independent QA or include personal evidence notes');
 const launchHtml=read('launch.html');
 check(launchHtml.includes('id="releaseDecision"')&&launchHtml.includes('id="releaseReasons"'),
   'Owner-only launch release gate is missing');
