@@ -4,6 +4,7 @@
 :root{--paper:#f4f1eb;--surface:#fffdfa;--ink:#17212b;--muted:#69767b;--line:#ddd5cb;--coral:#d75c3e}
 *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px Manrope,system-ui,sans-serif}header{background:#17212b;color:white;padding:17px max(20px,calc((100% - 1120px)/2));display:flex;justify-content:space-between;align-items:center;gap:15px}header a{color:white;text-decoration:none;font-size:12px;font-weight:800}main{width:min(1090px,calc(100% - 34px));margin:36px auto 65px}h1{font-size:clamp(30px,5vw,52px);letter-spacing:-1.7px;margin:8px 0 14px}h1 em{font:italic 1.04em 'Instrument Serif',Georgia,serif;color:var(--coral)}h2{font-size:22px;margin:0 0 12px}h3{font-size:17px;margin:0 0 9px}p{color:var(--muted);line-height:1.75}.eyebrow{font-size:11px;font-weight:800;letter-spacing:2px;color:#b35b42}.card{background:var(--surface);padding:21px;border:1px solid var(--line);border-radius:17px;box-shadow:0 11px 31px #17212b0c;margin-bottom:15px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}button,.button{padding:11px 15px;background:var(--ink);color:#fff;border:1px solid var(--ink);border-radius:9px;font:800 12px Manrope,system-ui,sans-serif;cursor:pointer;text-decoration:none}button.secondary{background:transparent;color:var(--ink)}button.bad{background:#a94b3c;border-color:#a94b3c}button:disabled{opacity:.55;cursor:not-allowed}.small{font-size:12px;color:var(--muted)}.tag{font-size:11px;font-weight:800;padding:6px 10px;border-radius:20px;background:#e7ede7;color:#315d42}.notice{background:#e8eee5;padding:14px 17px;border-radius:9px;color:#2b6547;margin:14px 0}.notice.error{background:#f9e9e2;color:#a34b35}.item{border-bottom:1px solid var(--line);padding:15px 0}.item:last-child{border:0}.item a{word-break:break-all;color:#9b553b}.item textarea{display:block;width:100%;min-height:78px;resize:vertical;padding:10px 12px;border:1px solid #bdc8bf;border-radius:9px;background:#fff;font:inherit;margin:10px 0}.item .actions{display:flex;gap:9px;flex-wrap:wrap}.badge{background:#eaf3e6;padding:11px;border-radius:10px;color:#27563d;font-weight:700;font-size:12px}.hidden{display:none!important}@media(max-width:750px){.grid{grid-template-columns:1fr}header{flex-direction:column;align-items:flex-start}.card{padding:16px}}
 .review-checks{border:1px solid #cbdccf;border-radius:11px;background:#edf5ed;margin:12px 0;padding:13px}.review-checks strong{display:block;margin-bottom:8px}.review-checks label{display:flex;gap:9px;margin:10px 0;font-size:12px;align-items:flex-start}.review-checks input{margin-top:2px;width:16px;height:16px;flex:none;accent-color:#276e52}
+.review-toolbar{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin:15px 0}.review-toolbar label{display:grid;gap:5px;font-size:12px;font-weight:800;flex:1;min-width:190px}.review-toolbar input{width:100%;font:inherit;border:1px solid #bdc8bf;background:white;padding:11px 12px;border-radius:9px;min-height:43px}.review-toolbar button{min-height:43px}.review-toolbar input:focus-visible{outline:3px solid #e1a378;outline-offset:2px}.item[hidden]{display:none!important}@media(max-width:600px){.review-toolbar{align-items:stretch}.review-toolbar label{min-width:100%}.review-toolbar button{width:100%}.item .actions button{width:100%}}
 </style><link rel="stylesheet" href="/mobile-iac.css">
 <script defer src="/mobile-iac.js"></script>
 </head><body>
@@ -11,7 +12,7 @@
 <main><div class="eyebrow">AUTHENTIC STUDENT ASSESSMENT · ADMIN ONLY</div><h1>Review work.<br><em>Recognize skills.</em></h1>
 <p>Skill credentials must represent real evidence. Review a student's submitted repository, project functionality and implementation. The database verifies approved enrollment and an actual 100% skill-quiz result before issuing the unique Maa Sati IAC badge and certificate.</p><div id="notice" role="status" aria-live="polite"></div>
 <div id="authGate" class="card">Checking authorized account…</div>
-<div id="workspace" class="hidden"><div class="row"><h2>Project submissions awaiting review</h2><button id="refresh" type="button" class="secondary">Refresh submissions</button></div><div class="grid"><section class="card"><h2>Pending review</h2><p class="small" id="pendingCounter" aria-live="polite"></p><div id="pending"></div><button id="morePending" type="button" class="secondary hidden">Load more pending projects</button></section><section class="card"><h2>Recent decisions</h2><div id="recent"></div></section></div><div class="badge">🏅 Approval issues a unique skill certificate + digital badge, records the verified milestone and makes it available in the student's profile. Never approve a link without testing the project.</div></div>
+<div id="workspace" class="hidden"><div class="row"><h2>Project submissions awaiting review</h2><button id="refresh" type="button" class="secondary">Refresh submissions</button></div><div class="grid"><section class="card"><h2>Pending review</h2><p class="small" id="pendingCounter" aria-live="polite"></p><div class="review-toolbar"><label for="reviewSearch">Find in loaded reviews<input type="search" id="reviewSearch" maxlength="120" placeholder="Course, skill, student or project…" autocomplete="off"></label><button type="button" id="clearReviewSearch" class="secondary">Clear search</button></div><p class="small" id="reviewSearchStatus" aria-live="polite">Search results appear here after reviews load.</p><div id="pending"></div><button id="morePending" type="button" class="secondary hidden">Load more pending projects</button></section><section class="card"><h2>Recent decisions</h2><div id="recent"></div></section></div><div class="badge">🏅 Approval issues a unique skill certificate + digital badge, records the verified milestone and makes it available in the student's profile. Never approve a link without testing the project.</div></div>
 </main><script type="module">
 import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
 const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
@@ -22,6 +23,19 @@ function safeUrl(s){try{const url=new URL(s);return url.protocol==='https:'?url.
 let currentAdmin=null,reviewPage=0,reviewTotal=0,reviewCard=null;
 const reviewFields="id,month_id,user_id,project_url,description,status,instructor_feedback,submitted_at,reviewed_at";
 const pendingBatch=page=>db.from("iac_skill_project_submissions").select(reviewFields,{count:"exact"}).eq("status","pending").order("submitted_at",{ascending:true}).range(page*50,page*50+49);
+function filterPendingReviews(){
+ const query=el('reviewSearch').value.trim().toLocaleLowerCase();
+ const items=[...el('pending').querySelectorAll('[data-review-item]')];
+ let visible=0;
+ for(const item of items){
+  const match=!query||item.textContent.toLocaleLowerCase().includes(query);
+  item.hidden=!match;
+  if(match)visible++;
+ }
+ el('reviewSearchStatus').textContent=query
+  ?visible+' matching reviews in '+items.length+' loaded. Load more to search additional pending projects.'
+  :items.length+' pending reviews loaded. More may be available.';
+}
 async function load(){
  const [auth,permission]=await Promise.all([db.auth.getUser(),db.rpc('iac_is_admin')]);
  if(auth.error||!auth.data.user||permission.error||permission.data!==true){
@@ -42,7 +56,7 @@ async function refresh(){
  const recs=checked(sub).concat(checked(decisions)),months=new Map(checked(monthly).map(x=>[x.id,x])),names=new Map(checked(program).map(x=>[x.id,x.title])),students=new Map(checked(profiles).map(x=>[x.id,x.full_name]));
  const card=s=>{
   const m=months.get(s.month_id),label=(names.get(m?.program_id)||'Course')+' · Month '+(m?.month_number||'?')+' · '+(m?.title||'Skill');
-  return '<div class="item"><h3>'+esc(label)+'</h3><p class="small">Student: '+esc(students.get(s.user_id)||'Student account')+' · '+new Date(s.submitted_at).toLocaleDateString('en-IN')+'</p><p><a href="'+esc(safeUrl(s.project_url))+'" target="_blank" rel="noopener noreferrer">'+esc(s.project_url)+'</a></p><p>'+esc(s.description)+'</p>'+(s.status==='pending'?'<label for="feedback-'+esc(s.id)+'" class="small">Real-world project review note (required for approval or requested changes)</label><textarea id="feedback-'+esc(s.id)+'" maxlength="1500" placeholder="Explain what you tested, skill evidence checked, functional results or exact changes requested."></textarea><div class="review-checks" id="checks-'+esc(s.id)+'"><strong>Approval checks (required)</strong><label><input type="checkbox" data-check="demo"> I opened and tested the working HTTPS link</label><label><input type="checkbox" data-check="work"> I reviewed the project against the skill requirements</label><label><input type="checkbox" data-check="original"> I checked the student explanation and evidence</label></div><div class="actions"><button data-approve="'+esc(s.id)+'">Approve project + issue badge</button><button data-reject="'+esc(s.id)+'" class="bad">Request changes</button></div>':'<div class="small"><strong>Status:</strong> '+esc(s.status)+'</div>'+(s.instructor_feedback?'<p class="small">Feedback: '+esc(s.instructor_feedback)+'</p>':''))+'</div>';
+  return '<div class="item" data-review-item="'+esc(s.id)+'"><h3>'+esc(label)+'</h3><p class="small">Student: '+esc(students.get(s.user_id)||'Student account')+' · '+new Date(s.submitted_at).toLocaleDateString('en-IN')+'</p><p><a href="'+esc(safeUrl(s.project_url))+'" target="_blank" rel="noopener noreferrer">'+esc(s.project_url)+'</a></p><p>'+esc(s.description)+'</p>'+(s.status==='pending'?'<label for="feedback-'+esc(s.id)+'" class="small">Real-world project review note (required for approval or requested changes)</label><textarea id="feedback-'+esc(s.id)+'" maxlength="1500" placeholder="Explain what you tested, skill evidence checked, functional results or exact changes requested."></textarea><div class="review-checks" id="checks-'+esc(s.id)+'"><strong>Approval checks (required)</strong><label><input type="checkbox" data-check="demo"> I opened and tested the working HTTPS link</label><label><input type="checkbox" data-check="work"> I reviewed the project against the skill requirements</label><label><input type="checkbox" data-check="original"> I checked the student explanation and evidence</label></div><div class="actions"><button data-approve="'+esc(s.id)+'">Approve project + issue badge</button><button data-reject="'+esc(s.id)+'" class="bad">Request changes</button></div>':'<div class="small"><strong>Status:</strong> '+esc(s.status)+'</div>'+(s.instructor_feedback?'<p class="small">Feedback: '+esc(s.instructor_feedback)+'</p>':''))+'</div>';
  };
  reviewCard=card;reviewPage=0;reviewTotal=Number(sub.count??checked(sub).length);
  const pending=recs.filter(x=>x.status==='pending');
@@ -50,6 +64,7 @@ async function refresh(){
  const recent=recs.filter(x=>x.status!=='pending').slice(0,25);
  el('recent').innerHTML=recent.length?recent.map(card).join(''):'<p class="small">No decisions recorded yet.</p>';
  el('pendingCounter').textContent='Showing '+pending.length+' of '+reviewTotal+' pending projects (oldest first).';
+ filterPendingReviews();
  el('morePending').classList.toggle('hidden',pending.length>=reviewTotal);
  document.querySelectorAll('[data-approve],[data-reject]').forEach(button=>button.onclick=()=>review(button));
 }
@@ -63,6 +78,7 @@ async function loadMorePending(){
   el('pending').insertAdjacentHTML('beforeend',incoming.map(reviewCard).join(''));
   reviewPage=next;reviewTotal=Number(response.count??reviewTotal);
   el('pendingCounter').textContent='Showing '+((reviewPage*50)+incoming.length)+' of '+reviewTotal+' pending projects (oldest first).';
+  filterPendingReviews();
   button.classList.toggle('hidden',((reviewPage*50)+incoming.length)>=reviewTotal);
   document.querySelectorAll('[data-approve],[data-reject]').forEach(b=>b.onclick=()=>review(b));
  }catch(e){notice(e.message,true)}finally{button.disabled=false;button.textContent='Load more pending projects';}
@@ -84,5 +100,7 @@ async function review(button){
 }
 el('refresh').onclick=()=>refresh().catch(e=>notice(e.message,true));
 el('morePending').onclick=loadMorePending;
+el('reviewSearch').addEventListener('input',filterPendingReviews);
+el('clearReviewSearch').onclick=()=>{el('reviewSearch').value='';filterPendingReviews();el('reviewSearch').focus();};
 load().catch(e=>notice(e.message,true));
 </script></body></html>
