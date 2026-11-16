@@ -28,6 +28,7 @@ button{font:inherit;font-size:12px;font-weight:800;color:white;background:var(--
 <p class="small">Private, read-only live audit of all published courses. Counts validate recorded data only; they do not prove lesson videos play or that quiz content is educationally correct.</p>
 <div id="courseContentSummary" class="grid" aria-live="polite"></div>
 <div id="courseContentList" aria-live="polite">Checking published lessons, recordings and assessments…</div>
+<div class="row"><button id="downloadRecordingPlan" type="button" disabled>Download missing recording plan (CSV)</button><span id="recordingPlanStatus" class="small" role="status">Available after course audit loads.</span></div>
 <p class="small"><a class="link" href="/platform.html#admin">Open Admin Workspace → Upload private lesson video (choose course and existing lesson)</a></p>
 <p class="small">Course prices are monthly rates. Razorpay course checkout is intentionally disabled until secure monthly renewal and merchant acceptance are ready.</p>
 </section>
@@ -200,8 +201,32 @@ async function loadAcceptance(){
  }
 }
 
+function downloadRecordingPlan(){
+ const status=$('recordingPlanStatus');
+ const courses=Array.isArray(latestCatalog?.courses)?latestCatalog.courses:[];
+ if(!courses.length){status.textContent='Course audit not available. Refresh and retry.';return;}
+ const rows=[['Course','Lesson title','Lesson ID','Recording status']];
+ for(const course of courses){
+  for(const lesson of Array.isArray(course.recording_to_fix)?course.recording_to_fix:[]){
+   rows.push([String(course.title||''),String(lesson.title||''),String(lesson.id||''),'Recording link missing']);
+  }
+ }
+ if(rows.length===1){status.textContent='No missing recording references in the current audit.';return;}
+ const csv=rows.map(row=>row.map(v=>{
+  const safe=/^[=+@\\-]/.test(v)?'\''+v:v;
+  return '"'+safe.replace(/"/g,'""')+'"';
+ }).join(',')).join('\\r\\n');
+ const blob=new Blob(['\\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download='maa-sati-iac-missing-recordings.csv';document.body.append(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1500);
+ status.textContent='Exported '+(rows.length-1)+' missing lesson(s). This list is not proof of actual video playback.';
+}
+$('downloadRecordingPlan').addEventListener('click',downloadRecordingPlan);
 function renderCourseReadiness(data,error){
  const flag=$('courseContentFlag'),summary=$('courseContentSummary'),list=$('courseContentList');
+ $('downloadRecordingPlan').disabled=!!error||!data||!Array.isArray(data.courses)||!data.courses.length;
+ $('recordingPlanStatus').textContent=error?'Course audit unavailable.':data?'Export missing lesson titles for recording production.':'Waiting for course audit.';
  summary.replaceChildren();
  if(error||!data){
   flag.textContent='HOLD · Audit unavailable';flag.className='status hold';
