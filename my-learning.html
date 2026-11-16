@@ -22,6 +22,11 @@ html{scroll-padding-top:18px}#today,#skills,#courses,#quizResults,#badges{scroll
 <section id="workspace" class="hidden">
 <div class="hero" id="nextStep"><div><div class="eyebrow">YOUR NEXT STEP</div><h2>Choose a learning program</h2><p>Start with a roadmap and find the first skill to practise.</p></div><a href="/programs.html" class="button">Explore Roadmaps</a></div>
 <div class="metrics" id="metrics"></div>
+<section class="card" id="reviewUpdates" aria-labelledby="reviewUpdatesTitle">
+ <div class="row"><div><div class="eyebrow">PRIVATE ACCOUNT UPDATES</div><h2 id="reviewUpdatesTitle">Mentor feedback & project updates</h2><p class="small">Updates are generated from your saved learning records when you open or refresh this page. They are not email or push notifications.</p></div><a class="button secondary" href="/learning-journey.html">Learning journey</a></div>
+ <div id="reviewUpdateCount" class="pill wait" role="status" aria-live="polite">Loading review updates…</div>
+ <div id="reviewUpdateList" class="today-list" aria-live="polite"></div>
+</section>
 <section class="card" id="today" aria-labelledby="todayTitle">
  <div class="row"><div><div class="eyebrow">SIMPLE STUDENT HOME</div><h2 id="todayTitle">What should I do today?</h2><p class="small">Only real next steps from your own account are shown here.</p></div><a class="button secondary" href="/start-here.html">How learning works</a></div>
  <div id="todayTasks" class="today-list" aria-live="polite"></div>
@@ -74,12 +79,29 @@ function renderToday(mine,ownSkills){
  if(!items.length){host.innerHTML=mine.length?'<div class="today-item"><div><strong>You are up to date!</strong><p>Check your roadmap for more lessons or refresh when your mentor has reviewed your work.</p></div><a class="button secondary" href="#skills">See my skills</a></div>':'<div class="today-item"><div><strong>Start with a course you like</strong><p>Explore free roadmaps and request enrollment in the course of your choice.</p></div><a class="button" href="/programs.html">Choose a course</a></div>';return;}
  host.innerHTML=items.map(s=>{const step=labels[s.next_step]||labels.quiz;const explanatory={quiz:'Read the lesson first, then check your knowledge.',submit_project:'Your quiz is passed. Build and submit your own project.',revise_project:'Read your mentor’s feedback, improve the work and resubmit.',mentor_review:'Your project is waiting for review. You can explore another lesson meanwhile.',enroll:'Enrollment is needed before this step can be completed.'};return '<div class="today-item"><div><strong>'+esc(s.title)+'</strong><p>'+esc(s.program_title)+' · Month '+esc(s.month_number)+' · '+esc(explanatory[s.next_step]||step[0])+'</p></div><a class="button secondary" href="'+esc(linkFor(s))+'">'+esc(step[1])+' →</a></div>'}).join('');
 }
+function renderReviewUpdates(ownSkills){
+ const events=ownSkills.filter(s=>['revise_project','mentor_review','credential_review','earned'].includes(s.next_step))
+  .sort((a,b)=>({revise_project:0,earned:1,mentor_review:2,credential_review:3}[a.next_step]??4)-({revise_project:0,earned:1,mentor_review:2,credential_review:3}[b.next_step]??4));
+ const host=$('reviewUpdateList');
+ $('reviewUpdateCount').textContent=events.length+' project / mentor status update'+(events.length===1?'':'s');
+ if(!events.length){
+  host.innerHTML='<div class="today-item"><div><strong>No project review updates yet</strong><p>When you submit an eligible project, its real review state appears here after refreshing. No fake messages are generated.</p></div><a class="button secondary" href="#skills">View my skills</a></div>';
+  return;
+ }
+ host.innerHTML=events.slice(0,12).map(s=>{
+  const text=s.next_step==='revise_project'?'Changes requested — revise and resubmit':s.next_step==='earned'?'Official skill badge earned':s.next_step==='credential_review'?'Credential review in progress':'Waiting for mentor review';
+  const feedback=String(s.project_feedback||'');
+  const detail=feedback?'<p><strong>Mentor feedback:</strong> '+esc(feedback)+'</p>':'<p>No mentor feedback recorded for this step yet.</p>';
+  return '<div class="today-item"><div><strong>'+esc(s.title)+'</strong><p>'+esc(s.program_title)+' · Month '+esc(s.month_number)+' · '+esc(text)+'</p>'+detail+'</div><a class="button secondary" href="'+esc(linkFor(s))+'">'+(s.next_step==='revise_project'?'Improve project':s.next_step==='earned'?'View badge':'View status')+' →</a></div>';
+ }).join('');
+}
 function render(){
  const programs=snapshot.programs||[],skills=snapshot.skills||[],history=snapshot.quiz_history||[],badges=snapshot.badges||[];
  const mine=programs.filter(p=>p.enrollment_status==='active'||p.enrollment_status==='completed');
  const activeIds=new Set(mine.map(p=>p.id));
  const ownSkills=skills.filter(s=>activeIds.has(s.program_id));
  renderToday(mine,ownSkills);
+ renderReviewUpdates(ownSkills);
  const passed=ownSkills.filter(x=>x.quiz_passed).length,earned=ownSkills.filter(x=>x.badge_awarded).length;
  const reviews=ownSkills.filter(x=>x.project_status==='pending').length;
  const metrics=[['Verified badges',badges.length],['Skill quizzes passed',passed],['Quiz attempts',history.length],['Projects awaiting review',reviews]];
