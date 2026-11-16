@@ -38,6 +38,18 @@ check(['sameorigin', 'deny'].includes(headerMap.get('x-frame-options')?.toLowerC
   'Missing anti-framing response header');
 check(!JSON.stringify(conf).includes('service_role'), 'Never include service-role credentials in static config');
 
+const studentJourney=read('learning-journey.html');
+check(studentJourney.includes('id="courseOverview"') &&
+  studentJourney.includes("['mentor_review','credential_review'].includes(s.next_step)") &&
+  studentJourney.includes("s.next_step==='revise_project'"),
+  'Student course overview must report earned badges, passed quizzes, pending reviews and requested revisions');
+check(studentJourney.includes('class="task-actions"') &&
+  studentJourney.includes("esc(a.url)") &&
+  studentJourney.includes("getNext(s)"),
+  'Every monthly skill must show its next action using the server-sourced learning state');
+check(studentJourney.includes("s.badge_awarded&&s.certificate_code"),
+  'Verified badge count requires an issued certificate code, not self-reported activity');
+
 const learningRoom=read('platform.html');
 check(learningRoom.includes("q('enrollments').select('status')") &&
   learningRoom.includes("['active','completed'].includes(own.data?.status)"),
