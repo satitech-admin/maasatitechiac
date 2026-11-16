@@ -49,6 +49,16 @@ check(mentorReviews.includes("db.rpc('iac_is_admin')") &&
   mentorReviews.includes("checks.length!==3"),
   'Mentor project approval requires administrator authorization, actual evidence checks and server-side review');
 
+const accountAcceptance=read('account-acceptance.html');
+check(accountAcceptance.includes("'certificate_negative','Invalid certificate rejection'") &&
+  accountAcceptance.includes("runCheck('certificate_negative'") &&
+  accountAcceptance.includes("randomUUID") &&
+  accountAcceptance.includes("accepted?'fail':'pass'"),
+  'Private acceptance must reject a random non-issued certificate without creating credentials');
+check(accountAcceptance.includes("db.rpc('iac_verify_certificate',{p_code:fabricated})") &&
+  accountAcceptance.includes('This is one negative test, not a complete security audit.'),
+  'Negative certificate QA must use the existing read-only registry and not imply full security clearance');
+
 const certificateVerifier=read('certificate.html');
 check(certificateVerifier.includes("function resetVerification()") &&
   certificateVerifier.includes("verificationRun++") &&
