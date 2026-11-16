@@ -29,6 +29,7 @@ button:focus-visible,a:focus-visible{outline:3px solid #d89173;outline-offset:3p
 <p class="lead">Sign in with your own authorized account, then run checks for your email verification, private learning records, enrollment, actual quiz/project evidence and notifications. No grades, credentials, payment or account permissions are modified.</p>
 <div class="card"><div class="row"><div><h2>Run your checks</h2><p>Results describe this account at the time of testing. Green access checks do not mean you completed a course.</p></div><button id="run" class="btn" type="button">Run account checks</button></div>
 <div id="summary" role="status" aria-live="polite" class="note">Not tested. Sign in first and press “Run account checks”.</div>
+<p id="runProgress" role="status" aria-live="polite" class="note">0 checks evaluated. No account data loaded.</p>
 <div class="actions"><button id="copy" class="btn secondary" disabled type="button">Copy safe results</button><a class="btn secondary" href="/platform.html#dashboard">Sign in / Register</a><a class="btn secondary" href="/onboarding.html">Account verification</a></div>
 </div>
 <section class="card" aria-labelledby="detailsTitle"><h2 id="detailsTitle">Check results</h2><div id="results" class="steps" aria-live="polite"></div></section>
@@ -57,6 +58,26 @@ const cases=[
  ['notifications','Notification inbox','Check whether the private inbox can be queried and if alerts exist.'],
  ['staff','Institute team access','Check whether the account has a verified staff/admin role.']
 ];
+const checkActions={
+ account:['Sign in','/platform.html#dashboard'],
+ email:['Verify email','/platform.html#dashboard'],
+ profile:['Complete profile','/onboarding.html'],
+ guardian:['Guardian onboarding','/onboarding.html'],
+ enrollment:['Review enrollment','/platform.html#courses'],
+ progress:['Open learning journey','/learning-journey.html'],
+ quiz:['Take a quiz','/programs.html'],
+ project:['Submit a project','/programs.html'],
+ badge:['View verified badges','/my-learning.html#badges'],
+ certificate:['Verify certificate','/certificate.html'],
+ certificate_negative:['Certificate registry','/certificate.html'],
+ notifications:['Open notification inbox','/analytics.html'],
+ staff:['Institute access guide','/onboarding.html']
+};
+function updateRunProgress(){
+ const values=[...results.values()];
+ const completed=values.filter(x=>x.message!=='Checking…'&&x.message!=='Not tested yet.').length;
+ $('runProgress').textContent=completed+' of '+cases.length+' account checks evaluated. Pending results are not automatically launch failures.';
+}
 let lastReport='';
 const results=new Map(cases.map(([id])=>[id,{state:'pending',message:'Not tested yet.'}]));
 const status=(key,state,message)=>results.set(key,{state,message});
@@ -68,8 +89,16 @@ function render(){
   const heading=document.createElement('h3');heading.textContent=title;
   const descriptionNode=document.createElement('p');descriptionNode.textContent=description;
   const outcome=document.createElement('p');outcome.textContent=result.message;
-  article.append(pill,heading,descriptionNode,outcome);container.append(article);
+  article.append(pill,heading,descriptionNode,outcome);
+  const action=checkActions[key];
+  if(action){
+   const link=document.createElement('a');link.className='btn secondary';link.href=action[1];
+   link.textContent=action[0];link.style.marginTop='8px';link.style.display='inline-flex';
+   article.append(link);
+  }
+  container.append(article);
  }
+ updateRunProgress();
 }
 function failure(error){return String(error?.message||'Request failed').replace(/[\r\n]+/g,' ').replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi,'[account-id]').replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,'[email]').replace(/https?:\/\/[^\s"']+/gi,'[link]').slice(0,160)}
 async function runCheck(key,fn){
