@@ -144,6 +144,11 @@ if(!platformJs.includes("const canApproveEnrollment=id=>learnerLevel(id)==='coll
 if(!platformJs.includes("approvedGuardians.some(g=>g.student_id===id)"))errors.push('Admin UI must read approved guardian records');
 if(!platformJs.includes("isAdmin()&&canApproveEnrollment(x.user_id)?btn('Approve'"))errors.push('School enrollment approval must stay hidden without guardian verification');
 if(!platformJs.includes("if(!Array.isArray(rows)||rows.length===0)"))errors.push('Admin updates must reject zero-row write responses');
+if(!platformJs.includes("sb.rpc('iac_review_enrollment'"))errors.push('Admin enrollment decisions must use audited RPC');
+if(!platformJs.includes('data-enrollment-note='))errors.push('Admissions and completion evidence inputs missing');
+if(platformJs.includes("write('enrollments','update'"))errors.push('Direct enrollment updates bypass the evidence audit');
+if(!platformJs.includes("q('enrollment_review_audit')"))errors.push('Founder enrollment audit history is missing');
+
 
 // Production auth email links must not point back to random protected Vercel preview URLs.
 const authOrigin='https://maasatitechiac.vercel.app';
@@ -160,6 +165,13 @@ if(!platformJs.includes("emailRedirectTo:IAC_AUTH_ORIGIN+'/onboarding.html'"))er
 if(!onboardingJs.includes("redirectTo:IAC_AUTH_ORIGIN+'/onboarding.html'"))errors.push('Password recovery callback must match canonical signup destination');
 if(onboardingJs.includes("checked(await db.rpc('iac_claim_founder_admin'))"))errors.push('Founder claim failure must not break normal learner onboarding');
 if(!onboardingJs.includes('const founderClaim=await db.rpc(\'iac_claim_founder_admin\')'))errors.push('Missing founder role activation check in onboarding');
+if(!onboardingJs.includes('guardianEvidenceNote')||!onboardingJs.includes('p_note:evidence'))
+ errors.push('Guardian decisions require written verification/rejection evidence');
+if(!onboardingJs.includes("db.from('iac_guardian_review_audit')"))
+ errors.push('Guardian review audit history must be visible only to authorized founder');
+if(!onboardingJs.includes('evidence.length<20||evidence.length>800'))
+ errors.push('Guardian evidence note length validation missing');
+
 const learningJs=fs.readFileSync('learning-journey.html','utf8');
 if(!learningJs.includes('iac_student_learning_snapshot')||!learningJs.includes('badge_awarded'))errors.push('Learning journey lost verified backend provenance');
 
