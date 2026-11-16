@@ -5,6 +5,9 @@ on:
     paths:
       - '*.html'
       - 'scripts/validate-iac-site.mjs'
+      - 'scripts/validate-mobile-layout.mjs'
+      - 'mobile-iac.css'
+      - 'mobile-iac.js'
       - 'scripts/test-learning-stages.mjs'
       - 'scripts/validate-launch-readiness.mjs'
       - 'scripts/verify-public-http.mjs'
@@ -16,6 +19,9 @@ on:
     paths:
       - '*.html'
       - 'scripts/validate-iac-site.mjs'
+      - 'scripts/validate-mobile-layout.mjs'
+      - 'mobile-iac.css'
+      - 'mobile-iac.js'
       - 'scripts/test-learning-stages.mjs'
       - 'scripts/validate-launch-readiness.mjs'
       - 'scripts/verify-public-http.mjs'
@@ -41,6 +47,8 @@ jobs:
         run: node --version
       - name: Check page scripts and navigation
         run: node scripts/validate-iac-site.mjs
+      - name: Test mobile layouts and accessible navigation
+        run: node scripts/validate-mobile-layout.mjs
       - name: Test learner progress states
         run: node scripts/test-learning-stages.mjs
       - name: Validate public/private launch files
