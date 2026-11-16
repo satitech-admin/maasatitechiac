@@ -100,7 +100,12 @@ try{
  else console.log('PASS: responsive body widths and real mobile menu interactions');
 }finally{
  try{ws?.close()}catch{}
- try{chrome?.kill()}catch{}
+ if(chrome&&chrome.exitCode===null){
+  const exit=new Promise(resolve=>chrome.once('exit',resolve));
+  chrome.kill('SIGTERM');
+  await Promise.race([exit,sleep(2000)]);
+ }
  await new Promise(r=>server.close(r));
- fs.rmSync(profile,{recursive:true,force:true});
+ try{fs.rmSync(profile,{recursive:true,force:true,maxRetries:12,retryDelay:200})}
+ catch(error){console.warn('Temporary Chrome profile cleanup warning (runner will delete it): '+String(error?.code||error))}
 }
