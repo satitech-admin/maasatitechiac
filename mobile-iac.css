@@ -1,0 +1,93 @@
+/* Maa Sati IAC — shared mobile layout layer, 16 Nov 2026.
+   Loaded AFTER legacy page styles. Keeps all original branding, artwork and logo aspect ratios. */
+:root{--iac-touch-size:44px}
+*,*::before,*::after{box-sizing:border-box}
+:where(html,body){max-width:100%}
+:where(main,section,article,aside,header,footer,nav,form,.card,.panel,.shell,.wrap,.container,.content,.row,.grid,.layout){min-width:0}
+:where(h1,h2,h3,h4,p,li,small,label,.card,.panel,.item,.listrow){overflow-wrap:anywhere}
+:where(img,video,iframe,svg,canvas){max-width:100%}
+img{height:auto}
+:where(.logo img,.brand img,.cert-logo,[class*="school-logo"],[class*="brand-logo"]){object-fit:contain!important}
+:where(pre,.code-block,.code-panel){max-width:100%;overflow-x:auto;overscroll-behavior-x:contain}
+:where(.tablewrap,.table-wrap,.table-container,.responsive-table){max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+:where(.row,.actions,.formrow,.mini-actions,.hero-actions,.controls,.button-row){min-width:0;flex-wrap:wrap}
+:where(input,select,textarea,button,a){min-width:0}
+:where(input:not([type="checkbox"]):not([type="radio"]),select,textarea){max-width:100%}
+:where(button,a,input,select,textarea):focus-visible{outline-offset:3px}
+.iac-mobile-nav-toggle{display:none}
+@media (max-width:900px){
+ :where(.grid,.grid.two,.layout,.cards,.roadmap,.programs,.course-grid,.stats-grid,.dashboard-grid,.quick-grid,.step-grid)>*{min-width:0}
+ :where(.card,.panel,.tile,.program,.skill,.step,.metric,.listrow){max-width:100%;min-width:0}
+ :where(.site-nav,.topbar .topinner,header:not(.topbar):not(.top)){min-width:0}
+}
+@media (max-width:760px){
+ :where(html,body){width:100%;max-width:100%}
+ :where(main,.shell,.wrap,.container,.page,.content){max-width:100%}
+ :where(.grid,.grid.two,.layout,.hero,.banner,.practice,.role-grid,.step-grid,.choice-grid,.quick-grid,.dashboard-grid,.stat-grid,.roadmap,.chart-grid){grid-template-columns:minmax(0,1fr)!important}
+ :where(.row,.actions,.formrow,.mini-actions,.hero-actions,.controls,.button-row){flex-wrap:wrap!important}
+ :where(.card,.panel,.stat,.metric,.listrow,.program,.skill,.item){min-width:0}
+ :where(.field,.input,input:not([type="checkbox"]):not([type="radio"]),select,textarea){max-width:100%;min-width:0}
+ :where(.tablewrap,.table-wrap,.table-container,.responsive-table){display:block;width:100%;overflow-x:auto}
+ table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+ :where(th,td){white-space:normal;overflow-wrap:anywhere}
+ :where(pre,.code-block,.code-panel){overflow-x:auto}
+ :where(header:not(.topbar):not(.top),.site-nav){flex-wrap:wrap;gap:10px}
+ :where(.top-inner,.topinner){flex-wrap:wrap;gap:9px}
+ /* On pages with many destinations, turn the header into a proper keyboard-accessible menu. */
+ .iac-has-mobile-nav{display:flex!important;flex-wrap:wrap!important;align-items:center;position:relative;gap:9px!important}
+ .iac-mobile-nav-toggle{display:inline-flex!important;align-items:center;justify-content:center;gap:8px;min-height:44px;min-width:84px;margin-left:auto;border:1px solid #b8bfc1!important;border-radius:10px;background:#fff;color:#182b32;padding:9px 12px;font:750 13px system-ui,sans-serif;cursor:pointer;touch-action:manipulation}
+ .iac-mobile-nav-toggle[aria-expanded="true"]{background:#e8eee9;color:#17212b}
+ .iac-has-mobile-nav>nav[data-iac-mobile-nav]{display:none!important;order:99!important;flex-basis:100%!important;width:100%!important;max-width:100%!important;margin:0!important;padding:12px!important;flex-wrap:wrap!important;align-items:stretch!important;justify-content:flex-start!important;gap:8px!important;overflow:visible!important;max-height:min(68vh,580px)!important;overflow-y:auto!important;overscroll-behavior:contain;border:1px solid #d9dfdb;border-radius:14px;background:#fcfaf7;color:#17212b;box-shadow:0 12px 28px #15221e1c}
+ .iac-has-mobile-nav>nav[data-iac-mobile-nav].iac-mobile-nav-expanded{display:flex!important}
+ .iac-has-mobile-nav>nav[data-iac-mobile-nav]>:where(button,a,details){flex:1 1 calc(50% - 8px)!important;max-width:100%!important;min-width:0!important;min-height:44px;white-space:normal!important;overflow-wrap:anywhere;text-align:left}
+ .iac-has-mobile-nav>nav[data-iac-mobile-nav]>:where(button,a){display:flex!important;align-items:center!important;justify-content:flex-start!important;padding:10px 12px!important;border-radius:9px!important;text-decoration:none}
+ .iac-has-mobile-nav>nav[data-iac-mobile-nav] a{overflow-wrap:anywhere}
+ .iac-has-mobile-nav>nav[data-iac-mobile-nav] details{position:static!important}
+ .iac-has-mobile-nav>nav[data-iac-mobile-nav] details>summary{display:flex!important;align-items:center;min-height:44px;padding:10px 12px!important;white-space:normal!important}
+ .iac-has-mobile-nav>nav[data-iac-mobile-nav] .iac-more-menu,.iac-has-mobile-nav>nav[data-iac-mobile-nav] .main-more-menu{position:static!important;left:auto!important;right:auto!important;top:auto!important;max-width:100%!important;width:100%!important;box-shadow:none!important;overflow-wrap:anywhere}
+ header.top .top-inner{display:flex!important;flex-wrap:wrap!important;gap:9px!important}
+ header.top .brand{flex-shrink:1!important;min-width:0!important;max-width:100%}
+ header.top .topnav{max-width:100%!important}
+ header.top .top-account{min-width:0;max-width:100%}
+ .topbar .topinner{padding-inline:12px!important;gap:8px!important}
+ .topbar .logo{min-width:0!important;max-width:calc(100% - 106px)!important;flex:1 1 140px}
+ .topbar .brand{min-width:0}
+ .topbar .header-cta{max-width:100%;white-space:normal!important}
+ .topbar .menu-toggle{min-width:44px;min-height:44px;flex-shrink:0}
+ .topbar .nav.open{width:100%!important;max-width:100%!important;overflow-y:auto!important}
+ .site-nav{gap:9px;flex-wrap:wrap!important}
+ :where(button,.button,.btn,[role="button"],summary){touch-action:manipulation}
+ :where(.button,.btn,button):not([class*="icon-only"]){min-height:42px}
+ :where(.qr,img){height:auto}
+}
+@media (max-width:600px){
+ :where(.grid,.grid.two,.layout,.programs,.cards,.roadmap,.practice,.steps,.hero-grid,.academy-hero-grid,.quick-grid,.role-grid,.step-grid,.metrics-grid){grid-template-columns:minmax(0,1fr)!important}
+ :where(main,.shell,.wrap,.page,.content){padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+ :where(.card,.panel,.item,.skill,.program-body){padding-inline:clamp(12px,4vw,18px)}
+ :where(.metrics,.statbar,.student-quicklinks){grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px}
+ :where(.metric,.stat){padding:12px;min-width:0}
+ :where(h1,.page-title){font-size:clamp(28px,8vw,41px)!important;letter-spacing:-.05em!important;line-height:1.12}
+ :where(h2){font-size:clamp(21px,5.8vw,29px)}
+ :where(input:not([type="checkbox"]):not([type="radio"]),select,textarea){font-size:16px}
+ :where(.row,.actions,.mini-actions,.controls,.formrow){gap:9px}
+ :where(.row,.actions,.mini-actions)>:where(button,a,.btn,.button){max-width:100%;overflow-wrap:anywhere}
+ :where(.tablewrap,.table-wrap,.responsive-table){border-radius:10px}
+ :where(table){font-size:12px}
+ :where(th,td){padding:9px!important}
+ .cert{width:100%;max-width:100%}
+ .cert-logo{object-fit:contain!important}
+ .verify-mark,.signature{min-width:0!important}
+}
+@media (max-width:380px){
+ .iac-has-mobile-nav>nav[data-iac-mobile-nav]>:where(button,a,details){flex-basis:100%!important}
+ :where(.metrics,.statbar){grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .topbar .logo{max-width:calc(100% - 82px)!important}
+ .topbar .header-cta{font-size:11px!important;padding:8px!important}
+ .topbar .brand strong{font-size:13px!important}
+ :where(.pill,.tag,.badge){max-width:100%;white-space:normal}
+}
+@media (prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto!important}
+ :where(.iac-mobile-nav-toggle){transition:none!important}
+}
+@media print{.iac-mobile-nav-toggle{display:none!important}header nav[data-iac-mobile-nav]{display:flex!important}}
