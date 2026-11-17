@@ -1,0 +1,90 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Workshop Event Studio | Maa Sati IAC</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#f4f6fb;color:#192f47}*{box-sizing:border-box}body{margin:0}header{background:#172d4c;color:#fff;padding:18px max(18px,calc((100% - 1160px)/2));display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}header a{color:#fff}main{max-width:1160px;margin:34px auto;padding:0 18px 75px}h1{font-size:clamp(29px,5vw,43px);margin:7px 0}h2{font-size:21px}h3{font-size:16px}.muted{color:#62738a;line-height:1.6}.panel,.day,.metric{background:#fff;border:1px solid #dce4ee;border-radius:14px;padding:20px;margin:15px 0}.cols,.days{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.days .day{margin:0}.field{display:grid;gap:6px;font-size:12px;font-weight:750;margin:10px 0}.field input,.field textarea,.field select{font:inherit;padding:11px;border:1px solid #b8c6d6;background:#fff;color:#21354b;border-radius:9px;width:100%;min-width:0}.field textarea{min-height:90px;resize:vertical}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}button{border:0;border-radius:9px;background:#2555aa;color:#fff;padding:11px 16px;font:inherit;font-weight:750;cursor:pointer}button:disabled{opacity:.55;cursor:not-allowed}.alt{background:#e8edf8;color:#254d93}.warn{background:#fff8e8;border:1px solid #eed6a9;color:#7e5b26;padding:13px 16px;border-radius:10px;font-size:13px}.pill{background:#e9f0fb;color:#315582;font-size:11px;border-radius:20px;padding:5px 9px;font-weight:800}.pill.ok{background:#e4f4ea;color:#236546}.hidden{display:none!important}#status{min-height:26px}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.metric{margin:0}.metric strong{display:block;font-size:30px}.metric small{color:#607187}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #e0a449;outline-offset:3px}a{color:#2757a9}header a{color:#fff}@media(max-width:760px){.cols,.days{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:460px){.metrics{grid-template-columns:1fr}}
+</style></head><body><header><strong>Maa Sati IAC · Founder Event Studio</strong><nav><a href="/launch.html">Founder dashboard</a> · <a href="/workshop-mentor.html">Mentor Planner</a></nav></header><main><div class="muted">FOUNDER ONLY · SCHOOL WORKSHOPS</div><h1>Workshop Event & Curriculum Studio</h1><p class="muted">Create a school-specific workshop as a private draft, build Day 1–7 learning content and publish only after every lesson and required event details are ready.</p><div id="status" role="status" aria-live="polite">Checking founder access…</div><section id="app" class="hidden">
+<div id="metrics" class="metrics" aria-label="Event totals"></div>
+<section class="panel"><h2>Create workshop draft</h2><form id="create"><div class="cols"><label class="field">Workshop title<input id="title" minlength="5" maxlength="160" required placeholder="7-Day AI & Coding Workshop — School Name"></label><label class="field">School name<input id="school" maxlength="180" required placeholder="School or institute name"></label><label class="field">Workshop type<select id="kind"><option value="one_week">One-week school session</option><option value="workshop">Workshop</option></select></label><label class="field">Start date / time (local)<input type="datetime-local" id="date" required></label><label class="field">Fee per student (₹)<input type="number" id="fee" min="1" max="1000000" step="1" value="199" required></label><label class="field">Student capacity<input type="number" id="capacity" min="1" max="5000" step="1" value="50" required></label><label class="field">Minimum attendance days<select id="minDays"><option value="6">6 of 7 days</option><option value="7">7 of 7 days</option><option value="5">5 of 7 days</option></select></label></div><div class="row"><button type="submit" id="createButton">Create private draft</button></div></form><p class="muted">No workshop is published by creating a draft. Confirm each school's correct fee before publishing.</p></section>
+<section class="panel"><div class="row"><h2>Manage workshop</h2><button id="refresh" class="alt" type="button">Refresh</button></div><label class="field">Choose an event<select id="event"><option value="">Select workshop</option></select></label><p id="eventSummary" class="muted"></p></section>
+<section id="editor" class="hidden"><div class="panel"><div class="row"><h2>Day 1–7 lessons</h2><button type="button" class="alt" id="template">Fill suggested curriculum into unsaved days</button></div><p class="muted">Suggested content is a starting point. Review and customize it before saving. Each day's notes are separate and editable.</p><div id="days" class="days"></div></div>
+<div class="panel"><div class="row"><h2>Publication checks</h2><span id="readiness" class="pill">Draft</span></div><div id="checklist" class="muted"></div><p><button type="button" id="publish" disabled>Publish completed workshop</button></p><p class="warn">Publication makes the event publicly discoverable. The backend rejects publication unless all seven lessons are saved, the event has a fee, capacity, start date and the founder authorizes it. Publishing does not create payments, attendance, enrollments or certificates.</p></div></section></section></main>
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
+const sb=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9'),$=id=>document.getElementById(id);
+const node=(tag,value)=>{const x=document.createElement(tag);x.textContent=String(value??'');return x};
+const result=x=>{if(x.error)throw x.error;return x.data||[]};
+const topics=[
+ ['Start with AI, Websites & Safety','What websites and AI tools do. Prompt basics, safe AI use, and an interactive example. Activity: write a clear prompt and compare outputs.'],
+ ['Build Your First HTML Page','HTML document, headings, paragraphs, line breaks, links and images. Activity: build your personal introduction page.'],
+ ['Make a Better HTML Page','Lists, sections, divs, images, links and semantic structure. Activity: build an accessible school event page.'],
+ ['Design with CSS Basics','Colours, typography, spacing, boxes, layouts and mobile responsiveness. Activity: style your school event page.'],
+ ['Create Interactions with JavaScript','Variables, events, buttons and simple DOM changes. Activity: make an interactive quiz or greeting widget.'],
+ ['Improve with AI & Test Your Project','Use AI for explanations and debugging, verify generated code, and check mobile accessibility. Activity: improve and test the mini-project.'],
+ ['Project Showcase & Reflection','Finish your project, submit its URL, present what you built and get mentor feedback. Attendance and certificates follow separate rules.']
+];
+const validURL=value=>{if(!value)return null;try{const x=new URL(value);return x.protocol==='https:'?x.href:null}catch{return null}};
+let events=[],saved=new Map(),draft=new Map(),current=null,viewVersion=0,admin=false;
+function toIso(v){return v?new Date(v).toISOString():null;}
+function field(label,value,type='text',maxLength=2000){const outer=document.createElement('label');outer.className='field';outer.append(node('span',label));const input=document.createElement(type==='textarea'?'textarea':'input');if(type!=='textarea')input.type=type;input.value=value||'';input.maxLength=maxLength;outer.append(input);return {outer,input};}
+function validateDate(value){return value&&!Number.isNaN(new Date(value).getTime());}
+function eventReady(ev){return !!(ev&&ev.title?.trim().length>=5&&ev.fee_paise!=null&&ev.capacity>0&&ev.starts_at);}
+function readiness(){if(!current)return;const ev=events.find(e=>e.id===current),completed=[1,2,3,4,5,6,7].filter(d=>{const x=saved.get(d);return x&&x.title?.trim().length>=4&&x.notes?.trim().length>=12;}).length;
+const ok=eventReady(ev)&&completed===7&&!ev.published;
+$('readiness').textContent=ev.published?'Published':completed+'/7 saved days';$('readiness').className='pill'+(ev.published?' ok':'');
+$('checklist').textContent='Event details '+(eventReady(ev)?'ready':'incomplete')+' · '+completed+'/7 days saved with meaningful titles and notes · '+(ev.published?'Already published':'Still a draft');
+$('publish').disabled=!ok;
+}
+function renderDays(){const host=$('days');host.replaceChildren();const version=++viewVersion;
+for(let day=1;day<=7;day++){const savedDay=saved.get(day),suggestion=draft.get(day),box=document.createElement('article');box.className='day';
+box.append(node('h3','Day '+day));const title=field('Lesson title',savedDay?.title??suggestion?.title??'','text',160),notes=field('Lesson instructions',savedDay?.notes??suggestion?.notes??'','textarea',3000);
+const dt=field('Date / time (optional)',savedDay?.starts_at?new Date(savedDay.starts_at).toISOString().slice(0,16):'','datetime-local',30);
+const live=field('Live class HTTPS URL (optional)',savedDay?.join_url||'','url',500),recording=field('Recorded lesson HTTPS URL (optional)',savedDay?.recording_url||'','url',500);
+box.append(title.outer,notes.outer,dt.outer,live.outer,recording.outer);
+const save=node('button',savedDay?'Update Day '+day:'Save Day '+day);save.type='button';
+save.onclick=async()=>{if(version!==viewVersion||!current)return;
+const t=title.input.value.trim(),n=notes.input.value.trim(),l=live.input.value.trim(),r=recording.input.value.trim(),when=dt.input.value;
+if(t.length<4||n.length<12){$('status').textContent='Day '+day+': title needs 4+ characters and notes 12+ characters.';return;}
+if((l&&!validURL(l))||(r&&!validURL(r))){$('status').textContent='Class and recording links must be valid HTTPS URLs.';return;}
+if(when&&!validateDate(when)){$('status').textContent='Invalid lesson start date.';return;}
+save.disabled=true;try{const item={event_id:current,day_number:day,title:t,notes:n,starts_at:toIso(when),join_url:l||null,recording_url:r||null};
+const response=savedDay?await sb.from('iac_event_days').update(item).eq('id',savedDay.id).select('id').single():await sb.from('iac_event_days').insert(item).select('id').single();
+result(response);draft.delete(day);$('status').textContent='Day '+day+' lesson saved.';await loadEvent(current);}
+catch(e){$('status').textContent='Unable to save day '+day+': '+(e.message||'Unknown error');save.disabled=false;}};
+box.append(save);host.append(box);
+}
+readiness();}
+async function loadEvent(id){current=id;draft=new Map();$('editor').classList.toggle('hidden',!id);
+const ev=events.find(e=>e.id===id);
+if(!ev){$('eventSummary').textContent='Select a school workshop draft.';return;}
+$('eventSummary').textContent=(ev.school_name||'Institute')+' · '+(ev.published?'PUBLISHED':'DRAFT')+' · ₹'+(ev.fee_paise/100).toFixed(0)+' · capacity '+(ev.capacity??'not set');
+try{const days=result(await sb.from('iac_event_days').select('id,day_number,title,notes,join_url,recording_url,starts_at').eq('event_id',id).order('day_number'));
+if(id!==current)return;saved=new Map(days.map(d=>[d.day_number,d]));renderDays();}
+catch(e){$('status').textContent='Unable to load days: '+e.message;}}
+async function refresh(selectId=current){const res=await sb.from('iac_events').select('id,title,school_name,kind,capacity,starts_at,fee_paise,min_attendance_days,published').in('kind',['one_week','workshop']).order('created_at',{ascending:false}).limit(500);
+events=result(res);
+const select=$('event');select.replaceChildren(new Option('Choose workshop',''));
+for(const ev of events){select.append(new Option((ev.published?'✓ ':'○ ')+(ev.title||'Unnamed')+' · '+(ev.school_name||'Institute'),ev.id));}
+const stats=[['Total workshops',events.length],['Draft workshops',events.filter(e=>!e.published).length],['Published workshops',events.filter(e=>e.published).length]];
+$('metrics').replaceChildren();for(const [label,value] of stats){const b=document.createElement('article');b.className='metric';b.append(node('strong',value),node('small',label));$('metrics').append(b);}
+if(selectId&&events.some(e=>e.id===selectId)){select.value=selectId;await loadEvent(selectId);}else{$('editor').classList.add('hidden');current=null;$('eventSummary').textContent='No workshop selected.';}
+}
+$('create').onsubmit=async ev=>{ev.preventDefault();if(!admin)return;
+const title=$('title').value.trim(),school=$('school').value.trim(),start=$('date').value,fee=Number($('fee').value),capacity=Number($('capacity').value);
+if(title.length<5||school.length<2||!validateDate(start)||!Number.isInteger(fee)||fee<1||!Number.isInteger(capacity)||capacity<1){$('status').textContent='Provide valid event title, school, date, fee and capacity.';return;}
+if(!confirm('Create a PRIVATE draft for '+school+'? Fee ₹'+fee+' per student. Nothing will be publicly published yet.'))return;
+const btn=$('createButton');btn.disabled=true;try{
+const payload={title,school_name:school,kind:$('kind').value,starts_at:toIso(start),fee_paise:fee*100,capacity,min_attendance_days:Number($('minDays').value),published:false};
+const res=await sb.from('iac_events').insert(payload).select('id').single();if(res.error)throw res.error;
+$('status').textContent='Private workshop draft created. Add all seven lessons before publishing.';await refresh(res.data.id);$('create').reset();
+}catch(err){$('status').textContent='Draft not saved: '+(err.message||'Unknown error');}finally{btn.disabled=false;}};
+$('event').onchange=()=>loadEvent($('event').value);
+$('refresh').onclick=async()=>{try{await refresh();$('status').textContent='Workshop data refreshed.';}catch(e){$('status').textContent='Refresh failed: '+e.message;}};
+$('template').onclick=()=>{if(!current)return;if(!confirm('Fill suggested 7-day curriculum in unsaved days? You must review and save every day before publishing.'))return;for(let n=1;n<=7;n++){if(!saved.has(n))draft.set(n,{title:topics[n-1][0],notes:topics[n-1][1]});}renderDays();$('status').textContent='Suggested curriculum prepared locally for unsaved days. Review and save each day.';};
+$('publish').onclick=async()=>{if(!current||$('publish').disabled||!admin)return;const ev=events.find(e=>e.id===current);
+if(!confirm('Publish '+ev.title+' for '+(ev.school_name||'institute')+'? Confirm the fee, dates and all seven lessons are final.'))return;
+$('publish').disabled=true;try{const res=await sb.rpc('iac_admin_publish_workshop',{p_event:current});if(res.error)throw res.error;const id=current;await refresh(id);$('status').textContent='Workshop published after database readiness checks.';}
+catch(e){$('status').textContent='Publication blocked: '+(e.message||'Verification failed');readiness();}};
+async function boot(){try{const a=await sb.auth.getUser();if(a.error||!a.data.user){$('status').replaceChildren(node('span','Founder sign-in required. '));const link=node('a','Sign in');link.href='/platform.html#dashboard';$('status').append(link);return;}
+const r=await sb.rpc('iac_is_admin');if(r.error||r.data!==true)throw Error('Founder permission required');admin=true;await refresh(null);$('app').classList.remove('hidden');$('status').textContent='Verified founder session. Event studio ready.';}
+catch(err){$('status').textContent='Unable to open event studio: '+(err.message||'Try again');}}
+boot();
+</script></body></html>
