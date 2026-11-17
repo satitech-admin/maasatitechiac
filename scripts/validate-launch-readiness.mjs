@@ -149,6 +149,13 @@ check(learningRoom.includes("Have you actually studied this lesson") &&
   learningRoom.includes("it does not prove video attendance or award a certificate"),
   'Self-reported lesson completion must require explicit acknowledgement and never imply credential eligibility');
 
+check(learningRoom.includes("saved.error&&saved.error.code!=='23505'") &&
+  learningRoom.includes("saved.error?.code==='23505'"),
+  'Concurrent duplicate lesson progress inserts must report already saved instead of a false error');
+check(learningRoom.includes("['active','completed'].includes(own?.status)") &&
+  learningRoom.includes("select('id,course_id,published')"),
+  'Lesson progress UI and verified database policy must both require published lessons and approved enrollment');
+
 const launchHtml=read('launch.html');
 check(launchHtml.includes('id="releaseDecision"')&&launchHtml.includes('id="releaseReasons"'),
   'Owner-only launch release gate is missing');
