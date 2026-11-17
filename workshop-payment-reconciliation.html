@@ -44,12 +44,14 @@ async function load(){
    db.from('iac_payment_orders').select('student_id,event_id,product_type,status,paid_at,razorpay_payment_id').eq('product_type','event').limit(1500),
    db.from('iac_guardian_consents').select('student_id,status').limit(1500),
    db.from('iac_workshop_identity_links').select('student_id').limit(1500),
-   db.from('iac_workshop_enrollment_approvals').select('student_id,event_id').limit(1500)
+   db.from('iac_workshop_enrollment_approvals').select('student_id,event_id').limit(1500),
+   db.from('iac_native_workshop_identity_checks').select('student_id').limit(1500),
+   db.from('iac_native_workshop_approvals').select('student_id,event_id').limit(1500)
   ]);
   for(const result of results)if(result.error)throw result.error;
-  const [ev,registrations,orders,guardianList,links,approvals]=results.map(take);
-  limited=results.some((x,i)=>(x.data||[]).length>=[500,1500,1500,1500,1500,1500][i]);
-  events=ev;const evMap=new Map(ev.map(x=>[x.id,x])),identities=new Set(links.map(x=>x.student_id)),approvalKeys=new Set(approvals.map(x=>x.student_id+'|'+x.event_id));
+  const [ev,registrations,orders,guardianList,links,approvals,nativeLinks,nativeApprovals]=results.map(take);
+  limited=results.some((x,i)=>(x.data||[]).length>=[500,1500,1500,1500,1500,1500,1500,1500][i]);
+  events=ev;const evMap=new Map(ev.map(x=>[x.id,x])),identities=new Set([...links,...nativeLinks].map(x=>x.student_id)),approvalKeys=new Set([...approvals,...nativeApprovals].map(x=>x.student_id+'|'+x.event_id));
   guardians.clear();for(const g of guardianList)guardians.set(g.student_id,g.status);
   const userIds=[...new Set(registrations.filter(x=>evMap.has(x.event_id)).map(x=>x.user_id))];
   names.clear();
