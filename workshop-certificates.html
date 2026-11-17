@@ -1,0 +1,98 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Workshop Certificate Issuance | Maa Sati IAC</title>
+<style>:root{font:14px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif;color:#1b3048;background:#f3f6fa}*{box-sizing:border-box}body{margin:0}header{background:#152b49;color:white;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:18px max(18px,calc((100% - 1160px)/2))}header a{color:#fff}main{max-width:1160px;margin:30px auto;padding:0 18px 75px}h1{font-size:clamp(29px,5vw,43px);margin:7px 0}h2{font-size:22px;margin:5px 0 12px}.muted{color:#62758a}.panel,.metric,.student{border:1px solid #dce5ef;background:#fff;border-radius:14px;padding:20px;margin:14px 0}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.metric{margin:0}.metric strong{font-size:28px;display:block}.metric span{color:#67798c;font-size:12px}.row{display:flex;justify-content:space-between;flex-wrap:wrap;align-items:center;gap:12px}.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:end}.field{display:grid;gap:7px;font-size:12px;font-weight:750;margin:10px 0}.field input,.field select,.field textarea{font:inherit;width:100%;padding:11px 12px;border:1px solid #bac8d7;border-radius:8px;background:white;color:#1b3048}.field textarea{min-height:95px;resize:vertical}.tag{display:inline-block;padding:5px 9px;border-radius:20px;background:#e8effa;color:#31558a;font-weight:800;font-size:11px}.tag.good{background:#e3f3e8;color:#236543}.tag.warn{background:#fff0da;color:#8b591c}.checks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}.check{background:#f5f8fc;border-radius:9px;padding:10px;font-size:12px}.check.ok{border-left:3px solid #2b805f}.check.missing{border-left:3px solid #d89a32}button{font:inherit;font-weight:750;padding:10px 15px;border-radius:9px;background:#2855a8;color:#fff;border:0;cursor:pointer}button:disabled{opacity:.52;cursor:not-allowed}.notice{border:1px solid #ead6ae;background:#fff8e9;border-radius:10px;padding:14px;color:#795a2a;font-size:13px}.hidden{display:none!important}a{color:#2859ab}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #e3a84e;outline-offset:3px}footer{margin-top:24px;color:#6a798d;font-size:12px}@media(max-width:880px){.checks{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:680px){.stats,.checks{grid-template-columns:repeat(2,minmax(0,1fr))}.panel,.student{padding:16px}}@media(max-width:450px){.stats,.checks{grid-template-columns:1fr}.controls{display:grid}}
+</style></head><body><header><strong>Maa Sati IAC · Certificate Operations</strong><nav><a href="/launch.html">Founder dashboard</a> · <a href="/workshop-unified-progress.html">Student progress</a> · <a href="/workshop-mentor.html">Mentor review</a></nav></header>
+<main><div class="muted">FOUNDER ONLY · EVIDENCE-BASED CERTIFICATE ISSUANCE</div><h1>Workshop Certificate Review & Issuance</h1><p class="muted">Verify enrollment, recorded attendance and approved mini-project evidence. Record a separate founder review, then issue a verifiable certificate only when all database checks pass.</p><div id="status" role="status" aria-live="polite">Checking founder authorization…</div>
+<section id="app" class="hidden"><section class="panel"><div class="controls"><label class="field">Workshop batch<select id="event"><option value="">All workshops</option></select></label><label class="field">Search student<input id="search" type="search" placeholder="Name, school or class"></label><label class="field">Show status<select id="filter"><option value="">All</option><option value="eligible">Eligible for review</option><option value="reviewed">Founder reviewed</option><option value="issued">Issued</option><option value="blocked">Requirements incomplete</option></select></label><button type="button" id="refresh">Refresh verified data</button></div><p id="summary" class="muted"></p></section>
+<div class="stats" id="stats"></div>
+<section class="panel"><div class="row"><h2>Student certificate queue</h2><span class="tag">No automatic issuance</span></div><div id="queue"></div></section>
+<section class="panel"><h2>Certificate safety rules</h2><p class="notice">Eligibility requires a verified workshop enrollment approval, required attendance days marked present by staff, and an approved project with reviewer evidence. Founder review and certificate issuance are separate actions. The server rechecks every requirement at issuance and prevents duplicate certificates, including if the earlier certificate was revoked. This workshop workflow does not issue seminar or course certificates.</p>
+<p><a href="/workshop-unified-progress.html">View full student progress</a> · <a href="/workshop-native-approvals.html">Verify enrollments</a> · <a href="/workshop-enrollments.html">Record attendance</a></p></section></section>
+<footer>Only authorized founders can perform these actions. This page neither changes attendance nor automatically marks a project approved.</footer></main>
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
+const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
+const $=id=>document.getElementById(id),el=(tag,value)=>{const n=document.createElement(tag);n.textContent=String(value??'');return n};
+let authorized=false,records=[],events=[],loading=false;
+const typeTag=(value,good=false)=>{const n=el('span',value);n.className='tag'+(good?' good':' warn');return n};
+const metric=(label,value)=>{const b=el('article','');b.className='metric';b.append(el('strong',value),el('span',label));return b;};
+function statusOf(r){
+ if(r.certificate_already_exists)return 'issued';
+ if(r.ready_to_issue)return 'reviewed';
+ if(r.eligible_for_review)return 'eligible';
+ return 'blocked';
+}
+function draw(){
+ const ev=$('event').value,q=$('search').value.trim().toLocaleLowerCase(),filter=$('filter').value;
+ const rows=records.filter(r=>(!ev||r.event_id===ev)&&(!filter||statusOf(r)===filter)&&(!q||[r.name,r.school,r.class_name,r.event_title].some(v=>String(v||'').toLocaleLowerCase().includes(q))));
+ $('stats').replaceChildren(metric('Registered students',rows.length),metric('Eligible for review',rows.filter(r=>r.eligible_for_review&&!r.founder_review_recorded&&!r.certificate_already_exists).length),metric('Ready to issue',rows.filter(r=>r.ready_to_issue).length),metric('Already issued',rows.filter(r=>r.certificate_already_exists).length));
+ $('summary').textContent=rows.length+' of '+records.length+' recent workshop registrations shown.'+(records.length>=200?' Batch limit reached. Filter by workshop if records are missing.':'');
+ const host=$('queue');host.replaceChildren();
+ if(!rows.length){host.append(el('p','No matching workshop registrations. Real student enrollment, mentor-reviewed project and verified attendance must exist before certificates can be issued.'));return;}
+ for(const r of rows){
+  const card=el('article','');card.className='student';const head=el('div','');head.className='row';
+  head.append(el('h3',(r.name||'Student account')+' · '+(r.event_title||'Workshop')));
+  const st=statusOf(r);head.append(typeTag(st==='issued'?'Certificate already issued':st==='reviewed'?'Ready to issue':st==='eligible'?'Eligible for founder review':'Requirements incomplete',st==='reviewed'||st==='issued'));card.append(head);
+  card.append(el('p',(r.school||'School not supplied')+' · '+(r.class_name||'Class not supplied')));
+  const checks=el('div','');checks.className='checks';
+  for(const [label,pass] of [['Founder enrollment approval',r.approval_verified],['Verified attendance '+r.verified_days+'/'+r.required_days,r.verified_days>=r.required_days],['Mentor-reviewed project',r.project_approved],['Founder certificate review',r.founder_review_recorded],['No prior workshop certificate',!r.certificate_already_exists]]){
+   const check=el('div',(pass?'✓ ':'• ')+label);check.className='check '+(pass?'ok':'missing');checks.append(check);
+  }card.append(checks);
+  if(st==='eligible'&&!r.founder_review_recorded){
+   const label=el('label','');label.className='field';label.append(el('span','Founder review evidence (30–1500 characters)'));
+   const note=document.createElement('textarea');note.minLength=30;note.maxLength=1500;note.placeholder='Record how you confirmed identity, attendance and reviewed project evidence without private phone numbers or payment credentials.';label.append(note);
+   const button=el('button','Record founder review');button.type='button';
+   button.onclick=async()=>{
+    const evidence=note.value.trim();if(evidence.length<30){$('status').textContent='Write at least 30 characters of factual review evidence.';return;}
+    if(!confirm('Confirm independent review for this exact student and workshop? This does not issue a certificate.'))return;
+    button.disabled=true;try{
+     const result=await db.rpc('iac_admin_review_workshop_certificate',{p_registration:r.registration_id,p_note:evidence});
+     if(result.error)throw result.error;
+     await load();$('status').textContent='Founder certificate review recorded. Certificate has NOT been issued.';
+    }catch(e){$('status').textContent='Review blocked: '+(e.message||'Unknown error');button.disabled=false;}
+   };card.append(label,button);
+  }
+  if(st==='reviewed'){
+   const button=el('button','Issue verified workshop certificate');button.type='button';
+   button.onclick=async()=>{
+    if(!confirm('Issue one permanent verified certificate for '+(r.name||'this student')+' in '+(r.event_title||'this workshop')+'? This action creates an official certificate record and cannot be undone by repeating issuance.'))return;
+    button.disabled=true;try{
+     const response=await db.rpc('iac_admin_issue_reviewed_workshop_certificate',{p_registration:r.registration_id});
+     if(response.error)throw response.error;
+     const code=response.data?.certificate_code||'';await load();
+     $('status').replaceChildren(el('span','Verified certificate issued. Code: '+code+'. '));
+     if(code){const link=el('a','Open official certificate');link.href='/certificate.html?code='+encodeURIComponent(code);link.target='_blank';link.rel='noopener noreferrer';$('status').append(link);}
+    }catch(e){$('status').textContent='Certificate NOT issued: '+(e.message||'Unknown error');button.disabled=false;}
+   };card.append(button);
+  }
+  host.append(card);
+ }
+}
+async function load(){
+ if(!authorized||loading)return;loading=true;$('refresh').disabled=true;$('status').textContent='Checking real student completion evidence…';
+ try{
+  const target=$('event').value,registrations=await db.from('iac_event_registrations').select('id,event_id,user_id').limit(200);
+  if(registrations.error)throw registrations.error;
+  const allowedEvents=new Map(events.map(e=>[e.id,e]));
+  const all=(registrations.data||[]).filter(r=>allowedEvents.has(r.event_id)&&(!target||r.event_id===target));
+  let result=[];for(const r of all){
+   const ready=await db.rpc('iac_workshop_certificate_readiness',{p_registration:r.id});
+   if(ready.error)throw ready.error;result.push({...ready.data,registration_id:r.id});
+  }
+  const ids=[...new Set(all.map(r=>r.user_id))],profiles=new Map();
+  for(let i=0;i<ids.length;i+=100){const response=await db.from('iac_profiles').select('id,full_name,school_or_college,class_or_year').in('id',ids.slice(i,i+100));if(response.error)throw response.error;for(const p of response.data||[])profiles.set(p.id,p);}
+  records=result.map(r=>({...r,name:profiles.get(r.student_id)?.full_name,school:profiles.get(r.student_id)?.school_or_college,class_name:profiles.get(r.student_id)?.class_or_year,event_title:allowedEvents.get(r.event_id)?.title||r.event_title}));
+  draw();$('status').textContent='Readiness verified from live database. No certificates were issued.';
+ }catch(e){$('status').textContent='Unable to load certificate queue: '+(e.message||'Unknown error');}
+ finally{$('refresh').disabled=false;loading=false;}
+}
+async function boot(){
+ try{
+  const auth=await db.auth.getUser();if(auth.error||!auth.data.user){$('status').replaceChildren(el('span','Founder sign-in required. '));const a=el('a','Sign in');a.href='/platform.html#dashboard';$('status').append(a);return;}
+  const admin=await db.rpc('iac_is_admin');if(admin.error||admin.data!==true)throw Error('Verified founder/admin role required.');
+  const result=await db.from('iac_events').select('id,title,kind,school_name').in('kind',['one_week','workshop']).limit(500);if(result.error)throw result.error;
+  events=result.data||[];const picker=$('event');for(const ev of events)picker.append(new Option((ev.title||'Workshop')+' · '+(ev.school_name||'Institute'),ev.id));
+  authorized=true;$('app').classList.remove('hidden');await load();
+ }catch(e){$('status').textContent='Access unavailable: '+(e.message||'Unknown error');}
+}
+$('search').addEventListener('input',draw);$('filter').addEventListener('change',draw);$('event').addEventListener('change',load);$('refresh').addEventListener('click',load);boot();
+</script></body></html>
