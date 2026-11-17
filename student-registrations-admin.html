@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Student Registration Admin | Maa Sati IAC</title>
+<style>
+:root{font-family:Manrope,system-ui,sans-serif;color:#1b2c42;background:#f4f7fb}*{box-sizing:border-box}body{margin:0}header{background:#142846;color:#fff;padding:18px max(18px,calc((100% - 1160px)/2));display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}header a{color:#fff}main{max-width:1160px;margin:32px auto;padding:0 18px 70px}h1{font-size:clamp(29px,5vw,43px);margin:8px 0}h2{font-size:21px}.muted{color:#64758a;line-height:1.55}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.tile,.panel{border:1px solid #dee5ef;background:white;border-radius:15px;padding:20px;box-shadow:0 8px 30px #112c4a09}.tile strong{display:block;font-size:33px}.tile small{color:#617184}.panel{margin-top:17px}.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:end}.controls label{font-weight:700;font-size:12px;display:grid;gap:6px}.controls input,.controls select{padding:11px;border:1px solid #bccadd;border-radius:9px;font:inherit;background:white;color:#172841;min-width:170px;max-width:100%}button{border:0;border-radius:9px;background:#224faf;color:#fff;font:inherit;font-weight:700;padding:12px 17px;cursor:pointer}button:disabled{opacity:.55;cursor:not-allowed}button.secondary{color:#224faf;background:#e8effd}a{color:#2455b9}table{border-collapse:collapse;width:100%;font-size:13px}th,td{padding:13px 10px;text-align:left;border-bottom:1px solid #e4e9f1;vertical-align:top}th{color:#53647c;font-size:11px;letter-spacing:.05em;text-transform:uppercase}td{overflow-wrap:anywhere}.scroll{overflow-x:auto}.pill{display:inline-flex;border-radius:30px;padding:5px 9px;background:#eaf1fe;font-size:11px;font-weight:700}#notice{margin:16px 0;min-height:22px}.warning{color:#8b4e23}.hidden{display:none!important}footer{margin-top:30px;font-size:12px;color:#67768b}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #d39a52;outline-offset:3px}@media(max-width:850px){.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:520px){.grid{grid-template-columns:1fr 1fr}.tile{padding:13px}.tile strong{font-size:25px}.controls{display:grid}.controls input,.controls select{width:100%}header{padding:16px}th,td{padding:10px 8px}}
+</style><link rel="stylesheet" href="/mobile-iac.css"></head>
+<body><header><strong>Maa Sati IAC · Founder Operations</strong><nav><a href="/launch.html">Launch Dashboard</a> · <a href="/platform.html">Learning Portal</a></nav></header>
+<main><div class="muted">PRIVATE · VERIFIED ADMINISTRATORS ONLY</div><h1>Student Registration Admin</h1><p class="muted">Read-only overview of actual institute account profiles, course enrollments and event registrations. This does not include registrations from any separate external workshop form.</p>
+<div id="notice" role="status" aria-live="polite">Checking secure administrator access…</div>
+<section id="workspace" class="hidden" aria-label="Private registration records">
+<div id="stats" class="grid"></div>
+<div class="panel"><h2>Find student registrations</h2>
+<div class="controls"><label>Student / School <input id="search" type="search" maxlength="140" placeholder="Search name or school"></label><label>Class / Year<select id="class"><option value="">All classes</option></select></label><label>School<select id="school"><option value="">All schools</option></select></label><button id="clear" class="secondary" type="button">Clear</button><button id="reload" type="button">Refresh records</button></div>
+<p id="shown" class="muted" aria-live="polite"></p><div class="scroll"><table><thead><tr><th>Student</th><th>School / College</th><th>Class / Year</th><th>Course enrollments</th><th>Seminar / Event</th><th>Registered</th></tr></thead><tbody id="rows"></tbody></table></div>
+</div><p class="warning">Student data is private. No direct public sharing or export is enabled. Enrollment approval must be done through the existing authorized workflow.</p></section>
+<footer>Maximum 500 recent profiles per refresh. Summary totals include all accessible database records. No fabricated registration data is shown.</footer>
+</main>
+<script type="module">
+import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.119.0';
+const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
+const $=id=>document.getElementById(id);let records=[];
+const text=(tag,value)=>{const el=document.createElement(tag);el.textContent=String(value??'—');return el};
+const count=value=>{const n=Number(value);return Number.isFinite(n)&&n>=0?Math.floor(n):0};
+const pretty=value=>{const d=new Date(value);return !value||Number.isNaN(d.getTime())?'—':d.toLocaleDateString('en-IN',{timeZone:'Asia/Kolkata',day:'2-digit',month:'short',year:'numeric'})};
+function options(id,values){const el=$(id),original=el.value;el.replaceChildren(new Option(id==='class'?'All classes':'All schools',''));for(const value of [...new Set(values.map(v=>String(v||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'en',{numeric:true})))el.append(new Option(value,value));el.value=[...el.options].some(x=>x.value===original)?original:'';}
+function render(){
+ const query=$('search').value.trim().toLocaleLowerCase(),grade=$('class').value,school=$('school').value;
+ const shown=records.filter(x=>(String(x.name||'')+' '+String(x.school||'')).toLocaleLowerCase().includes(query)&&(!grade||x.class===grade)&&(!school||x.school===school));
+ $('shown').textContent=shown.length+' of '+records.length+' recent profile records displayed';
+ const body=$('rows');body.replaceChildren();
+ if(!shown.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=6;td.textContent='No matching records. Change filters or refresh.';tr.append(td);body.append(tr);return;}
+ for(const row of shown){const tr=document.createElement('tr');const enrol=count(row.course_enrollments),active=count(row.active_enrollments),pending=count(row.pending_enrollments);for(const value of [row.name||'Name not supplied',row.school||'Not provided',row.class||row.level||'Not provided',enrol+' total · '+active+' active · '+pending+' pending',count(row.event_registrations)+' registered',pretty(row.registered_at)])tr.append(text('td',value));body.append(tr);}
+}
+async function load(){
+ $('notice').textContent='Verifying founder permissions and loading saved data…';$('reload').disabled=true;
+ try{
+  const auth=await db.auth.getUser();
+  if(auth.error||!auth.data.user){$('workspace').classList.add('hidden');$('notice').replaceChildren(text('p','Sign in to your verified founder/admin account before viewing private student records. '));const a=document.createElement('a');a.href='/platform.html#dashboard';a.textContent='Sign in';$('notice').append(a);return;}
+  const result=await db.rpc('iac_admin_registration_overview');
+  if(result.error)throw result.error;
+  const data=result.data||{},metrics=data.counts||{};records=Array.isArray(data.students)?data.students:[];
+  const labels=[['Registered profiles',metrics.profiles],['Course enrollments',metrics.course_enrollments],['Pending enrollments',metrics.pending_enrollments],['Event registrations',metrics.event_registrations]];
+  $('stats').replaceChildren();for(const [label,value] of labels){const item=document.createElement('article');item.className='tile';item.append(text('strong',count(value)),text('small',label));$('stats').append(item);}
+  options('class',records.map(x=>x.class));options('school',records.map(x=>x.school));render();
+  $('workspace').classList.remove('hidden');$('notice').textContent='Authorized view · last refreshed '+new Date().toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'})+'.';
+ }catch(error){records=[];$('workspace').classList.add('hidden');$('notice').textContent=error.code==='42501'?'Verified institute administrator role required.':'Unable to load protected registration data. Please retry or contact institute support.';console.error(error);}
+ finally{$('reload').disabled=false;}
+}
+$('search').addEventListener('input',render);$('class').addEventListener('change',render);$('school').addEventListener('change',render);$('clear').onclick=()=>{$('search').value='';$('class').value='';$('school').value='';render();};$('reload').onclick=load;load();
+</script></body></html>
