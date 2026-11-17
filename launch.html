@@ -22,6 +22,12 @@ button{font:inherit;font-size:12px;font-weight:800;color:white;background:var(--
 <section id="dashboard" class="hidden">
 <div class="row"><h2>Current deployment & readiness</h2><button id="reload">Refresh audit</button></div>
 <div id="summary" class="grid"></div>
+<section class="card" id="seminarAdminMetrics" aria-labelledby="seminarMetricsTitle">
+<div class="row"><div><h2 id="seminarMetricsTitle">School Seminar Certificates — Admin Analytics</h2><p class="small">Private school-wise certificate issuance, downloads and clicks from the authenticated administrator API. Clicks are not unique visitors.</p></div><span class="status warn" id="seminarMetricsFlag" role="status">Checking…</span></div>
+<div class="grid" id="seminarMetricsSummary" aria-live="polite"></div>
+<div id="seminarMetricsList" aria-live="polite">Loading authorized school statistics…</div>
+<p class="small">Student certificate issuance, existing certificate links and public QR verification are separate and unchanged. Legacy shared-code analytics API decommissioning requires a separate client migration.</p>
+</section>
 <section class="card" aria-labelledby="nextTitle"><h2 id="nextTitle">Founder Next Steps — Real Operations</h2><p class="small">These links take you to actual institute workflows. Database counts show recorded activity, not proof that end-to-end testing is complete.</p><div id="nextWork" class="next-grid" aria-live="polite">Checking next tasks…</div></section>
 <section class="card" aria-labelledby="courseContentTitle" id="courseContentReadiness">
 <div class="row"><h2 id="courseContentTitle">Published Course Content — Real Readiness</h2><span id="courseContentFlag" class="status warn" role="status">Checking…</span></div>
@@ -317,6 +323,32 @@ function renderNextActions(counts){
   +'<a href="'+escapeValue(link)+'">'+escapeValue(cta)+' →</a></article>'
  ).join('');
 }
+async function loadSeminarAdminMetrics(){
+ const flag=$('seminarMetricsFlag'),host=$('seminarMetricsList'),summary=$('seminarMetricsSummary');
+ flag.textContent='Checking…';flag.className='status warn';host.textContent='Loading authorized school statistics…';summary.replaceChildren();
+ const result=await db.rpc('iac_admin_seminar_certificate_counts');
+ if(result.error){flag.textContent='Unavailable';flag.className='status hold';host.textContent='School certificate analytics unavailable for this account. '+(result.error.code==='42501'?'Verified institute administrator required.':'Refresh to retry.');return;}
+ const schools=Array.isArray(result.data)?result.data:[];
+ const total=k=>schools.reduce((sum,school)=>sum+Number(school[k]||0),0);
+ flag.textContent='Authenticated admin data';flag.className='status ok';
+ summary.innerHTML=[
+  number('Seminar schools',schools.length,'Recorded seminar event/school rows'),
+  number('Certificates issued',total('issued'),'Currently non-revoked school certificates'),
+  number('Certificates downloaded',total('downloaded'),'Distinct recorded certificate downloads'),
+  number('Download clicks',total('total_clicks'),'Recorded events, not unique visitors')
+ ].join('');
+ host.replaceChildren();
+ if(!schools.length){host.textContent='No seminar events recorded yet.';return;}
+ for(const school of schools){
+  const article=document.createElement('article');article.className='item';
+  const heading=document.createElement('h3');heading.textContent=school.school||'Unlabeled school';
+  const detail=document.createElement('p');detail.className='small';
+  detail.textContent=[school.event||'Seminar',school.date||'Date not set',
+   'Issued: '+Number(school.issued||0),'Downloaded: '+Number(school.downloaded||0),
+   'PDF clicks: '+Number(school.pdf_downloads||0),'Image clicks: '+Number(school.image_downloads||0)].join(' · ');
+  article.append(heading,detail);host.append(article);
+ }
+}
 async function refresh(){
  try{
  const identity=await db.auth.getUser();
@@ -327,6 +359,7 @@ async function refresh(){
  latestMeasured={counts,tech};latestOwnerStates=null;renderReleaseGate();
  renderNextActions(counts);
  $('gate').classList.add('hidden');$('dashboard').classList.remove('hidden');
+ await loadSeminarAdminMetrics();
  $('summary').innerHTML=[
   number('Account profiles',counts.student_profiles,'Includes founder and learners; not proof of enrollment'),
   number('Active students',counts.active_students,'Approved active course enrollments'),
