@@ -50,6 +50,15 @@ async function reload(){
       paymentButton.onclick=()=>payForWorkshop(event,paymentButton);
       card.append(paymentButton);
     }
+    const refreshButton=el('button','Refresh official payment status');refreshButton.type='button';refreshButton.style.display='block';refreshButton.style.marginTop='10px';
+    refreshButton.onclick=async()=>{refreshButton.disabled=true;try{
+      const response=await paymentApi({action:'status'});
+      const matching=(response.orders||[]).filter(o=>o.product_type==='event'&&o.event_id===event.id);
+      const nowCaptured=matching.some(o=>o.status==='captured'&&o.paid_at);
+      $('status').textContent=nowCaptured?'Official gateway record confirms captured payment. Founder approval remains pending.':'No captured gateway payment recorded for this workshop. If you paid, do not pay again until institute support checks the transaction.';
+      await reload();if(!nowCaptured)$('status').textContent='No captured gateway payment recorded for this workshop. If you paid, contact institute support before paying again.';
+    }catch(error){$('status').textContent='Unable to refresh official payment status: '+(error.message||'Please retry');}finally{refreshButton.disabled=false;}};
+    card.append(refreshButton);
     const link=el('a','Open approved learning dashboard');link.href='/my-workshop.html';link.style.display='inline-block';link.style.marginTop='12px';card.append(link);
    }else{
     const btn=el('button','Register for this workshop');btn.type='button';btn.style.display='block';btn.style.marginTop='12px';
