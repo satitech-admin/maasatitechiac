@@ -1,0 +1,51 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Unified Workshop Progress | Maa Sati IAC</title>
+<style>:root{font:14px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;color:#1b3048;background:#f4f7fb}*{box-sizing:border-box}body{margin:0}header{display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;background:#172d4a;color:white;padding:18px max(18px,calc((100% - 1150px)/2))}header a{color:white}main{max-width:1150px;margin:34px auto;padding:0 18px 70px}h1{font-size:clamp(30px,5vw,44px);margin:4px 0}.muted{color:#607388}.panel,.stat{background:white;padding:20px;border:1px solid #dce4ef;border-radius:14px;margin:14px 0}.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.stat{margin:0}.stat b{font-size:28px;display:block}.stat small{color:#65798e;font-size:12px}.row{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:end}.field{display:grid;gap:6px;font-size:12px;font-weight:750}.field input,.field select{min-width:190px;width:100%;border:1px solid #b7c6d7;background:#fff;color:#1b3048;border-radius:8px;padding:11px;font:inherit}button{background:#2556ab;color:#fff;border:0;padding:11px 16px;font:inherit;font-weight:750;border-radius:9px;cursor:pointer}button:disabled{opacity:.5}.scroll{overflow:auto}table{min-width:1060px;border-collapse:collapse;width:100%;font-size:12px}th,td{text-align:left;vertical-align:top;border-bottom:1px solid #e2e9f1;padding:11px}th{background:#f4f7fb;text-transform:uppercase;font-size:11px;color:#5b6c83}.tag{display:inline-block;font-size:11px;font-weight:800;border-radius:20px;background:#eaf0fb;color:#315987;padding:5px 9px}.tag.ok{background:#e1f2e8;color:#236844}.tag.warn{background:#fff0d7;color:#845b1d}.notice{padding:14px;border:1px solid #ead5aa;color:#745526;background:#fff8e8;border-radius:10px;font-size:13px}.hidden{display:none!important}a{color:#2655a6}button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #e3a850;outline-offset:3px}@media(max-width:900px){.stats{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:600px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.row{display:grid}.panel{padding:15px}}@media(max-width:390px){.stats{grid-template-columns:1fr}}
+</style></head><body><header><strong>Maa Sati IAC · Founder Student Operations</strong><nav><a href="/launch.html">Founder dashboard</a> · <a href="/workshop-native-approvals.html">Native approvals</a> · <a href="/workshop-mentor.html">Mentor reviews</a></nav></header>
+<main><div class="muted">FOUNDER ONLY · LIVE STUDENT PROGRESS</div><h1>Unified Workshop Enrollment & Progress</h1><p class="muted">One view for imported and native workshop approvals, verified day-wise attendance, reviewed projects, mentor feedback and actual certificate records.</p><div id="status" role="status" aria-live="polite">Checking founder authorization…</div>
+<section id="app" class="hidden"><section class="panel"><div class="row"><label class="field">Workshop event<select id="event"><option value="">All workshops</option></select></label><label class="field">Search student or school<input type="search" id="search" placeholder="Name, class or school"></label><label class="field">Enrollment status<select id="approval"><option value="">All</option><option value="pending">Awaiting approval</option><option value="native">Native approved</option><option value="imported">Imported approved</option></select></label><label class="field">Certificate readiness<select id="eligible"><option value="">All</option><option value="yes">Eligible for review</option><option value="no">Not yet eligible</option></select></label><button type="button" id="refresh">Refresh live data</button></div><p id="summary" class="muted"></p></section>
+<div id="stats" class="stats"></div><section class="panel"><h2>Student-wise progress</h2><div class="scroll"><table><thead><tr><th>Student / school</th><th>Workshop</th><th>Enrollment</th><th>Verified attendance</th><th>Mini-project</th><th>Mentor feedback</th><th>Certificate check</th><th>Issued certificate</th></tr></thead><tbody id="rows"></tbody></table></div></section>
+<section class="panel"><h2>How certificate readiness is calculated</h2><p class="notice">A student is marked ready for certificate review only if their workshop enrollment is founder-approved, the required number of attendance days are verified, and their submitted project has an approved mentor review. This is not automatic certificate issuance. Actual issued and revoked certificate records are shown separately.</p><p><a href="/workshop-enrollments.html">Attendance management</a> · <a href="/workshop-mentor.html">Project reviews</a> · <a href="/workshop-payment-reconciliation.html">Payment reconciliation</a></p></section></section>
+<footer class="muted">Records are private and visible only to authorized founder accounts. Large data sets are limited to 500 recent workshop registrations; no fake registrations, payments or certificates are generated.</footer></main>
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
+const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
+const $=id=>document.getElementById(id),text=(tag,str)=>{const e=document.createElement(tag);e.textContent=String(str??'');return e};
+let all=[],events=[],authorized=false;
+const tag=(val,good)=>{const b=text('span',val);b.className='tag'+(good?' ok':' warn');return b};
+function refreshDisplay(){
+ const eventId=$('event').value,q=$('search').value.trim().toLocaleLowerCase(),state=$('approval').value,eligible=$('eligible').value;
+ const shown=all.filter(x=>(!eventId||x.event_id===eventId)&&(!state||x.approval_source===state)&&(!eligible||(eligible==='yes'?x.certificate_eligible:!x.certificate_eligible))&&(!q||[x.name,x.student_school,x.event_school,x.student_class].some(t=>String(t||'').toLocaleLowerCase().includes(q))));
+ const values=[['Student registrations',shown.length],['Founder approved',shown.filter(x=>x.approval_source!=='pending').length],['With verified attendance',shown.filter(x=>x.present_days>0).length],['Approved projects',shown.filter(x=>x.project_status==='approved').length],['Eligible for certificate review',shown.filter(x=>x.certificate_eligible).length]];
+ $('stats').replaceChildren();for(const [label,v] of values){const c=text('article','');c.className='stat';c.append(text('b',v),text('small',label));$('stats').append(c);}
+ $('summary').textContent=shown.length+' of '+all.length+' recent workshop registrations shown.'+(all.length>=500?' Dataset limit reached; earlier records may be excluded.':'');
+ const host=$('rows');host.replaceChildren();
+ if(!shown.length){const tr=text('tr',''),td=text('td','No matching student workshop records yet.');td.colSpan=8;tr.append(td);host.append(tr);return;}
+ for(const x of shown){const tr=text('tr','');const who=text('td','');who.append(text('strong',x.name||'Learner account'),text('div',(x.student_school||'School not provided')+' · '+(x.student_class||'Class not provided')));tr.append(who);
+ tr.append(text('td',x.event_title||'Workshop'));
+ const approval=text('td','');approval.append(tag(x.approval_source==='native'?'Native approved':x.approval_source==='imported'?'Imported approved':'Approval pending',x.approval_source!=='pending'));tr.append(approval);
+ tr.append(text('td',x.present_days+' verified / '+x.required_days+' required ('+x.recorded_days+' recorded)'));
+ const project=text('td','');project.append(tag((x.project_status||'not_submitted').replaceAll('_',' '),x.project_status==='approved'));if(x.project_url){try{const url=new URL(x.project_url);if(url.protocol==='https:'){const a=text('a',' View project');a.href=url.href;a.rel='noopener noreferrer';a.target='_blank';project.append(a);}}catch{}}tr.append(project);
+ tr.append(text('td',x.mentor_feedback||'No mentor feedback'));
+ const readiness=text('td','');readiness.append(tag(x.certificate_eligible?'Eligible for review':'Not yet eligible',x.certificate_eligible));tr.append(readiness);
+ const certificate=text('td','');certificate.append(tag(x.certificate_issued?'Issued':x.certificate_revoked?'Revoked only':'Not issued',x.certificate_issued));tr.append(certificate);
+ host.append(tr);}
+}
+async function reload(){
+ if(!authorized)return;$('refresh').disabled=true;$('status').textContent='Loading verified records…';
+ try{
+ const response=await db.rpc('iac_admin_unified_workshop_progress',{p_event:null});if(response.error)throw response.error;
+ all=Array.isArray(response.data?.rows)?response.data.rows:[];
+ $('status').textContent='Live founder progress view updated. No student data was changed.';refreshDisplay();
+ }catch(error){$('status').textContent='Cannot load unified progress: '+(error.message||'Unknown error');}finally{$('refresh').disabled=false;}
+}
+async function boot(){
+ try{
+ const auth=await db.auth.getUser();if(auth.error||!auth.data.user){$('status').replaceChildren(text('span','Founder login required. '));const a=text('a','Sign in');a.href='/platform.html#dashboard';$('status').append(a);return;}
+ const role=await db.rpc('iac_is_admin');if(role.error||role.data!==true)throw Error('Founder/admin authorization required.');
+ const result=await db.from('iac_events').select('id,title,school_name,kind').in('kind',['one_week','workshop']).limit(500);if(result.error)throw result.error;
+ events=result.data||[];const p=$('event');for(const ev of events)p.append(new Option((ev.title||'Workshop')+' · '+(ev.school_name||'Institute'),ev.id));
+ authorized=true;$('app').classList.remove('hidden');await reload();
+ }catch(e){$('status').textContent='Access unavailable: '+(e.message||'Unknown error');}
+}
+$('event').addEventListener('change',refreshDisplay);$('search').addEventListener('input',refreshDisplay);$('approval').addEventListener('change',refreshDisplay);$('eligible').addEventListener('change',refreshDisplay);$('refresh').addEventListener('click',reload);boot();
+</script></body></html>
