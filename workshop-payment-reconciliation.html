@@ -1,0 +1,67 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Workshop Payment Reconciliation | Maa Sati IAC</title>
+<style>:root{font:14px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif;background:#f4f7fb;color:#1a3149}*{box-sizing:border-box}body{margin:0}header{background:#172d4b;color:white;padding:18px max(18px,calc((100% - 1150px)/2));display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}header a{color:white}main{margin:32px auto;max-width:1150px;padding:0 18px 65px}h1{font-size:clamp(29px,5vw,43px);margin:8px 0}h2{font-size:21px}.muted{color:#63758b}.panel,.stat{background:white;border:1px solid #dbe5ef;border-radius:14px;padding:19px;margin:15px 0}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}.stat{margin:0}.stat strong{display:block;font-size:30px}.stat small{font-size:12px;color:#607389}.row{display:flex;gap:12px;align-items:end;justify-content:space-between;flex-wrap:wrap}.field{font-size:12px;font-weight:750;display:grid;gap:6px}.field input,.field select{font:inherit;background:white;color:#1a3149;border:1px solid #b6c5d7;padding:11px 12px;border-radius:9px;min-width:210px}button{border:0;border-radius:9px;background:#2555ac;color:white;font:inherit;font-weight:750;padding:11px 16px;cursor:pointer}button:disabled{opacity:.55}.scroll{overflow:auto}table{width:100%;border-collapse:collapse;min-width:850px;font-size:12px}th,td{border-bottom:1px solid #e5eaf1;text-align:left;vertical-align:top;padding:12px 11px}th{background:#f4f7fc;color:#556881;font-size:11px;text-transform:uppercase}.tag{display:inline-block;font-size:11px;font-weight:850;padding:5px 8px;border-radius:20px;background:#eaf1fb;color:#355c89}.tag.ok{background:#e2f3e8;color:#246744}.tag.warn{background:#fff0d8;color:#87591b}.notice{border:1px solid #ead8b2;background:#fff8eb;color:#745929;padding:14px;border-radius:11px;font-size:13px}.hidden{display:none!important}a{color:#2555a8}button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #e3aa55;outline-offset:3px}@media(max-width:770px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.row{justify-content:flex-start}}@media(max-width:450px){.field input,.field select{min-width:0;width:100%}.row{display:grid}.stats{grid-template-columns:1fr}}
+</style></head><body><header><strong>Maa Sati IAC · Founder Finance Operations</strong><nav><a href="/launch.html">Founder dashboard</a> · <a href="/workshop-approvals.html">Approval decisions</a> · <a href="/workshop-automated-qa.html">QA</a></nav></header>
+<main><div class="muted">FOUNDER ONLY · READ-ONLY FINANCIAL RECONCILIATION</div><h1>Workshop Payment & Enrollment Tracker</h1><p class="muted">Inspect genuine institute event registrations alongside existing Razorpay order records, guardian verification and founder approvals. Only server-confirmed captured orders count as paid.</p><div id="status" role="status" aria-live="polite">Checking authorized founder access…</div>
+<section id="app" class="hidden">
+<div class="panel"><div class="row"><label class="field">Published or draft workshop<select id="event"><option value="">All workshop events</option></select></label><label class="field">Payment status<select id="payment"><option value="">All</option><option value="paid">Gateway captured</option><option value="created">Order created, not captured</option><option value="unpaid">No payment order</option></select></label><label class="field">Search learner<input id="search" type="search" placeholder="Search student name"></label><button id="refresh" type="button">Refresh live status</button></div><p id="summary" class="muted"></p></div>
+<div id="stats" class="stats"></div><section class="panel"><h2>Registered students</h2><div class="scroll"><table><thead><tr><th>Student</th><th>Workshop</th><th>Razorpay status</th><th>Guardian verification</th><th>Identity link</th><th>Founder approval</th></tr></thead><tbody id="rows"></tbody></table></div></section>
+<section class="panel"><h2>Financial review guidance</h2><p class="notice">Created order ≠ collected money. Captured order shows the institute's recorded gateway result and must match the exact event and student. A payment screenshot, unrelated course payment, or unverified guardian submission never automatically approves enrollment. Contact the payment provider or institute support to reconcile disputed payments; do not manually change captured status here.</p><p><a href="/workshop-approvals.html">Open founder approval workflow</a> · <a href="/workshop-account-matching.html">Check verified identities</a></p></section>
+</section><footer class="muted">Privacy: this page is visible only after authorized institute admin login. It does not show payment IDs, guardian emails or contact numbers. Data is read-only and may be limited when the database contains very large batches.</footer></main>
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
+const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
+const $=id=>document.getElementById(id),el=(tag,val)=>{const a=document.createElement(tag);a.textContent=String(val??'');return a;},take=result=>{if(result.error)throw result.error;return result.data||[];};
+let rows=[],events=[],limited=false;
+const names=new Map(),guardians=new Map();
+function render(){
+ const eventId=$('event').value,condition=$('payment').value,term=$('search').value.trim().toLocaleLowerCase();
+ const shown=rows.filter(r=>(!eventId||r.event_id===eventId)&&(!condition||r.payment===condition)&&(!term||r.name.toLocaleLowerCase().includes(term)));
+ $('summary').textContent=shown.length+' of '+rows.length+' institute event registrations shown'+(limited?'. Some records may be missing because the row limit was reached.':'.');
+ $('stats').replaceChildren();
+ for(const [label,count] of [['Visible registrations',shown.length],['Captured gateway payments',shown.filter(x=>x.payment==='paid').length],['Awaiting or missing payment',shown.filter(x=>x.payment!=='paid').length],['Founder-approved enrollments',shown.filter(x=>x.approved).length]]){
+  const stat=el('article','');stat.className='stat';stat.append(el('strong',count),el('small',label));$('stats').append(stat);
+ }
+ const host=$('rows');host.replaceChildren();
+ if(!shown.length){const tr=el('tr',''),td=el('td','No matching workshop student registrations found.');td.colSpan=6;tr.append(td);host.append(tr);return;}
+ for(const entry of shown){
+  const tr=el('tr','');
+  tr.append(el('td',entry.name));
+  tr.append(el('td',entry.event_title));
+  const payment=el('td','');const status=el('span',entry.payment==='paid'?'Captured':entry.payment==='created'?'Order created':'No order');status.className='tag '+(entry.payment==='paid'?'ok':'warn');payment.append(status);tr.append(payment);
+  tr.append(el('td',entry.guardian));
+  tr.append(el('td',entry.linked?'Verified identity linked':'No verified identity link'));
+  const final=el('td',entry.approved?'Founder approved':'Approval pending');tr.append(final);host.append(tr);
+ }
+}
+async function load(){
+ $('refresh').disabled=true;$('status').textContent='Checking live payment and enrollment records…';
+ try{
+  const auth=await db.auth.getUser();if(auth.error||!auth.data.user){$('app').classList.add('hidden');$('status').replaceChildren(el('span','Founder login required. '));const link=el('a','Sign in');link.href='/platform.html#dashboard';$('status').append(link);return;}
+  const role=await db.rpc('iac_is_admin');if(role.error||role.data!==true)throw Error('Verified founder/admin permission required.');
+  const results=await Promise.all([
+   db.from('iac_events').select('id,title,school_name,kind,fee_paise,published').in('kind',['one_week','workshop']).limit(500),
+   db.from('iac_event_registrations').select('id,event_id,user_id').limit(1500),
+   db.from('iac_payment_orders').select('student_id,event_id,product_type,status,paid_at,razorpay_payment_id').eq('product_type','event').limit(1500),
+   db.from('iac_guardian_consents').select('student_id,status').limit(1500),
+   db.from('iac_workshop_identity_links').select('student_id').limit(1500),
+   db.from('iac_workshop_enrollment_approvals').select('student_id,event_id').limit(1500)
+  ]);
+  for(const result of results)if(result.error)throw result.error;
+  const [ev,registrations,orders,guardianList,links,approvals]=results.map(take);
+  limited=results.some((x,i)=>(x.data||[]).length>=[500,1500,1500,1500,1500,1500][i]);
+  events=ev;const evMap=new Map(ev.map(x=>[x.id,x])),identities=new Set(links.map(x=>x.student_id)),approvalKeys=new Set(approvals.map(x=>x.student_id+'|'+x.event_id));
+  guardians.clear();for(const g of guardianList)guardians.set(g.student_id,g.status);
+  const userIds=[...new Set(registrations.filter(x=>evMap.has(x.event_id)).map(x=>x.user_id))];
+  names.clear();
+  for(let i=0;i<userIds.length;i+=200){const ids=userIds.slice(i,i+200);const response=await db.from('iac_profiles').select('id,full_name').in('id',ids);for(const p of take(response))names.set(p.id,p.full_name);}
+  rows=registrations.filter(x=>evMap.has(x.event_id)).map(r=>{
+    const eventOrders=orders.filter(o=>o.student_id===r.user_id&&o.event_id===r.event_id);
+    const paid=eventOrders.some(o=>o.status==='captured'&&o.paid_at&&o.razorpay_payment_id);
+    return{name:names.get(r.user_id)||'Learner account',event_title:evMap.get(r.event_id).title,event_id:r.event_id,payment:paid?'paid':eventOrders.some(o=>o.status==='created')?'created':'unpaid',guardian:guardians.get(r.user_id)||'Not submitted',linked:identities.has(r.user_id),approved:approvalKeys.has(r.user_id+'|'+r.event_id)};
+  });
+  const picker=$('event'),previous=picker.value;picker.replaceChildren(new Option('All workshop events',''));for(const e of ev)picker.append(new Option((e.title||'Workshop')+' · '+(e.school_name||'Institute'),e.id));picker.value=previous;
+  $('app').classList.remove('hidden');render();$('status').textContent='Admin authorization verified. Registered student payment statuses loaded from database.';
+ }catch(error){$('app').classList.add('hidden');$('status').textContent='Could not load payment reconciliation: '+(error.message||'Unknown error');}finally{$('refresh').disabled=false;}
+}
+$('event').onchange=render;$('payment').onchange=render;$('search').oninput=render;$('refresh').onclick=load;load();
+</script></body></html>
