@@ -139,6 +139,16 @@ check(read('launch.html').includes('maa-sati-iac-founder-acceptance-runbook.csv'
   read('launch.html').includes('Owner reported state') &&
   read('launch.html').includes('Owner attested · requires independent QA'),
   'Founder runbook CSV must not claim independent QA or include personal evidence notes');
+check(learningRoom.includes("case 'complete-lesson'") &&
+  learningRoom.includes("select('id,course_id,published').eq('id',value).maybeSingle()") &&
+  learningRoom.includes("lesson.published!==true") &&
+  learningRoom.includes("select('status').eq('user_id',user.id).eq('course_id',lesson.course_id)") &&
+  learningRoom.includes("['active','completed'].includes(own?.status)"),
+  'Lesson completion action must recheck published lesson and approved student enrollment');
+check(learningRoom.includes("Have you actually studied this lesson") &&
+  learningRoom.includes("it does not prove video attendance or award a certificate"),
+  'Self-reported lesson completion must require explicit acknowledgement and never imply credential eligibility');
+
 const launchHtml=read('launch.html');
 check(launchHtml.includes('id="releaseDecision"')&&launchHtml.includes('id="releaseReasons"'),
   'Owner-only launch release gate is missing');
