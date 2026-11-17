@@ -1,0 +1,64 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Workshop Account Matching | Maa Sati IAC</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#1a3048;background:#f4f7fb}*{box-sizing:border-box}body{margin:0}header{background:#162c4c;color:white;padding:18px max(18px,calc((100% - 1160px)/2));display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}header a{color:#fff}main{max-width:1160px;margin:34px auto;padding:0 18px 70px}h1{font-size:clamp(28px,5vw,42px);margin:7px 0}p{line-height:1.6}.muted{color:#617187}.panel,.metric{border:1px solid #dbe3ed;background:white;border-radius:14px;padding:19px;margin:15px 0}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.stats .metric{margin:0}.metric strong{display:block;font-size:30px}.metric small{color:#65768a}.toolbar{display:flex;align-items:end;gap:11px;flex-wrap:wrap}.toolbar label{display:grid;gap:6px;font-size:12px;font-weight:800}.toolbar input,.toolbar select{font:inherit;padding:10px 12px;border:1px solid #aebed1;border-radius:9px;min-width:200px;max-width:100%;background:white}button{font:inherit;border:0;border-radius:9px;background:#2454af;color:white;padding:11px 16px;font-weight:750;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}.scroll{overflow:auto}table{border-collapse:collapse;width:100%;min-width:810px;font-size:12px}th,td{border-bottom:1px solid #e3eaf2;text-align:left;padding:12px 10px;vertical-align:top}th{color:#5a697e;background:#f3f6fb;text-transform:uppercase;font-size:11px}td{overflow-wrap:anywhere}.chip{display:inline-block;background:#edf1f8;border-radius:15px;padding:5px 8px;font-weight:750}.chip.good{background:#e5f4eb;color:#226747}.chip.warn{background:#fff2d9;color:#875b16}.notice{background:#fff7e7;border:1px solid #eed9a9;border-radius:10px;padding:13px;color:#785a2a;font-size:13px}.hidden{display:none!important}#status{min-height:25px}.small{font-size:12px}a{color:#2257b9}header a{color:#fff}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #dea14a;outline-offset:3px}@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}.toolbar{display:grid}.toolbar input,.toolbar select{width:100%}}@media(max-width:400px){.metric{padding:12px}.metric strong{font-size:24px}}
+</style></head><body><header><strong>Maa Sati IAC · Founder Tools</strong><nav><a href="/launch.html">Founder Dashboard</a> · <a href="/school-workshop-admin.html">Review Queue</a></nav></header>
+<main><div class="muted small">PRIVATE OPERATIONS · READ ONLY</div><h1>Student Account Reconciliation</h1><p class="muted">Compare imported school workshop records with institute profiles. Exact name, school and class matches are <strong>candidates only</strong>—they are not verified identities. No student accounts, payments, guardian permissions or enrollments are changed here.</p><div id="status" role="status" aria-live="polite">Checking founder authorization…</div>
+<section id="app" class="hidden"><section id="stats" class="stats" aria-label="Matching overview"></section>
+<div class="panel"><div class="toolbar"><label>Search student or school<input id="search" type="search" placeholder="Name or school"></label><label>Matching status<select id="filter"><option value="">All</option><option value="single">One possible match</option><option value="multiple">Ambiguous matches</option><option value="none">No match</option></select></label><button type="button" id="reload">Refresh records</button></div><p id="info" class="muted small"></p><div class="scroll"><table><thead><tr><th>Imported student</th><th>School / Class</th><th>Matching status</th><th>Institute profile candidate</th><th>Guardian record</th><th>Payment record</th></tr></thead><tbody id="rows"></tbody></table></div></div>
+<div class="notice">Important: A possible profile match must be confirmed independently with the student/guardian before any enrollment decision. Guardian approval and captured payment shown here are associated with a candidate account, not proof that the imported student is the same person. No records are automatically linked or approved.</div>
+</section><p class="muted small">Up to 500 latest queued imports and 1,000 institute profiles are compared per refresh. If a limit is reached, results may be incomplete.</p></main>
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
+const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
+const $=id=>document.getElementById(id),mk=(tag,str)=>{const el=document.createElement(tag);el.textContent=String(str??'');return el;};
+const norm=value=>String(value||'').normalize('NFKC').toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim().replace(/\s+/g,' ');
+let resolved=[];
+function render(){
+ const phrase=norm($('search').value),status=$('filter').value;
+ const records=resolved.filter(r=>(norm(r.entry.student_name+' '+r.entry.school_name).includes(phrase))&&(!status||r.status===status));
+ $('info').textContent=records.length+' of '+resolved.length+' imported records shown. Name matches are suggestions, not proof of identity.';
+ const host=$('rows');host.replaceChildren();
+ if(!records.length){const tr=document.createElement('tr'),td=mk('td','No records match these filters.');td.colSpan=6;tr.append(td);host.append(tr);return;}
+ for(const row of records){
+  const r=row.entry,tr=document.createElement('tr');
+  tr.append(mk('td',r.student_name||'Unknown student'),mk('td',(r.school_name||'Unknown school')+' · '+(r.class_label||'Unknown class')));
+  const state=document.createElement('td'),badge=mk('span',row.status==='single'?'One possible match':row.status==='multiple'?'Ambiguous — '+row.candidates.length+' profiles':'No exact profile match');badge.className='chip '+(row.status==='single'?'good':'warn');state.append(badge);tr.append(state);
+  tr.append(mk('td',row.status==='single'?row.candidates[0].full_name+' · '+(row.candidates[0].school_or_college||''):'Manual identity review required'));
+  tr.append(mk('td',row.status==='single'?row.guardian||'Not submitted':'Not determined'));
+  tr.append(mk('td',row.status==='single'?row.payment:'Not determined'));
+  host.append(tr);
+ }
+}
+async function load(){
+ $('reload').disabled=true;$('status').textContent='Checking protected registration and learner records…';
+ try{
+  const who=await db.auth.getUser();if(who.error||!who.data.user){$('app').classList.add('hidden');$('status').replaceChildren(mk('span','Founder sign-in required. '));const link=mk('a','Open sign-in');link.href='/platform.html#dashboard';$('status').append(link);return;}
+  const admin=await db.rpc('iac_is_admin');if(admin.error||admin.data!==true)throw Error('Verified admin required.');
+  const responses=await Promise.all([
+   db.from('iac_workshop_import_queue').select('id,student_name,school_name,class_label,review_status,proof_present').order('imported_at',{ascending:false}).limit(500),
+   db.from('iac_profiles').select('id,full_name,school_or_college,class_or_year').limit(1000),
+   db.from('iac_guardian_consents').select('student_id,status').limit(1000),
+   db.from('iac_payment_orders').select('student_id,status,product_type').limit(1000)
+  ]);
+  for(const response of responses)if(response.error)throw response.error;
+  const [queue,profiles,guardians,orders]=responses.map(x=>x.data||[]);
+  const indexes=new Map();
+  for(const p of profiles){const key=[p.full_name,p.school_or_college,p.class_or_year].map(norm).join('|');if(!indexes.has(key))indexes.set(key,[]);indexes.get(key).push(p);}
+  const guardianById=new Map(guardians.map(r=>[r.student_id,r.status]));
+  resolved=queue.map(entry=>{
+   const key=[entry.student_name,entry.school_name,entry.class_label].map(norm).join('|');
+   const candidates=indexes.get(key)||[],status=candidates.length===0?'none':candidates.length===1?'single':'multiple';
+   const id=candidates.length===1?candidates[0].id:null;
+   const guardian=id?(guardianById.get(id)||'Not submitted'):'Not determined';
+   const studentOrders=id?orders.filter(r=>r.student_id===id&&r.product_type==='event'):[];
+   const payment=id?(studentOrders.some(r=>r.status==='captured')?'Captured event order on candidate account (event not matched)':studentOrders.length?'Event order not captured':'No event gateway order'):'Not determined';
+   return{entry,candidates,status,guardian,payment};
+  });
+  const stats=[['Queued registrations',queue.length],['Possible one-to-one matches',resolved.filter(r=>r.status==='single').length],['Ambiguous',resolved.filter(r=>r.status==='multiple').length],['Unmatched',resolved.filter(r=>r.status==='none').length]];
+  $('stats').replaceChildren();for(const [label,num]of stats){const card=mk('article','');card.className='metric';card.append(mk('strong',num),mk('small',label));$('stats').append(card);}
+  $('app').classList.remove('hidden');render();
+  $('status').textContent='Authorized read-only comparison loaded.'+(responses.some((r,i)=>(r.data||[]).length>=[500,1000,1000,1000][i])?' Row limit reached; results could be incomplete.':'');
+ }catch(error){resolved=[];$('app').classList.add('hidden');$('status').textContent='Unable to load account matching: '+(error.message||'Unknown error');}finally{$('reload').disabled=false;}
+}
+$('search').addEventListener('input',render);$('filter').addEventListener('change',render);$('reload').addEventListener('click',load);load();
+</script></body></html>
