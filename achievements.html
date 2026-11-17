@@ -1,0 +1,58 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Verified Achievements | Maa Sati IAC</title><style>
+:root{font:15px/1.65 system-ui,-apple-system,Segoe UI,sans-serif;color:#1a2b42;background:#f3f5f8}*{box-sizing:border-box}body{margin:0}header{padding:18px max(18px,calc((100% - 990px)/2));background:#172d4b;color:#fff;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}header a{color:#fff}main{max-width:990px;padding:0 18px 70px;margin:35px auto}h1{font-size:clamp(30px,5vw,45px);margin:6px 0;letter-spacing:-.035em}h2{font-size:21px;margin:5px 0 12px}.muted{color:#63758b}.card,.award{background:white;border:1px solid #dbe5ed;padding:22px;border-radius:14px;margin:16px 0}.awards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.award{margin:0}.award h3{font-size:17px;margin:0 0 8px}.tag{padding:5px 10px;border-radius:20px;color:#236349;background:#e4f1e8;font-size:11px;font-weight:800}.field{display:grid;gap:7px;font-size:12px;font-weight:750;margin:13px 0}.field input,.field textarea{width:100%;font:inherit;border:1px solid #b9c8d9;border-radius:9px;padding:11px;background:#fff;color:#18304a}.field textarea{min-height:70px}.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.control{padding:11px 17px;border-radius:9px;border:0;background:#2856aa;color:#fff;font:inherit;font-weight:700;cursor:pointer}.control:disabled{opacity:.5}.note{padding:13px;border-radius:10px;background:#fff8e9;border:1px solid #ead5ad;color:#785b2d;font-size:13px}.hidden{display:none!important}a{color:#2856a2}a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #e3b15a;outline-offset:3px}@media(max-width:650px){.awards{grid-template-columns:1fr}.card{padding:17px}}
+</style></head><body><header><strong>Maa Sati IAC · Verified Achievements</strong><nav><a href="/my-certificates.html">My private wallet</a> · <a href="/platform.html#dashboard">Account</a></nav></header>
+<main><div class="muted">INSTITUTE-VERIFIED ACHIEVEMENTS</div><h1 id="pageTitle">Student Achievement Profile</h1><p class="muted" id="intro">A public achievement profile is only available after the student opts in and required guardian permission is verified. Official certificates remain independently verifiable.</p><p id="status" role="status" aria-live="polite">Loading account or shared achievements…</p>
+<section id="owner" class="hidden"><div class="card"><h2>Share my verified achievements</h2><p class="muted">Your profile is private unless you deliberately enable sharing. The public page shows only your chosen display name, headline, valid issued certificates and verified badges. It never displays your email, contact details, school, class, or private learning data.</p>
+<label class="field">Public display name<input id="displayName" maxlength="70" minlength="2" placeholder="Choose the name shown publicly"></label>
+<label class="field">Short optional headline<textarea id="headline" maxlength="140" placeholder="e.g. Learning to build web applications"></textarea></label>
+<label class="field"><span class="row"><input id="enabled" type="checkbox" style="width:auto"> Enable my public achievement page</span></label>
+<p class="note" id="guardianNote">Independent guardian verification is required before publishing. You may always disable your public profile here.</p>
+<div class="row"><button class="control" id="save" type="button">Save sharing settings</button><button class="control" id="copy" type="button" disabled>Copy public profile link</button></div>
+<p id="shareLink" class="muted"></p></div>
+<div class="card"><h2>My private achievements</h2><p class="muted">For certificates and attendance visible only to you, use your private wallet.</p><a href="/my-certificates.html">Open My Certificate Wallet</a></div></section>
+<section id="public" class="hidden"><div class="card"><div class="row"><span class="tag">Verified institute records only</span></div><h2 id="publicName">Achievement holder</h2><p id="publicHeadline" class="muted"></p></div><div class="card"><h2>Official issued certificates</h2><div id="certificates" class="awards"></div></div><div class="card"><h2>Verified skill badges</h2><div id="badges" class="awards"></div></div><p class="note">A certificate can be revoked. Use its official verification page to check its current validity. A badge is shown only when linked to a currently valid institute certificate.</p></section>
+</main><script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
+const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
+const $=id=>document.getElementById(id),item=(tag,value)=>{const el=document.createElement(tag);el.textContent=String(value??'');return el;};
+const params=new URLSearchParams(location.search),token=params.get('profile');let myToken='',guardianVerified=false;
+function populate(host,items,certificates){
+ host.replaceChildren();if(!items.length){host.append(item('p','No verified records are currently available.'));return;}
+ for(const record of items){const card=item('article','');card.className='award';card.append(item('h3',certificates?record.title:record.title));const line=item('p',certificates?'Issued '+(record.issued_at?new Date(record.issued_at).toLocaleDateString('en-IN'):'—'):'Awarded '+(record.awarded_at?new Date(record.awarded_at).toLocaleDateString('en-IN'):'—'));line.className='muted';card.append(line);
+ if(certificates){const a=item('a','Verify certificate');a.href='/certificate.html?code='+encodeURIComponent(record.code);card.append(a);}host.append(card);}
+}
+async function openPublic(){
+ if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token||'')){$('status').textContent='Invalid public profile link.';return;}
+ const res=await db.rpc('iac_public_achievement_by_token',{p_token:token});
+ if(res.error)throw res.error;
+ if(!res.data?.available){$('status').textContent='This public profile is unavailable or sharing has been disabled.';return;}
+ $('public').classList.remove('hidden');$('publicName').textContent=res.data.name;$('publicHeadline').textContent=res.data.headline||'';
+ $('pageTitle').textContent='Verified Student Achievements';
+ populate($('certificates'),res.data.certificates||[],true);populate($('badges'),res.data.badges||[],false);
+ $('status').textContent='Showing current verified achievement records.';
+}
+async function openSettings(){
+ const user=await db.auth.getUser();if(user.error||!user.data?.user){$('status').replaceChildren(item('span','Student sign-in required to manage your profile. '));const link=item('a','Sign in');link.href='/platform.html#dashboard';$('status').append(link);return;}
+ const res=await db.rpc('iac_student_public_achievement_settings');if(res.error)throw res.error;
+ myToken=res.data?.share_token||'';guardianVerified=!!res.data?.guardian_verified;
+ $('displayName').value=res.data?.display_name||'';$('headline').value=res.data?.headline||'';$('enabled').checked=!!res.data?.enabled;
+ $('guardianNote').textContent=guardianVerified?'Independently verified guardian consent is recorded. You control whether to publish this page.':'Guardian consent is not yet independently verified. Publishing will be blocked until verification is approved; private settings can still be saved.';
+ $('owner').classList.remove('hidden');displayLink();$('status').textContent='Sharing settings loaded. Your profile is '+(res.data?.enabled?'public.':'private.');
+}
+function displayLink(){
+ const active=$('enabled').checked&&guardianVerified&&!!myToken;
+ $('copy').disabled=!active;
+ $('shareLink').textContent=active?'Public profile: '+new URL('/achievements.html?profile='+myToken,location.origin).href:'Your public profile is currently disabled.';
+}
+$('save').onclick=async()=>{
+ const name=$('displayName').value.trim(),headline=$('headline').value.trim(),enabled=$('enabled').checked;
+ if(name.length<2||name.length>70||headline.length>140){$('status').textContent='Enter a 2–70 character name and optional headline up to 140 characters.';return;}
+ if(enabled&&!guardianVerified){$('status').textContent='Guardian verification is required before a profile can be shared publicly.';return;}
+ if(enabled&&!confirm('Publish your chosen name, headline and verified awards on a shareable public URL? Anyone with the link can view and forward it.'))return;
+ $('save').disabled=true;
+ try{const result=await db.rpc('iac_student_set_public_achievement',{p_enabled:enabled,p_name:name,p_headline:headline});if(result.error)throw result.error;myToken=result.data.share_token;displayLink();$('status').textContent=enabled?'Public achievement profile enabled.':'Public achievement profile disabled.';}
+ catch(e){$('status').textContent='Could not update sharing: '+(e.message||'Unknown error');}finally{$('save').disabled=false;}
+};
+$('copy').onclick=()=>{if(!myToken||!$('enabled').checked||!guardianVerified)return;const url=new URL('/achievements.html?profile='+myToken,location.origin).href;navigator.clipboard?.writeText(url).then(()=>{$('status').textContent='Share link copied.'}).catch(()=>{$('status').textContent='Copy the link displayed under sharing settings.';});};
+(token?openPublic():openSettings()).catch(e=>{$('status').textContent='Unable to load achievements: '+(e.message||'Please retry');});
+</script></body></html>
