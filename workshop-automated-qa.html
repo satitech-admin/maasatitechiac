@@ -1,0 +1,47 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Automated Workshop QA | Maa Sati IAC</title>
+<style>:root{font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;background:#f4f7fb;color:#1c3049}*{box-sizing:border-box}body{margin:0}header{background:#172d4c;color:white;padding:18px max(18px,calc((100% - 1150px)/2));display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}header a{color:white}main{margin:30px auto;max-width:1150px;padding:0 18px 70px}h1{font-size:clamp(28px,5vw,42px);margin:5px 0}h2{font-size:22px;margin:6px 0 14px}.muted{color:#66798b}.panel,.stat,.check{background:#fff;border:1px solid #dbe4ee;border-radius:14px;padding:20px;margin:13px 0}.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.stat{margin:0}.stat b{display:block;font-size:28px}.stat small{color:#677a8e;font-size:12px}.checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.check{margin:0}.row{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap}.tag{display:inline-flex;border-radius:30px;padding:5px 10px;font-size:11px;font-weight:800;background:#edf1f7;color:#4c627b}.tag.pass{background:#e0f2e7;color:#286747}.tag.fail{background:#ffe5e1;color:#942f2d}.tag.blocked{background:#fff0d7;color:#875912}.tag.not_applicable{background:#edf1f7;color:#607287}.check h3{font-size:16px;margin:6px 0}.check p{color:#617287;margin:7px 0;font-size:13px}.count{font-weight:750;color:#3f5267;font-size:12px}.notice{background:#fff8e8;border:1px solid #efdbb7;padding:14px;border-radius:10px;color:#745829;font-size:13px}button{border:0;border-radius:9px;padding:11px 17px;background:#2858ad;color:#fff;font:inherit;font-weight:750;cursor:pointer}button:disabled{opacity:.55;cursor:not-allowed}.links{display:flex;flex-wrap:wrap;gap:10px}.links a{display:inline-flex;border-radius:9px;background:#e8eff9;padding:10px 12px;text-decoration:none;color:#245097;font-size:13px;font-weight:750}.hidden{display:none!important}a:focus-visible,button:focus-visible{outline:3px solid #e4a34e;outline-offset:3px}@media(max-width:800px){.checks{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:490px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.panel,.check{padding:15px}}
+</style></head><body><header><strong>Maa Sati IAC · Automated QA</strong><nav><a href="/launch.html">Founder</a> · <a href="/workshop-acceptance.html">Manual acceptance</a> · <a href="/workshop-event-studio.html">Event studio</a></nav></header>
+<main><div class="muted">FOUNDER ONLY · LIVE DATABASE INSPECTION</div><h1>Automated Workshop QA</h1><p class="muted">Run read-only checks for workshop setup, curriculum, approval integrity, reviews and selected database permissions. These are automated database inspections, not browser simulations or payment-provider tests.</p>
+<div id="status" role="status" aria-live="polite">Checking founder authentication…</div>
+<section id="app" class="hidden">
+<div class="panel"><div class="row"><div><h2>Live QA snapshot</h2><p class="muted" id="runAt">Not run yet.</p></div><button id="run" type="button">Run database checks</button></div><div class="stats" id="stats"></div></div>
+<section class="panel"><h2>Automated checks</h2><div class="checks" id="checks"></div></section>
+<section class="panel"><h2>Remaining manual launch requirements</h2><p class="notice">Automated green results do not establish readiness to accept student payments or launch classes. Real founder, mentor and student login tests, genuine captured payment reconciliation, guardian permission, mobile UX, privacy checks and certificate eligibility must be tested separately.</p>
+<div class="links"><a href="/workshop-acceptance.html">Record evidence-backed manual tests</a><a href="/workshop-launch-readiness.html">Review school batches</a><a href="/workshop-approvals.html">Check enrollments</a><a href="/workshop-mentor.html">Inspect mentor operations</a></div></section></section><footer class="muted">No student details, private payment information or account identifiers are displayed in this read-only report.</footer></main>
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
+const sb=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
+const $=id=>document.getElementById(id),n=(tag,value)=>{const e=document.createElement(tag);e.textContent=String(value??'');return e};
+let authorized=false;
+async function run(){
+ if(!authorized)return;
+ $('run').disabled=true;$('status').textContent='Running protected read-only database audit…';
+ try{
+  const response=await sb.rpc('iac_admin_workshop_automated_audit');
+  if(response.error)throw response.error;
+  const result=response.data||{},metrics=result.metrics||{},checks=Array.isArray(result.checks)?result.checks:[];
+  const metricsLabels=[['Workshop batches',metrics.workshops],['Published',metrics.published],['Lesson records',metrics.lessons],['Enrollment approvals',metrics.enrollment_approvals],['Project submissions',metrics.projects]];
+  $('stats').replaceChildren();
+  for(const [label,value] of metricsLabels){const box=n('article','');box.className='stat';box.append(n('b',value??'—'),n('small',label));$('stats').append(box);}
+  $('checks').replaceChildren();
+  for(const check of checks){
+   const card=n('article','');card.className='check';const top=n('div','');top.className='row';
+   const state=['pass','fail','blocked','not_applicable'].includes(check.state)?check.state:'unknown';
+   const badge=n('span',state.replaceAll('_',' ').toUpperCase());badge.className='tag '+state;top.append(n('h3',check.title||check.key),badge);
+   card.append(top,n('p',check.detail||''),n('div','Affected records: '+(check.count??'—')));
+   card.lastChild.className='count';$('checks').append(card);
+  }
+  $('runAt').textContent='Checked at '+(result.generated_at?new Date(result.generated_at).toLocaleString('en-IN'):'current request')+'.';
+  const fails=checks.filter(x=>x.state==='fail').length,blocks=checks.filter(x=>x.state==='blocked').length;
+  $('status').textContent=checks.length+' database checks completed · '+fails+' failed · '+blocks+' blocked. This is not a completed end-to-end launch test.';
+ }catch(error){$('status').textContent='Database audit could not complete: '+(error.message||'Unknown error');}
+ finally{$('run').disabled=false;}
+}
+async function boot(){
+ try{const who=await sb.auth.getUser();if(who.error||!who.data.user){$('status').replaceChildren(n('span','Founder login required. '));const a=n('a','Sign in');a.href='/platform.html#dashboard';$('status').append(a);return;}
+ const role=await sb.rpc('iac_is_admin');if(role.error||role.data!==true)throw Error('Verified founder/admin account required');
+ authorized=true;$('app').classList.remove('hidden');await run();
+ }catch(error){$('status').textContent='Access denied: '+(error.message||'Unknown error');}
+}
+$('run').onclick=run;boot();
+</script></body></html>
