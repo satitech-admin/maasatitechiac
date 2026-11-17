@@ -1,0 +1,84 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Workshop Acceptance Testing | Maa Sati IAC</title>
+<style>:root{font:15px/1.55 system-ui,-apple-system,sans-serif;color:#1a3049;background:#f3f6fa}*{box-sizing:border-box}body{margin:0}header{background:#162d4d;color:#fff;padding:18px max(18px,calc((100% - 1120px)/2));display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}header a{color:white}main{max-width:1120px;margin:32px auto;padding:0 18px 75px}h1{font-size:clamp(29px,5vw,42px);margin:4px 0}h2{font-size:21px;margin:6px 0 13px}.muted{color:#65768b}.panel,.stat,.test{background:#fff;border:1px solid #dce5ee;border-radius:14px;padding:20px;margin:14px 0}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.stat{margin:0}.stat b{font-size:30px;display:block}.stat small{color:#69798b}.tests{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.test{margin:0}.test h3{font-size:16px;margin:3px 0}.test p{font-size:13px;color:#607389}.field{display:grid;gap:6px;font-size:12px;font-weight:750;margin:12px 0}.field input,.field select,.field textarea{font:inherit;color:#1e344e;background:#fff;border:1px solid #b4c5d7;border-radius:9px;padding:10px 12px;width:100%;min-width:0}.field textarea{min-height:80px;resize:vertical}button{border:0;background:#2555b2;color:#fff;border-radius:9px;padding:11px 16px;font:inherit;font-weight:750;cursor:pointer}button:disabled{opacity:.55;cursor:not-allowed}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.tag{font-size:11px;font-weight:800;padding:5px 10px;border-radius:24px;background:#eaf0fb;color:#31568b}.tag.good{background:#e4f3e9;color:#246344}.tag.warn{background:#fff1d8;color:#865b20}.note{background:#fff8e9;border:1px solid #eddbaf;border-radius:11px;padding:14px;color:#765928;font-size:13px}.hidden{display:none!important}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid #dba14c;outline-offset:3px}a{color:#2356a6}@media(max-width:760px){.stats,.tests{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:580px){.tests,.stats{grid-template-columns:1fr}} </style></head>
+<body><header><strong>Maa Sati IAC · Founder QA</strong><nav><a href="/launch.html">Founder dashboard</a> · <a href="/workshop-launch-readiness.html">Live readiness</a> · <a href="/workshop-event-studio.html">Event studio</a></nav></header>
+<main><div class="muted">AUTHORIZED FOUNDER · ACCEPTANCE TRACKING</div><h1>Workshop Acceptance Testing</h1><p class="muted">Record actual test outcomes with evidence. This is a manual checklist, not an automated browser test: untested steps remain untested until a real authorized user performs them.</p><div id="status" aria-live="polite" role="status">Checking founder account…</div>
+<section id="app" class="hidden"><section class="panel"><label class="field">Testing scope<select id="event"><option value="">Institute-wide / pre-launch checks</option></select></label><p id="scope" class="muted"></p><div class="row"><button id="refresh" type="button">Reload saved test results</button><a href="/workshop-launch-readiness.html">Inspect live database readiness</a></div></section><div id="stats" class="stats"></div><div class="panel"><h2>Acceptance test cases</h2><div id="tests" class="tests"></div></div><div class="note">Pass means the founder has manually confirmed the step and recorded evidence, not that ChatGPT independently verified it. Do not include passwords, OTPs, student phone numbers, private links or payment details in evidence notes. Workshop launch is not accepted until all critical cases are completed and live records meet requirements.</div></section>
+</main>
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
+const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
+const $=id=>document.getElementById(id),txt=(tag,text)=>{const x=document.createElement(tag);x.textContent=String(text??'');return x};
+const tests=[
+ ['founder_login','Founder login and protected dashboard','Sign in as founder and confirm founder-only tools are accessible.'],
+ ['mentor_login','Mentor / coordinator permissions','Sign in as teacher or coordinator; verify their tools and staff-only access.'],
+ ['student_login','Student sign-in and isolation','Sign in using an authorized learner test account and verify no other student data appears.'],
+ ['draft_create','Create real school draft','Create a genuine event with school, scheduled date, correct fee and capacity.'],
+ ['lesson_publish','7-day curriculum and publication','Save seven meaningful lessons and verify founder publishing rules.'],
+ ['identity_verification','Independent student identity verification','Verify imported registration against a genuine student account with documented method.'],
+ ['guardian_verification','Guardian consent validation','Confirm independently verified guardian permission for a participating minor.'],
+ ['payment_capture','Payment confirmation','Verify payment from actual gateway capture for the same event.'],
+ ['enrollment_approval','Founder enrollment approval','Check all approval gates before the owner records final enrollment.'],
+ ['student_lesson_access','Approved student lesson access','Confirm enrolled student can view lessons and unauthorized learner cannot.'],
+ ['attendance','Attendance recording','Confirm mentor records attendance and the correct learner sees the progress.'],
+ ['project_submission','Student project submission','Submit a valid HTTPS project link from an approved learner account.'],
+ ['mentor_review','Mentor project feedback','Review a real project with constructive notes and check learner status.'],
+ ['mobile_layout','Mobile usability','Inspect the relevant workflows on a small screen for alignment and overflow.'],
+ ['certificate_eligibility','Certificate eligibility and verification','Check certificate requirements separately after attendance and project review.']
+];
+let saved=new Map(),admin=null,events=[];
+const key=(event,key)=>String(event||'global')+'|'+key;
+function statusTag(state){const x=txt('span',state.replaceAll('_',' ').toUpperCase());x.className='tag '+(state==='pass'?'good':state==='fail'||state==='blocked'?'warn':'');return x;}
+function metrics(){
+ const statuses=tests.map(t=>saved.get(key($('event').value,t[0]))?.result||'not_tested');
+ const values=[['Test cases',tests.length],['Passed (manual)',statuses.filter(x=>x==='pass').length],['Failed or blocked',statuses.filter(x=>x==='fail'||x==='blocked').length],['Not tested',statuses.filter(x=>x==='not_tested').length]];
+ $('stats').replaceChildren();for(const [title,val]of values){const el=txt('article','');el.className='stat';el.append(txt('b',val),txt('small',title));$('stats').append(el);}
+}
+function render(){
+ const selected=$('event').value;$('scope').textContent=selected?'Event-specific checks for '+(events.find(x=>x.id===selected)?.title||'workshop'):'Institute-wide pre-launch checks (not proof that any particular workshop passed).';
+ const host=$('tests');host.replaceChildren();
+ for(const [testId,title,description] of tests){
+  const existing=saved.get(key(selected,testId));const item=txt('article','');item.className='test';
+  const heading=txt('div','');heading.className='row';heading.append(txt('h3',title),statusTag(existing?.result||'not_tested'));item.append(heading,txt('p',description));
+  const choose=txt('label','');choose.className='field';choose.append(txt('span','Manual test outcome'));
+  const dropdown=document.createElement('select');for(const [v,label] of [['not_tested','Not tested'],['pass','Pass — personally verified'],['fail','Fail — reproducible issue'],['blocked','Blocked — prerequisite missing']])dropdown.append(new Option(label,v));dropdown.value=existing?.result||'not_tested';choose.append(dropdown);
+  const note=txt('label','');note.className='field';note.append(txt('span','Evidence note (required for Pass, Fail or Blocked)'));
+  const input=document.createElement('textarea');input.maxLength=1800;input.value=existing?.evidence_note||'';input.placeholder='Describe observed behavior, account role (not email), date and result. Do not include private identifiers.';note.append(input);
+  const actions=txt('div','');actions.className='row';const btn=txt('button','Save test result');btn.type='button';
+  btn.onclick=async()=>{
+   const result=dropdown.value,evidence_note=input.value.trim();
+   if(result!=='not_tested'&&evidence_note.length<15){$('status').textContent='Evidence note must contain at least 15 characters to record an outcome.';return;}
+   if(result==='pass'&&!confirm('Confirm you personally performed and verified this test?'))return;
+   if(!admin)return;
+   btn.disabled=true;
+   try{
+    const payload={event_id:selected||null,check_key:testId,result,evidence_note:result==='not_tested'?'':evidence_note,checked_by:admin.id,checked_at:new Date().toISOString()};
+    let request;
+    if(existing)request=await db.from('iac_workshop_acceptance_checks').update({result:payload.result,evidence_note:payload.evidence_note,checked_by:admin.id,checked_at:payload.checked_at}).eq('id',existing.id).select('id').single();
+    else request=await db.from('iac_workshop_acceptance_checks').insert(payload).select('id').single();
+    if(request.error)throw request.error;
+    $('status').textContent=title+' — outcome saved as a manually recorded test.';await loadRecords(false);
+   }catch(e){$('status').textContent='Could not save test: '+(e.message||'Unknown error');btn.disabled=false;}
+  };
+  actions.append(btn);item.append(choose,note,actions);host.append(item);
+ }
+ metrics();
+}
+async function loadRecords(loadEvents=true){
+ try{
+  if(loadEvents){const result=await db.from('iac_events').select('id,title,school_name,kind').in('kind',['one_week','workshop']).limit(500);if(result.error)throw result.error;events=result.data||[];
+   const picker=$('event');const prev=picker.value;picker.replaceChildren(new Option('Institute-wide / pre-launch checks',''));for(const ev of events)picker.append(new Option((ev.title||'Workshop')+' · '+(ev.school_name||'Institute'),ev.id));picker.value=prev;
+  }
+  const out=await db.from('iac_workshop_acceptance_checks').select('id,event_id,check_key,result,evidence_note,checked_at').order('checked_at',{ascending:false}).limit(1500);if(out.error)throw out.error;
+  saved=new Map((out.data||[]).map(r=>[key(r.event_id,r.check_key),r]));render();
+  if((out.data||[]).length===1500)$('status').textContent='Test record limit reached. Older records may not be displayed.';
+ }catch(e){$('status').textContent='Could not load QA records: '+(e.message||'Unknown error');}
+}
+$('event').onchange=render;$('refresh').onclick=()=>loadRecords();
+async function boot(){
+ try{const a=await db.auth.getUser();if(a.error||!a.data.user){$('status').replaceChildren(txt('span','Founder sign-in required. '));const l=txt('a','Open institute login');l.href='/platform.html#dashboard';$('status').append(l);return;}
+  const role=await db.rpc('iac_is_admin');if(role.error||role.data!==true)throw Error('Verified founder/admin authorization required.');
+  admin=a.data.user;$('app').classList.remove('hidden');await loadRecords();$('status').textContent='Founder authorized. These are manually recorded acceptance checks, not automated passes.';
+ }catch(e){$('status').textContent='Access unavailable: '+(e.message||'Try again');}
+}
+boot();
+</script></body></html>
