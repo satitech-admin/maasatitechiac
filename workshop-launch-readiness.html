@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Workshop Launch Readiness | Maa Sati IAC</title>
+<style>
+:root{font:15px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif;color:#1c3148;background:#f4f6fa}*{box-sizing:border-box}body{margin:0}header{padding:19px max(18px,calc((100% - 1160px)/2));background:#172d4d;color:white;display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}header a{color:white}main{max-width:1160px;margin:32px auto;padding:0 18px 75px}h1{font-size:clamp(29px,5vw,43px);line-height:1.2;margin:8px 0}h2{font-size:22px;margin:4px 0 13px}h3{font-size:18px;margin:8px 0}p{color:#637388}.muted{color:#637388}.panel,.stat,.batch{background:white;border:1px solid #dae3ef;border-radius:14px;padding:20px;margin:14px 0}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.stat{margin:0}.stat strong{font-size:30px;display:block}.stat small{font-size:12px;color:#66788b}.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:end}.field{display:grid;gap:5px;font-size:12px;font-weight:750}.field select,.field input{font:inherit;padding:11px;border-radius:8px;border:1px solid #b8c6d7;background:white;color:#1c3148;min-width:230px}button{font:inherit;background:#2554aa;color:white;border:0;border-radius:9px;padding:10px 16px;font-weight:750;cursor:pointer}button:disabled{opacity:.5}.alt{background:#e8edf8;color:#244c92}a{color:#2353a7}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:13px}.actions a{text-decoration:none;border-radius:9px;padding:9px 12px;background:#eaf0fb;color:#244d97;font-size:12px;font-weight:750}.badge{font-size:11px;font-weight:800;border-radius:18px;padding:5px 9px;background:#edf1f7;color:#4e6177;display:inline-block}.badge.good{background:#e1f1e7;color:#245f42}.badge.warn{background:#fff0d8;color:#845b19}.row{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}.checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.check{background:#f7f9fd;border:1px solid #e5eaf2;border-radius:10px;padding:12px 14px;font-size:13px}.check b{display:block;font-size:13px}.check small{color:#6a7b8d}.check.pass{border-left:4px solid #328460}.check.fail{border-left:4px solid #d99d38}.bar{height:10px;background:#e9eef5;border-radius:15px;overflow:hidden;margin:13px 0}.bar>div{height:100%;background:#3b846d}.notice{background:#fff7e8;border:1px solid #e9d4a8;border-radius:11px;padding:14px;color:#755724;font-size:13px}.hidden{display:none!important}#status{min-height:26px}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #dfaa59;outline-offset:3px}@media(max-width:850px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:650px){.checks{grid-template-columns:1fr}.toolbar{display:grid}.field input,.field select{width:100%}}@media(max-width:370px){.stats{grid-template-columns:1fr}}
+</style></head><body>
+<header><strong>Maa Sati IAC · Founder Launch Quality</strong><nav><a href="/launch.html">Founder launch</a> · <a href="/workshop-event-studio.html">Event studio</a> · <a href="/workshop-mentor.html">Mentor dashboard</a></nav></header>
+<main><div class="muted">FOUNDER ACCESS · LIVE DATABASE CHECKS</div><h1>Workshop Launch Readiness</h1><p>Inspect real school workshop batches, curriculum, approvals, attendance and mini-project reviews. This page only reports the current database state: it does not generate fake students, force payments, or grant certificates.</p>
+<div id="status" role="status" aria-live="polite">Checking founder authorization…</div>
+<section id="app" class="hidden">
+<div id="stats" class="stats"></div>
+<div class="panel"><div class="toolbar"><label class="field">Filter by school or workshop<input id="search" type="search" placeholder="Search event or school"></label><label class="field">Launch status<select id="filter"><option value="">All batches</option><option value="draft">Draft</option><option value="published">Published</option><option value="missing">Needs setup</option></select></label><button id="refresh" type="button">Recheck live database</button></div><p class="muted" id="summary"></p></div>
+<section id="batches"></section>
+<section class="panel"><h2>What is needed before the first real workshop?</h2>
+<div class="notice">Create an authentic school workshop draft, enter its exact fee and date, save seven real lessons, then publish it. Only real students with verified identity, independently approved guardian consent, captured event-specific payment and valid registration can receive enrollment approval. Attendance and project reviews happen after the workshop starts.</div>
+<div class="actions"><a href="/workshop-event-studio.html">Create workshop draft</a><a href="/school-workshop-admin.html">Review registrations</a><a href="/workshop-approvals.html">Enrollment approval</a><a href="/workshop-mentor.html">Manage lessons and reviews</a><a href="/workshop-enrollments.html">Manage attendance</a></div></section>
+</section><footer class="muted">Readiness scores are operational indicators, not a guarantee of successful login, delivery or payment processing. Full end-to-end acceptance tests require authorized real accounts and events.</footer></main>
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
+const sb=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
+const $=id=>document.getElementById(id);
+const node=(tag,text)=>{const x=document.createElement(tag);x.textContent=String(text??'');return x};
+const data=x=>{if(x.error)throw x.error;return x.data||[]};
+let batches=[],limited=false;
+const fmtDate=s=>{if(!s)return 'Not scheduled';const d=new Date(s);return Number.isFinite(+d)?d.toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}):'Invalid date';};
+function makeStat(label,value){const card=node('article','');card.className='stat';card.append(node('strong',value),node('small',label));return card;}
+function check(label,pass,detail){const c=node('div','');c.className='check '+(pass?'pass':'fail');c.append(node('b',(pass?'✓ ':'• ')+label),node('small',detail));return c;}
+function render(){
+ const search=$('search').value.toLocaleLowerCase().trim(),filter=$('filter').value;
+ const shown=batches.filter(b=>(b.title+' '+(b.school_name||'')).toLocaleLowerCase().includes(search)&&(!filter||(filter==='draft'?!b.published:filter==='published'?b.published:!b.readyToPublish)));
+ const host=$('batches');host.replaceChildren();
+ $('summary').textContent=shown.length+' of '+batches.length+' workshop batches shown.'+(limited?' A data limit was reached; figures may be incomplete.':'');
+ if(!shown.length){const msg=node('div',batches.length?'No batches match these filters.':'No workshop events exist yet. Create the first private draft in Event Studio.');msg.className='panel';host.append(msg);return;}
+ for(const b of shown){
+  const card=node('article','');card.className='batch';const row=node('div','');row.className='row';
+  const titles=node('div','');titles.append(node('h3',b.title||'Untitled event'),node('small',(b.school_name||'Institute')+' · '+fmtDate(b.starts_at)));
+  const badge=node('span',b.published?'Published':'Private draft');badge.className='badge '+(b.published?'good':'warn');row.append(titles,badge);card.append(row);
+  const percentage=Math.round(b.lessonCount/7*100);
+  const bar=node('div','');bar.className='bar';const inner=node('div','');inner.style.width=percentage+'%';bar.append(inner);card.append(bar);
+  const checks=node('div','');checks.className='checks';
+  const detailsReady=!!(b.starts_at&&b.capacity>0&&b.fee_paise!=null&&b.title?.trim().length>=5);
+  checks.append(check('Event configuration',detailsReady,'Schedule, capacity, title and fee'));
+  checks.append(check('Seven-day curriculum',b.lessonCount===7,b.lessonCount+'/7 lessons saved with suitable titles and notes'));
+  checks.append(check('Published',b.published,b.published?'Visible as a published event':'Currently a draft'));
+  checks.append(check('Approved enrollments',b.approvals>0,b.approvals+' founder-approved enrollments'));
+  checks.append(check('Verified attendance',b.present>0,b.present+' verified present-day records'));
+  checks.append(check('Project submissions',b.projects>0,b.projects+' project submissions; '+b.pendingReviews+' awaiting mentor review'));
+  card.append(checks);
+  const summary=node('p','Registered learners: '+b.registrations+' · Approved projects: '+b.approvedProjects+' · Required attendance: '+b.min_attendance_days+'/7 days');
+  summary.className='muted';card.append(summary);
+  if(b.published&&b.lessonCount<7){const danger=node('p','Published workshop currently has fewer than 7 complete lessons. Review curriculum immediately.');danger.className='notice';card.append(danger);}
+  const actions=node('div','');actions.className='actions';
+  for(const [link,label] of [['/workshop-event-studio.html','Complete curriculum'],['/workshop-approvals.html','Enrollment approvals'],['/workshop-mentor.html','Review submissions']]){const a=node('a',label);a.href=link;actions.append(a);}card.append(actions);host.append(card);
+ }
+}
+async function load(){
+ $('refresh').disabled=true;$('status').textContent='Reading real institute event and learning records…';
+ try{
+  const auth=await sb.auth.getUser();
+  if(auth.error||!auth.data.user){$('app').classList.add('hidden');$('status').replaceChildren(node('span','Founder sign-in required. '));const link=node('a','Open sign-in');link.href='/platform.html#dashboard';$('status').append(link);return;}
+  const admin=await sb.rpc('iac_is_admin');if(admin.error||admin.data!==true)throw Error('Verified founder/admin permission required.');
+  const result=await Promise.all([
+   sb.from('iac_events').select('id,title,school_name,kind,starts_at,capacity,fee_paise,published,min_attendance_days').in('kind',['one_week','workshop']).limit(500),
+   sb.from('iac_event_days').select('event_id,day_number,title,notes').limit(3500),
+   sb.from('iac_event_registrations').select('id,event_id').limit(2000),
+   sb.from('iac_workshop_enrollment_approvals').select('event_id,student_id').limit(2000),
+   sb.from('iac_day_attendance').select('event_registration_id,attended,verified_at').limit(3500),
+   sb.from('iac_workshop_project_submissions').select('event_id,status').limit(2000)
+  ]);
+  for(const response of result)if(response.error)throw response.error;
+  const [events,days,regs,approvals,attendance,projects]=result.map(data);
+  limited=result.some((r,i)=>(r.data||[]).length>=[500,3500,2000,2000,3500,2000][i]);
+  const regEvent=new Map(regs.map(x=>[x.id,x.event_id]));
+  const attendanceMap=new Map();
+  for(const a of attendance){if(a.attended!==true||!a.verified_at)continue;const eventId=regEvent.get(a.event_registration_id);if(eventId)attendanceMap.set(eventId,(attendanceMap.get(eventId)||0)+1);}
+  batches=events.map(ev=>{
+   const lessons=new Set(days.filter(d=>d.event_id===ev.id&&d.title?.trim().length>=4&&d.notes?.trim().length>=12).map(d=>d.day_number));
+   const eventProjects=projects.filter(p=>p.event_id===ev.id);
+   const lessonCount=lessons.size;
+   return {...ev,lessonCount,readyToPublish:lessonCount===7&&!!ev.starts_at&&ev.capacity>0&&ev.fee_paise!=null,registrations:regs.filter(r=>r.event_id===ev.id).length,approvals:approvals.filter(a=>a.event_id===ev.id).length,present:attendanceMap.get(ev.id)||0,projects:eventProjects.length,pendingReviews:eventProjects.filter(x=>x.status==='submitted').length,approvedProjects:eventProjects.filter(x=>x.status==='approved').length};
+  });
+  $('stats').replaceChildren(makeStat('Total workshop batches',batches.length),makeStat('Published batches',batches.filter(b=>b.published).length),makeStat('Curriculum-ready batches',batches.filter(b=>b.lessonCount===7).length),makeStat('Approved enrollments',approvals.length));
+  $('app').classList.remove('hidden');$('status').textContent='Founder authorization confirmed. Live database inspection finished.';render();
+ }catch(e){$('app').classList.add('hidden');$('status').textContent='Readiness audit unavailable: '+(e.message||'Unknown issue');}finally{$('refresh').disabled=false;}
+}
+$('search').addEventListener('input',render);$('filter').addEventListener('change',render);$('refresh').addEventListener('click',load);load();
+</script></body></html>
