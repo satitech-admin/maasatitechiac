@@ -1,0 +1,62 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>School Workshop Registration Review | Maa Sati IAC</title>
+<style>:root{font-family:system-ui,Arial,sans-serif;background:#f4f6fb;color:#162e48}*{box-sizing:border-box}body{margin:0}header{background:#152c4c;color:#fff;padding:18px max(18px,calc((100% - 1100px)/2));display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}header a{color:#fff}main{max-width:1100px;margin:32px auto;padding:0 18px 65px}h1{margin:5px 0;font-size:clamp(28px,5vw,42px)}p{line-height:1.6;color:#5b6a7a}.panel,.metric{background:#fff;border:1px solid #dce4ee;border-radius:14px;padding:20px;margin-top:16px}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:16px}.metric{margin:0}.metric strong{display:block;font-size:32px}.metric small{color:#627083}.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:end}.tools label{font-size:12px;font-weight:750;display:grid;gap:6px}input,select{font:inherit;padding:11px;background:#fff;color:#132844;border:1px solid #aab9ca;border-radius:8px;max-width:100%}button{font:inherit;padding:11px 16px;border:0;border-radius:8px;background:#2455b9;color:white;font-weight:700;cursor:pointer}button:disabled{opacity:.55;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #e0a046;outline-offset:2px}.secondary{background:#e7edf8;color:#203f77}.notice{border-left:4px solid #bd8b29;background:#fff9e8;padding:13px 15px;border-radius:6px;color:#725624}.hidden{display:none!important}.scroll{overflow:auto;max-height:560px}table{border-collapse:collapse;width:100%;font-size:12px}th,td{padding:11px 9px;text-align:left;border-bottom:1px solid #e4eaf2;white-space:normal;min-width:100px;overflow-wrap:anywhere}thead{position:sticky;top:0;background:#eef2f8}td:nth-child(1){font-weight:700}.muted{font-size:12px;color:#6b7788}.steps{padding-left:22px;line-height:1.8}#state{min-height:30px}footer{font-size:12px;color:#65748a;margin-top:25px}@media(max-width:750px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.tools{display:grid}.tools label{width:100%}.tools input,.tools select{width:100%}}@media(max-width:400px){.metric{padding:13px}.metric strong{font-size:26px}}</style></head>
+<body><header><strong>Maa Sati IAC · Private Founder Tools</strong><nav><a href="/launch.html">Launch dashboard</a> · <a href="/student-registrations-admin.html">Institute profiles</a></nav></header><main><div class="muted">OWNER WORKSPACE · SCHOOL PROGRAMS</div><h1>School Workshop Registrations</h1><p>Review Google Forms response exports in a private founder workspace. Data is processed inside this browser, not uploaded to the institute server or saved to the browser.</p><div id="state" role="status" aria-live="polite">Checking institute administrator access…</div>
+<section id="app" class="hidden"><div class="panel"><h2>Import a private response export</h2><ol class="steps"><li>Open the private <strong>Maa Sati — One Week Registrations</strong> response Sheet using your authorized Google account.</li><li>Choose File → Download → Comma Separated Values (.csv) for the response tab.</li><li>Import it below. Never share this file in a public chat or repository.</li></ol><div class="tools"><label>Google Forms CSV export<input type="file" id="file" accept=".csv,text/csv" aria-describedby="privacy"></label><button id="clear" class="secondary" type="button">Clear private data</button></div><p id="privacy" class="muted">CSV is not transmitted. This local view does not verify payments, guardian permission, receipt delivery or enrollment.</p><div id="importMessage" aria-live="polite"></div></div>
+<div id="results" class="hidden"><section id="metrics" class="metrics" aria-label="Local response summary"></section><div class="panel"><h2>Filter submissions</h2><div class="tools"><label>Student / School<input id="search" type="search" placeholder="Search name or school"></label><label>Class<select id="grade"><option value="">All classes</option></select></label><label>School<select id="school"><option value="">All schools</option></select></label><label>Payment evidence<select id="proof"><option value="">All</option><option value="yes">Proof link recorded</option><option value="no">Proof link missing</option></select></label><button id="reset" class="secondary" type="button">Reset filters</button></div><p id="summary" class="muted" aria-live="polite"></p><div class="scroll"><table><thead><tr><th>Student</th><th>Class</th><th>School</th><th>Submitted</th><th>Guardian contact</th><th>Payment proof</th><th>Payment date/time</th></tr></thead><tbody id="table"></tbody></table></div></div><p class="notice">A payment screenshot is only submitted evidence, not a confirmed transaction. Payment status remains unverified until the owner matches it against actual account receipts. Guardian consent must also be independently verified.</p></div></section>
+<footer>School-child privacy: access is gated through the institute administrator account. The imported CSV is discarded on page reload or Clear. Avoid using shared devices.</footer></main>
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
+const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
+const $=id=>document.getElementById(id);let records=[],headers=[];
+const el=(tag,value)=>{const x=document.createElement(tag);x.textContent=String(value??'');return x;};
+function csvParse(str){let rows=[],row=[],value='',quoted=false;for(let i=0;i<str.length;i++){let ch=str[i];if(ch==='"'){if(quoted&&str[i+1]==='"'){value+='"';i++;}else quoted=!quoted;}else if(ch===','&&!quoted){row.push(value);value='';}else if((ch==='\n'||ch==='\r')&&!quoted){if(ch==='\r'&&str[i+1]==='\n')i++;row.push(value);if(row.some(x=>x.trim()))rows.push(row);row=[];value='';}else value+=ch;}if(quoted)throw Error('Unclosed CSV quote. Export the response tab again.');row.push(value);if(row.some(x=>x.trim()))rows.push(row);return rows;}
+const norm=s=>String(s||'').toLowerCase().normalize('NFKC').replace(/[^a-z0-9]+/g,' ');
+function indexOfField(types){for(const tokens of types){const match=headers.findIndex(h=>tokens.every(t=>norm(h).includes(t)));if(match>=0)return match;}return -1;}
+function mapColumns(){
+ const mapping={
+  name:indexOfField([['student','name'],['full','name'],['name']]),
+  school:indexOfField([['school','name'],['school']]),
+  grade:indexOfField([['class'],['grade']]),
+  timestamp:indexOfField([['timestamp'],['submitted','at'],['submission','time']]),
+  guardian:indexOfField([['guardian','mobile'],['parent','mobile'],['guardian','phone'],['parent','phone']]),
+  proof:indexOfField([['payment','screenshot'],['payment','proof'],['screenshot'],['upload','payment']]),
+  paymentDate:indexOfField([['payment','date'],['date','payment']]),
+  paymentTime:indexOfField([['payment','time'],['time','payment']])
+ };
+ if(mapping.name<0||mapping.school<0||mapping.grade<0)throw Error('Could not identify Student Name, School and Class headers. Use the original Google Forms responses tab CSV.');
+ return mapping;
+}
+function fromRecord(row,col){return col<0?'':String(row[col]||'').trim();}
+function fillOptions(id,items){const select=$(id);const first=select.options[0].text;select.replaceChildren(new Option(first,''));for(const value of [...new Set(items.filter(Boolean))].sort((a,b)=>a.localeCompare(b,'en',{numeric:true})))select.append(new Option(value,value));}
+function render(){
+ const query=$('search').value.trim().toLowerCase(),school=$('school').value,grade=$('grade').value,proof=$('proof').value;
+ const selected=records.filter(r=>(r.name+' '+r.school).toLowerCase().includes(query)&&(!school||r.school===school)&&(!grade||r.grade===grade)&&(!proof||(proof==='yes'?Boolean(r.proof):!r.proof)));
+ $('summary').textContent='Showing '+selected.length+' of '+records.length+' imported response rows. Duplicate form submissions are counted separately.';
+ const tbody=$('table');tbody.replaceChildren();
+ if(!selected.length){const tr=el('tr',''),td=el('td','No matching responses');td.colSpan=7;tr.append(td);tbody.append(tr);return;}
+ for(const r of selected.slice(0,1000)){const tr=document.createElement('tr');for(const x of [r.name,r.grade,r.school,r.timestamp,r.guardian,r.proof?'Evidence link recorded — unverified':'No evidence link', [r.paymentDate,r.paymentTime].filter(Boolean).join(' · ')])tr.append(el('td',x||'—'));tbody.append(tr);}
+ if(selected.length>1000)$('summary').textContent+=' First 1,000 matching records displayed.';
+}
+$('file').onchange=async()=>{
+ const file=$('file').files[0];if(!file)return;records=[];$('results').classList.add('hidden');
+ try{if(file.size>5*1024*1024)throw Error('CSV exceeds 5 MB. Use a smaller response export.');const content=await file.text();const rows=csvParse(content.replace(/^\uFEFF/,''));
+ if(rows.length<1)throw Error('CSV is empty.');headers=rows.shift();if(headers.length>100)throw Error('Too many columns.');const col=mapColumns();
+ if(rows.length>15000)throw Error('More than 15,000 responses. Export a smaller date range.');
+ records=rows.map(row=>Object.fromEntries(Object.entries(col).map(([key,index])=>[key,fromRecord(row,index)]))).filter(r=>r.name||r.school);
+ fillOptions('school',records.map(r=>r.school));fillOptions('grade',records.map(r=>r.grade));
+ $('search').value='';$('proof').value='';
+ const total=records.length,hasProof=records.filter(r=>Boolean(r.proof)).length;
+ const values=[['Imported submissions',total],['Schools represented',new Set(records.map(r=>r.school).filter(Boolean)).size],['Class groups',new Set(records.map(r=>r.grade).filter(Boolean)).size],['Proof links recorded',hasProof]];
+ $('metrics').replaceChildren();for(const [label,value]of values){const box=el('article','');box.className='metric';box.append(el('strong',value),el('small',label));$('metrics').append(box);}
+ $('results').classList.remove('hidden');$('importMessage').textContent='CSV loaded locally. No data sent to any server.';render();
+ }catch(err){records=[];headers=[];$('importMessage').textContent=err.message||'Cannot read file.';}finally{$('file').value='';}
+};
+$('clear').onclick=()=>{records=[];headers=[];$('results').classList.add('hidden');$('importMessage').textContent='Private response data cleared from this page.';$('file').value='';};
+for(const id of ['search','school','grade','proof'])$(id).addEventListener(id==='search'?'input':'change',render);
+$('reset').onclick=()=>{$('search').value='';$('school').value='';$('grade').value='';$('proof').value='';render();};
+async function authenticate(){try{const a=await db.auth.getUser();if(a.error||!a.data.user){$('state').replaceChildren(el('span','Admin sign-in required. '));const link=el('a','Open sign-in');link.href='/platform.html#dashboard';$('state').append(link);return;}
+ const role=await db.rpc('iac_is_admin');if(role.error||role.data!==true)throw Error('Unauthorized');
+ $('state').textContent='Verified administrator · private local CSV analysis';$('app').classList.remove('hidden');
+ }catch{$('state').textContent='Access denied. Verified institute founder/admin account required.';}}
+authenticate();
+</script></body></html>
