@@ -1,0 +1,48 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Certificate Analytics | Maa Sati IAC</title>
+<style>:root{font:14px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif;color:#19324e;background:#f4f7fb}*{box-sizing:border-box}body{margin:0}header{padding:18px max(18px,calc((100% - 1160px)/2));background:#162c4b;color:#fff;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}header a{color:#fff}main{max-width:1160px;margin:32px auto;padding:0 18px 76px}h1{font-size:clamp(30px,5vw,44px);margin:5px 0}.muted{color:#63758a}.panel,.metric{padding:19px;border:1px solid #dce5ef;border-radius:14px;background:#fff;margin:14px 0}.stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.metric{margin:0}.metric strong{display:block;font-size:30px}.metric small{font-size:12px;color:#65778c}.controls{display:flex;gap:12px;align-items:end;flex-wrap:wrap}.field{display:grid;gap:6px;font-size:12px;font-weight:750}.field input,.field select{font:inherit;min-width:195px;max-width:100%;border:1px solid #b7c6d6;background:#fff;color:#17324b;border-radius:9px;padding:11px}.scroll{overflow:auto}table{width:100%;min-width:900px;border-collapse:collapse;font-size:12px}th,td{padding:12px 11px;text-align:left;vertical-align:top;border-bottom:1px solid #e4eaf3}th{background:#f5f8fc;color:#5a6c82;font-size:11px;text-transform:uppercase}.tag{display:inline-flex;background:#e4f2e9;border-radius:20px;padding:5px 9px;font-size:11px;color:#256747;font-weight:800}.tag.warn{background:#fff0d9;color:#875919}.notice{padding:14px;border:1px solid #e9d7b1;background:#fff8eb;border-radius:11px;color:#735827;font-size:13px}.hidden{display:none!important}button{border:0;border-radius:9px;padding:11px 17px;background:#2555ab;color:#fff;font:inherit;font-weight:750;cursor:pointer}button:disabled{opacity:.55}a{color:#2756a7}button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #dea54e;outline-offset:3px}@media(max-width:900px){.stats{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:650px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.controls{display:grid}}@media(max-width:380px){.stats{grid-template-columns:1fr}}
+</style></head><body><header><strong>Maa Sati IAC · Certificate Analytics</strong><nav><a href="/launch.html">Founder dashboard</a> · <a href="/workshop-certificates.html">Issue workshop certificates</a> · <a href="/certificate.html">Verify certificate</a></nav></header>
+<main><div class="muted">FOUNDER ONLY · LIVE CERTIFICATE RECORDS</div><h1>Certificate Verification & Download Analytics</h1><p class="muted">Inspect issued certificates, valid public verification requests and authorized PDF responses. The registry tracks requests, not unique visitors, camera QR scans or proof that the file was saved on a device.</p><div id="status" role="status" aria-live="polite">Checking founder access…</div>
+<section id="app" class="hidden"><section class="panel"><div class="controls"><label class="field">Search certificate, recipient or program<input id="search" type="search" placeholder="Search certificate records"></label><label class="field">Certificate type<select id="type"><option value="">All types</option><option value="one_week">One-week workshop</option><option value="seminar">Seminar</option><option value="course">Course</option><option value="skill">Skill</option><option value="internship">Internship</option></select></label><label class="field">Status<select id="state"><option value="">All certificates</option><option value="valid">Valid</option><option value="revoked">Revoked</option></select></label><button id="refresh" type="button">Refresh analytics</button></div><p class="muted" id="summary"></p></section>
+<div id="stats" class="stats"></div>
+<section class="panel"><h2>Certificate activity</h2><div class="scroll"><table><thead><tr><th>Certificate</th><th>Recipient / program</th><th>Issued</th><th>Status</th><th>PDF responses served</th><th>Valid verification requests</th><th>Last PDF response</th><th>Public verification</th></tr></thead><tbody id="rows"></tbody></table></div></section>
+<section class="panel"><h2>How these counters work</h2><p class="notice">A <strong>PDF response served</strong> is counted after the protected PDF generator finishes rendering and the signed-in recipient is authorized. This does not establish that the user's browser saved the file. A <strong>valid verification request</strong> records a public certificate lookup that found a valid certificate; repeated requests close together may be combined. The certificate's QR links to the existing public verification page. These metrics are not unique QR scans or unique people.</p><p><a href="/certificate.html">Open official public certificate verification</a> · <a href="/workshop-unified-progress.html">View student completion progress</a></p></section>
+</section><footer class="muted">Only authorized institute admins may view recipient names and analytics. Public verification remains privacy-protective and does not disclose recipient contact details.</footer></main>
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
+const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
+const $=id=>document.getElementById(id),node=(tag,v)=>{const x=document.createElement(tag);x.textContent=String(v??'');return x};
+let authorized=false,all=[],metrics={};
+const format=s=>{if(!s)return '—';const d=new Date(s);return Number.isNaN(+d)?'—':d.toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'})};
+const stat=(name,value)=>{const x=node('article','');x.className='metric';x.append(node('strong',value??0),node('small',name));return x};
+function draw(){
+ const q=$('search').value.trim().toLocaleLowerCase(),type=$('type').value,state=$('state').value;
+ const selected=all.filter(x=>(!type||x.certificate_type===type)&&(!state||(state==='valid'?!x.revoked:x.revoked))&&(!q||[x.certificate_code,x.recipient_name,x.program_title].some(s=>String(s||'').toLocaleLowerCase().includes(q))));
+ $('stats').replaceChildren(stat('Issued certificates',metrics.issued_total),stat('Currently valid',metrics.issued_valid),stat('Revoked',metrics.issued_revoked),stat('PDF responses served',metrics.pdf_served_total),stat('Valid verification requests',metrics.valid_verification_requests));
+ $('summary').textContent=selected.length+' of '+all.length+' recent certificates shown. List is limited to 300 certificates; overall totals include all database records.';
+ const tbody=$('rows');tbody.replaceChildren();
+ if(!selected.length){const tr=node('tr',''),td=node('td','No matching issued certificates found.');td.colSpan=8;tr.append(td);tbody.append(tr);return;}
+ for(const x of selected){const tr=node('tr','');tr.append(node('td',x.certificate_code));
+ const details=node('td','');details.append(node('strong',x.recipient_name||'Recipient'),node('div',x.program_title||'Program'));tr.append(details);
+ tr.append(node('td',format(x.issued_at)));
+ const badge=node('span',x.revoked?'Revoked':'Valid');badge.className='tag'+(x.revoked?' warn':'');const st=node('td','');st.append(badge);tr.append(st);
+ tr.append(node('td',x.pdf_served??0),node('td',x.verification_requests??0),node('td',format(x.last_pdf_served)));
+ const verify=node('a','Verify');verify.href='/certificate.html?code='+encodeURIComponent(x.certificate_code);verify.target='_blank';verify.rel='noopener noreferrer';const final=node('td','');final.append(verify);tr.append(final);tbody.append(tr);}
+}
+async function load(){
+ if(!authorized)return;$('refresh').disabled=true;$('status').textContent='Loading live certificate issuance and request statistics…';
+ try{
+ const result=await db.rpc('iac_admin_certificate_access_analytics');
+ if(result.error)throw result.error;
+ metrics=result.data||{};all=Array.isArray(metrics.certificates)?metrics.certificates:[];
+ draw();$('status').textContent='Analytics refreshed. No certificate records were changed.';
+ }catch(e){$('status').textContent='Cannot load analytics: '+(e.message||'Unknown error');}finally{$('refresh').disabled=false;}
+}
+async function boot(){
+ try{
+ const auth=await db.auth.getUser();if(auth.error||!auth.data.user){$('status').replaceChildren(node('span','Founder login required. '));const link=node('a','Sign in');link.href='/platform.html#dashboard';$('status').append(link);return;}
+ const role=await db.rpc('iac_is_admin');if(role.error||role.data!==true)throw Error('Founder/admin access required.');
+ authorized=true;$('app').classList.remove('hidden');await load();
+ }catch(e){$('status').textContent='Access denied: '+(e.message||'Unknown issue');}
+}
+$('search').addEventListener('input',draw);$('type').addEventListener('change',draw);$('state').addEventListener('change',draw);$('refresh').addEventListener('click',load);boot();
+</script></body></html>
