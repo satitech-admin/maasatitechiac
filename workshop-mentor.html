@@ -1,0 +1,131 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Workshop Mentor Dashboard | Maa Sati IAC</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#182c42;background:#f3f5fa}*{box-sizing:border-box}body{margin:0}header{background:#172c48;color:#fff;padding:19px max(18px,calc((100% - 1150px)/2));display:flex;gap:16px;justify-content:space-between;flex-wrap:wrap}header a{color:#fff}main{max-width:1150px;padding:0 18px 72px;margin:32px auto}h1{font-size:clamp(30px,5vw,44px);margin:7px 0 12px}h2{font-size:21px}h3{font-size:16px}.muted{color:#64778c;line-height:1.6}.panel,.stat,.day,.submission{background:#fff;border:1px solid #dfe5ef;border-radius:15px;padding:20px;margin:15px 0}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.stat{margin:0}.stat strong{font-size:30px;display:block}.stat small{color:#65778b}.days{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.day{margin:0}.tag{padding:5px 9px;border-radius:25px;background:#eaf0fb;color:#274b85;font-size:11px;font-weight:800}.tag.ok{background:#e3f1e7;color:#276346}.tag.warn{background:#fff1d8;color:#8a591a}.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.controls{display:flex;gap:12px;align-items:end;flex-wrap:wrap}.field{display:grid;gap:7px;margin:10px 0;font-size:12px;font-weight:750}.field input,.field textarea,.field select{font:inherit;border:1px solid #b9c6d8;color:#162e49;background:white;border-radius:9px;padding:11px 12px;width:100%;max-width:100%;min-width:0}.field textarea{min-height:100px;resize:vertical}.field input[type="datetime-local"]{min-width:0}button{background:#2456b1;color:#fff;border:0;border-radius:9px;font:inherit;font-size:13px;font-weight:800;padding:11px 16px;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}.secondary{background:#ebf0fa;color:#24539d}.notice{border:1px solid #eedab4;background:#fff9ed;color:#7d5b29;border-radius:10px;padding:14px;font-size:13px}.hidden{display:none!important}.card-note{font-size:12px;color:#5f7185;overflow-wrap:anywhere}.scroll{overflow:auto}.submission{margin:11px 0}.submission a{overflow-wrap:anywhere}a{color:#2654a3}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #e2a44e;outline-offset:3px}@media(max-width:800px){.stats,.days{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:570px){.stats,.days{grid-template-columns:1fr}.panel,.day{padding:16px}.controls{display:grid}.controls .field{width:100%}}
+</style></head><body>
+<header><strong>Maa Sati IAC · Mentor Operations</strong><nav><a href="/mentor-operations.html">Staff operations</a> · <a href="/launch.html">Founder dashboard</a> · <a href="/platform.html">Institute portal</a></nav></header>
+<main><div class="muted">AUTHORIZED STAFF · WORKSHOP DELIVERY</div><h1>7-Day Workshop Mentor Dashboard</h1><p class="muted">Manage lesson schedules and learning resources, review submitted mini-projects, and monitor verified attendance. Staff permissions are enforced by the institute database.</p>
+<div id="status" role="status" aria-live="polite">Checking staff authorization…</div>
+<section id="workspace" class="hidden">
+<div class="panel"><div class="controls"><label class="field">Select workshop event<select id="event"><option value="">Choose a workshop</option></select></label><button id="refresh" type="button">Refresh event data</button></div><p id="eventInfo" class="muted"></p></div>
+<section id="eventWorkspace" class="hidden"><div id="stats" class="stats" aria-label="Workshop metrics"></div>
+<section class="panel"><div class="row"><h2>7-Day Lesson Planner</h2><span class="tag">Save each day separately</span></div><p class="muted">Publish accurate topic, lesson notes and live/recorded HTTPS links. Students can only access workshop lessons after approved enrollment.</p><div class="days" id="days"></div></section>
+<section class="panel"><div class="row"><h2>Student Mini-Project Reviews</h2><span id="projectCount" class="tag"></span></div><p class="muted">Provide actionable feedback before approving or requesting changes. Approved reviews cannot be overwritten.</p>
+<div class="controls"><label class="field">Review status<select id="filter"><option value="">All</option><option value="submitted">Awaiting review</option><option value="needs_changes">Changes needed</option><option value="approved">Approved</option></select></label></div>
+<div id="projects"></div></section>
+<div class="notice">Attendance shown here is recorded by authorized staff through the existing attendance workflow. Project approval is not certificate issuance. Certificate requirements must be checked separately.</div>
+</section></section><footer class="muted">If an event or learner is missing, check institute event configuration and registered students. No synthetic records or attendance are generated.</footer></main>
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
+const sb=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
+const $=id=>document.getElementById(id);
+const e=(tag,value)=>{const el=document.createElement(tag);el.textContent=String(value??'');return el};
+const requireData=result=>{if(result.error)throw result.error;return result.data||[]};
+const validURL=value=>{const v=String(value||'').trim();if(!v)return null;try{const u=new URL(v);return u.protocol==='https:'?u.href:null}catch{return null}};
+const fmt=value=>{const d=new Date(value);return value&&!Number.isNaN(+d)?d.toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'}):'Not scheduled'};
+const normalizeDate=value=>value?value.slice(0,16):'';
+let currentEvent='',events=[],projects=[],profiles=new Map(),schedule=new Map(),attendance=[],registrations=[];
+function textStatus(message){$('status').textContent=message;}
+function field(name,kind,value='',required=false){const wrap=document.createElement('label');wrap.className='field';wrap.append(e('span',name));const control=document.createElement(kind==='textarea'?'textarea':'input');if(kind!=='textarea')control.type=kind;control.value=value;control.required=required;if(kind==='textarea')control.maxLength=2000;else if(kind==='url')control.maxLength=500;else if(kind==='text')control.maxLength=160;wrap.append(control);return{wrap,control};}
+function display(){
+ const event=events.find(item=>item.id===currentEvent);
+ $('eventWorkspace').classList.toggle('hidden',!event);if(!event)return;
+ $('eventInfo').textContent=(event.title||'Workshop')+' · '+(event.school_name||'Institute')+' · '+fmt(event.starts_at);
+ const verified=attendance.filter(a=>a.attended&&a.verified_at).length,approved=projects.filter(p=>p.status==='approved').length,pending=projects.filter(p=>p.status==='submitted').length;
+ $('stats').replaceChildren();
+ for(const [label,value] of [['Registered learners',registrations.length],['Verified present days',verified],['Projects awaiting review',pending],['Approved projects',approved]]){
+ const card=e('article','');card.className='stat';card.append(e('strong',value),e('small',label));$('stats').append(card);}
+ const days=$('days');days.replaceChildren();
+ for(let n=1;n<=7;n++){
+  const existing=schedule.get(n),article=e('article','');article.className='day';
+  const heading=e('h3','Day '+n);article.append(heading);
+  const name=field('Lesson title','text',existing?.title||'',true),notes=field('Mentor notes','textarea',existing?.notes||'',true),date=field('Start date & time','datetime-local',normalizeDate(existing?.starts_at));
+  const joining=field('Live class URL (HTTPS)','url',existing?.join_url||''),recording=field('Recording URL (HTTPS)','url',existing?.recording_url||'');
+  notes.control.maxLength=3000;name.control.maxLength=160;
+  article.append(name.wrap,notes.wrap,date.wrap,joining.wrap,recording.wrap);
+  const btn=e('button',existing?'Update Day '+n:'Create Day '+n);btn.type='button';
+  btn.addEventListener('click',async()=>{
+   const title=name.control.value.trim(),detail=notes.control.value.trim(),live=joining.control.value.trim(),record=recording.control.value.trim(),dateValue=date.control.value;
+   if(title.length<3||detail.length<5||title.length>160||detail.length>3000){textStatus('Enter a meaningful lesson title and notes for day '+n);return;}
+   if((live&&!validURL(live))||(record&&!validURL(record))){textStatus('Live and recording links must use HTTPS.');return;}
+   if(dateValue&&Number.isNaN(Date.parse(dateValue))){textStatus('Invalid lesson start date.');return;}
+   if(!confirm('Save Day '+n+' lesson details for '+event.title+'? Approved students may see these resources.'))return;
+   btn.disabled=true;try{
+    const payload={event_id:currentEvent,day_number:n,title,notes:detail,join_url:live||null,recording_url:record||null,starts_at:dateValue?new Date(dateValue).toISOString():null};
+    const result=existing?await sb.from('iac_event_days').update(payload).eq('id',existing.id).select('id').single():await sb.from('iac_event_days').insert(payload).select('id').single();
+    if(result.error)throw result.error;
+    textStatus('Day '+n+' saved successfully.');await loadEvent();
+   }catch(err){textStatus('Day '+n+' was not saved: '+(err.message||'Permission or network issue'));btn.disabled=false;}
+  });
+  article.append(btn);days.append(article);
+ }
+ renderProjects();
+}
+function renderProjects(){
+ const list=$('projects');list.replaceChildren();
+ const rows=projects.filter(p=>!$('filter').value||p.status===$('filter').value);
+ $('projectCount').textContent=rows.length+' of '+projects.length+' projects';
+ if(!rows.length){list.append(e('p','No submitted projects match this filter.'));return;}
+ for(const p of rows){
+  const box=e('article','');box.className='submission';const author=profiles.get(p.student_id);
+  const hdr=document.createElement('div');hdr.className='row';hdr.append(e('h3',author?.full_name||'Registered learner'));
+  const status=e('span',p.status.replaceAll('_',' '));status.className='tag'+(p.status==='approved'?' ok':p.status==='needs_changes'?' warn':'');hdr.append(status);box.append(hdr);
+  box.append(e('p',(author?.school_or_college||'School not supplied')+' · Submitted '+fmt(p.submitted_at)));
+  const url=validURL(p.project_url);if(url){const link=e('a','Open student project');link.href=url;link.target='_blank';link.rel='noopener noreferrer';box.append(link);}
+  box.append(e('p',p.description||'No project description.'));
+  if(p.feedback)box.append(e('p','Previous mentor feedback: '+p.feedback));
+  if(p.status!=='approved'){
+   const decision=document.createElement('label');decision.className='field';decision.append(e('span','Review decision'));const select=document.createElement('select');
+   select.append(new Option('Request improvements','needs_changes'),new Option('Approve project','approved'));decision.append(select);
+   const notes=field('Constructive feedback (minimum 12 characters)','textarea','',true);notes.control.maxLength=2000;
+   const save=e('button','Save review');save.type='button';
+   save.addEventListener('click',async()=>{
+    const feedback=notes.control.value.trim();if(feedback.length<12){textStatus('Provide at least 12 characters of feedback.');return;}
+    if(!confirm('Submit '+select.selectedOptions[0].text+' decision for this student project?'))return;
+    save.disabled=true;
+    try{
+     const r=await sb.rpc('iac_mentor_review_workshop_project',{p_submission:p.id,p_decision:select.value,p_feedback:feedback});
+     if(r.error)throw r.error;textStatus('Mentor review recorded.');await loadEvent();
+    }catch(err){textStatus('Project review failed: '+(err.message||'Unknown error'));save.disabled=false;}
+   });
+   box.append(decision,notes.wrap,save);
+  }
+  list.append(box);
+ }
+}
+async function loadEvent(){
+ currentEvent=$('event').value;
+ if(!currentEvent){$('eventWorkspace').classList.add('hidden');return;}
+ $('refresh').disabled=true;textStatus('Loading workshop lesson and project records…');
+ try{
+  const results=await Promise.all([
+   sb.from('iac_event_days').select('id,day_number,title,notes,join_url,recording_url,starts_at').eq('event_id',currentEvent).order('day_number').limit(7),
+   sb.from('iac_workshop_project_submissions').select('id,student_id,project_url,description,status,feedback,submitted_at').eq('event_id',currentEvent).order('submitted_at',{ascending:false}).limit(500),
+   sb.from('iac_event_registrations').select('id,user_id').eq('event_id',currentEvent).limit(500),
+   sb.from('iac_workshop_enrollment_approvals').select('student_id').eq('event_id',currentEvent).limit(500)
+  ]);
+  if(results[3].error){const role=await sb.rpc('iac_is_admin');if(role.error||role.data!==true)throw new Error('Approval metrics require founder access.');}
+  const [days,submissions,regs]=results.slice(0,3).map(requireData);
+  schedule=new Map(days.map(day=>[day.day_number,day]));
+  projects=submissions;registrations=regs;
+  const ids=[...new Set([...submissions.map(x=>x.student_id),...regs.map(x=>x.user_id)])];
+  profiles=new Map();if(ids.length){const found=requireData(await sb.from('iac_profiles').select('id,full_name,school_or_college').in('id',ids.slice(0,500)));profiles=new Map(found.map(p=>[p.id,p]));}
+  const regids=regs.map(r=>r.id);attendance=[];
+  if(regids.length)attendance=requireData(await sb.from('iac_day_attendance').select('event_registration_id,day_number,attended,verified_at').in('event_registration_id',regids.slice(0,500)).limit(3500));
+  display();textStatus('Workshop mentor data loaded. '+(submissions.length>=500||regs.length>=500?'Result limit reached; some records may not be shown.':''));
+ }catch(err){$('eventWorkspace').classList.add('hidden');textStatus('Cannot load workshop: '+(err.message||'Unknown issue'));}finally{$('refresh').disabled=false;}
+}
+async function boot(){
+ try{
+  const auth=await sb.auth.getUser();if(auth.error||!auth.data.user){$('status').replaceChildren(e('span','Sign in with your institute staff account first. '));const link=e('a','Open sign-in');link.href='/platform.html#dashboard';$('status').append(link);return;}
+  const role=await sb.rpc('iac_is_staff');if(role.error||role.data!==true)throw Error('Verified mentor, coordinator or admin permission required.');
+  events=requireData(await sb.from('iac_events').select('id,title,school_name,kind,starts_at,published').in('kind',['one_week','workshop']).order('starts_at',{ascending:false,nullsFirst:false}).limit(500));
+  const picker=$('event');picker.replaceChildren(new Option('Choose a workshop',''));
+  for(const ev of events)picker.append(new Option((ev.title||'Workshop')+' · '+(ev.school_name||'Institute'),ev.id));
+  $('workspace').classList.remove('hidden');textStatus('Authorized mentor access · '+events.length+' workshop event(s) available.');
+ }catch(err){textStatus('Access unavailable: '+(err.message||'Try again'));}
+}
+$('event').addEventListener('change',loadEvent);
+$('refresh').addEventListener('click',loadEvent);
+$('filter').addEventListener('change',renderProjects);
+boot();
+</script></body></html>
