@@ -7,8 +7,8 @@
 <form id="guardianForm"><label>Guardian full name<input id="guardianName" type="text" minlength="2" maxlength="120" autocomplete="name" required></label><label>Guardian email address<input id="guardianEmail" type="email" minlength="5" maxlength="254" autocomplete="email" required></label><button id="guardianButton" type="submit">Submit guardian details for verification</button></form></div>
 <p class="note">Guardian details are stored privately for institute verification. Submitting a form does not grant guardian approval or automatically send an email or OTP.</p></section>
 <section class="panel"><h2>Available published workshops</h2><div class="events" id="events"></div></section>
-<section class="panel"><h2>After registering</h2><div class="steps"><div class="step">1. Institute reviews your real registration and verifies identity.</div><div class="step">2. Guardian permission is checked independently where required.</div><div class="step">3. Payment for the specific workshop must be confirmed through the official payment system.</div><div class="step">4. Founder approves enrollment, then your private Day 1–7 learning access unlocks.</div></div>
-<p class="note">This page does not collect payments. Do not send money to unverified QR codes or individuals. Ask the institute for its official event-specific payment link.</p></section></section>
+<section class="panel"><h2>After registering</h2><div class="steps"><div class="step">1. Institute reviews your real registration and verifies identity.</div><div class="step">2. Guardian permission is checked independently where required.</div><div class="step">3. Pay through the official Razorpay checkout after guardian verification; captured payment is verified server-side.</div><div class="step">4. Founder approves enrollment, then your private Day 1–7 learning access unlocks.</div></div>
+<p class="note">After verified guardian consent, registered students can open the official Razorpay checkout here. The institute server verifies captured payments; screenshots do not prove payment. No automatic enrollment approval follows payment.</p></section></section>
 <footer>Registration depends on remaining capacity. Duplicate submissions are not accepted. Private meeting links are available only after verified approval.</footer></main>
 <script type="module">
 import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
@@ -42,8 +42,15 @@ async function reload(){
    const payment=orders.filter(o=>o.event_id===event.id),captured=payment.some(o=>o.status==='captured'&&o.paid_at);
    const badge=el('span',registered?'Registered — approval pending':'Available for registration');badge.className='pill'+(registered?' good':'');card.append(badge);
    if(registered){
-    card.append(el('p',captured?'Captured gateway payment appears on this account; final validation is pending.':'No captured event payment recorded for this account.'));
-    const link=el('a','Open approved learning dashboard');link.href='/my-workshop.html';card.append(link);
+    card.append(el('p',captured?'Captured gateway payment recorded. Founder verification and final enrollment approval are still required.':'No captured gateway payment recorded for this event.'));
+    if(!captured){
+      const paymentButton=el('button','Pay securely for this workshop');paymentButton.type='button';paymentButton.style.marginTop='12px';paymentButton.style.display='block';
+      paymentButton.disabled=guardian?.status!=='approved'||event.fee_paise==null;
+      if(guardian?.status!=='approved')card.append(el('p','Payment unlocks after independent guardian verification and required student onboarding.'));
+      paymentButton.onclick=()=>payForWorkshop(event,paymentButton);
+      card.append(paymentButton);
+    }
+    const link=el('a','Open approved learning dashboard');link.href='/my-workshop.html';link.style.display='inline-block';link.style.marginTop='12px';card.append(link);
    }else{
     const btn=el('button','Register for this workshop');btn.type='button';btn.style.display='block';btn.style.marginTop='12px';
     btn.onclick=async()=>{
@@ -62,6 +69,61 @@ async function reload(){
   }
   $('status').textContent='Student account verified. '+events.length+' published workshop(s) found.';
  }catch(err){$('status').textContent='Could not load workshop registration data: '+(err.message||'Try again');}
+}
+const PAYMENT_FN='https://ylobnofwmryltbzdtkla.supabase.co/functions/v1/iac-razorpay';
+async function paymentApi(body){
+ const session=await db.auth.getSession();
+ if(session.error||!session.data.session?.access_token)throw Error('Please sign in again before payment.');
+ const response=await fetch(PAYMENT_FN,{
+  method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.data.session.access_token,'apikey':'sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9'},
+  body:JSON.stringify(body)
+ });
+ const payload=await response.json().catch(()=>({}));
+ if(!response.ok)throw Error(payload.error||'Official payment service unavailable. No payment confirmed.');
+ return payload;
+}
+let sdkPromise=null;
+function loadRazorpay(){
+ if(window.Razorpay)return Promise.resolve(window.Razorpay);
+ if(!sdkPromise)sdkPromise=new Promise((resolve,reject)=>{
+  const s=document.createElement('script');s.src='https://checkout.razorpay.com/v1/checkout.js';s.async=true;
+  s.onload=()=>window.Razorpay?resolve(window.Razorpay):reject(new Error('Checkout SDK did not initialize.'));
+  s.onerror=()=>reject(new Error('Secure checkout failed to load. Retry on a stable connection.'));
+  document.head.append(s);
+ }).catch(err=>{sdkPromise=null;throw err;});
+ return sdkPromise;
+}
+async function payForWorkshop(workshop,button){
+ if(!user||guardian?.status!=='approved'||!regs.some(r=>r.event_id===workshop.id)){
+  $('status').textContent='Registration and independently approved guardian consent are required before official checkout.';return;
+ }
+ if(!confirm('Open official Razorpay checkout for '+workshop.title+' at ₹'+(workshop.fee_paise/100).toFixed(2)+'? You will decide whether to complete the payment.'))return;
+ button.disabled=true;
+ try{
+  const available=await paymentApi({action:'availability'});
+  if(!available.configured)throw Error('Official payment gateway is not configured. No charge was attempted.');
+  const [Razorpay,order]=await Promise.all([loadRazorpay(),paymentApi({action:'create-order',product_type:'event',product_id:workshop.id})]);
+  if(!/^order_[A-Za-z0-9]+$/.test(String(order.razorpay_order_id||''))||!order.key_id||order.amount!==workshop.fee_paise||order.currency!=='INR')throw Error('Payment order validation failed. Do not proceed.');
+  const options={
+    key:order.key_id,order_id:order.razorpay_order_id,amount:order.amount,currency:'INR',
+    name:'Maa Sati IAC',description:String(order.description||workshop.title).slice(0,180),
+    theme:{color:'#2858af'},
+    handler:async function(result){
+      $('status').textContent='Payment response received. Verifying capture on the server…';
+      try{
+        const verified=await paymentApi({action:'confirm',razorpay_order_id:result.razorpay_order_id,razorpay_payment_id:result.razorpay_payment_id,razorpay_signature:result.razorpay_signature});
+        if(verified.captured===true){$('status').textContent='Payment captured and verified. Final founder approval remains pending.';await reload();}
+        else throw Error('Payment not confirmed. Contact institute support with your official Razorpay receipt.');
+      }catch(error){$('status').textContent='Payment verification pending: '+(error.message||'Please check official payment status. Do not pay twice.');}
+      finally{button.disabled=false;}
+    },
+    modal:{ondismiss:()=>{$('status').textContent='Checkout closed. No payment confirmation has been received. Check status before retrying.';button.disabled=false;}}
+  };
+  const widget=new Razorpay(options);
+  widget.on('payment.failed',()=>{$('status').textContent='Razorpay reported payment failure. Check your account before retrying.';button.disabled=false;});
+  widget.open();
+  $('status').textContent='Official Razorpay checkout opened. Complete payment only if you wish to proceed.';
+ }catch(error){$('status').textContent='Checkout was not started: '+(error.message||'Payment unavailable');button.disabled=false;}
 }
 $('guardianForm').onsubmit=async event=>{
  event.preventDefault();if(!user||guardian)return;
