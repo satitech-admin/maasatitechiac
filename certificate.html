@@ -35,6 +35,10 @@ async function verify(){
   if(!Array.isArray(data)||!data.length){note('Certificate ID not found. No credential exists for this code.','error');return;}
   const publicRecord=data[0];
   if(!publicRecord.valid){note('This certificate is revoked or invalid.','error');return;}
+  // Best-effort valid verification request counter. A page visit is not proof of a QR scan.
+  sb.rpc('iac_record_valid_certificate_verification',{p_code:code}).then(({error})=>{
+    if(error)console.warn('Verification analytics unavailable');
+  }).catch(()=>{});
   setDisplay(publicRecord);
   note('Valid certificate. Signed PDF download is restricted to the verified recipient.','ok');
   const auth=await sb.auth.getUser();
