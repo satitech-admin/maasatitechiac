@@ -1,0 +1,71 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Native Workshop Approval | Maa Sati IAC</title>
+<style>:root{font:14px/1.6 system-ui,sans-serif;color:#173049;background:#f4f7fb}*{box-sizing:border-box}body{margin:0}header{padding:19px max(18px,calc((100% - 1150px)/2));background:#162b49;color:#fff;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}header a{color:#fff}main{max-width:1150px;margin:30px auto;padding:0 18px 70px}h1{font-size:clamp(29px,5vw,42px);margin:5px 0}.muted{color:#66788d}.panel,.student,.stat{background:#fff;border:1px solid #dce5ef;border-radius:14px;padding:19px;margin:13px 0}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.stat{margin:0}.stat b{display:block;font-size:29px}.stat small{color:#62768d}.row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}.field{display:grid;gap:6px;font-size:12px;font-weight:700;margin:12px 0}.field input,.field textarea,.field select{font:inherit;background:#fff;color:#18314d;border:1px solid #b6c5d7;border-radius:9px;padding:10px 12px;width:100%;min-width:0}.field textarea{resize:vertical;min-height:78px}.tag{border-radius:20px;background:#e9eff9;padding:5px 10px;font-weight:800;font-size:11px;color:#315884}.tag.good{background:#e3f2e8;color:#246442}.tag.warn{background:#fff1d9;color:#8c5d1c}.checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.check{background:#f4f7fb;padding:9px 11px;border-radius:8px;font-size:12px}.check.good{border-left:3px solid #308661}.check.bad{border-left:3px solid #dd9d35}button{background:#2456ad;color:#fff;border:0;border-radius:9px;padding:10px 16px;font:inherit;font-weight:750;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}.notice{padding:14px;background:#fff8e9;color:#755727;border:1px solid #ebd5a9;border-radius:10px;font-size:13px}.hidden{display:none!important}a{color:#2658a9}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #e7aa53;outline-offset:3px}@media(max-width:760px){.checks,.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.checks,.stats{grid-template-columns:1fr}}
+</style></head><body><header><strong>Maa Sati IAC · Founder Enrollment</strong><nav><a href="/launch.html">Founder dashboard</a> · <a href="/workshop-approvals.html">CSV approvals</a> · <a href="/workshop-payment-reconciliation.html">Payments</a></nav></header><main><div class="muted">FOUNDER ONLY · NATIVE STUDENT REGISTRATIONS</div><h1>Direct Student Approval</h1><p class="muted">Independently verify real student identity, confirm approved guardian consent and captured event-specific Razorpay payment, then record the founder's final decision. This workflow does not require a school CSV import.</p><div id="status" role="status" aria-live="polite">Checking founder authorization…</div>
+<section id="app" class="hidden"><div id="stats" class="stats"></div><section class="panel"><div class="row"><label class="field">Workshop filter<select id="event"><option value="">All workshop events</option></select></label><label class="field">Find student<input id="search" type="search" placeholder="Search name or school"></label><button id="refresh" type="button">Refresh checks</button></div><p class="notice">Verification method must reflect a real independent check. Never record an imaginary phone call, guardian approval or payment confirmation. Final approval is revalidated by database triggers even if someone bypasses this screen.</p></section><div id="students"></div></section></main>
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
+const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9'),$=id=>document.getElementById(id),el=(tag,s)=>{const v=document.createElement(tag);v.textContent=String(s??'');return v},rows=r=>{if(r.error)throw r.error;return r.data||[];};
+let events=[],records=[],profiles=new Map(),guardians=new Map(),payments=[],verifications=new Map(),approvals=new Set(),legacy=new Set(),limited=false;
+const statuses=(record)=>{
+const guardian=guardians.get(record.user_id),verified=verifications.get(record.id);
+const paid=payments.some(p=>p.student_id===record.user_id&&p.event_id===record.event_id&&p.product_type==='event'&&p.status==='captured'&&p.paid_at&&p.razorpay_payment_id&&p.currency==='INR'&&p.amount_paise>=record.fee_paise);
+const approved=approvals.has(record.id)||legacy.has(record.event_id+'|'+record.user_id);
+return {verified:!!verified,guardian:!!(guardian&&guardian.status==='approved'&&guardian.verified_by&&guardian.verified_at),paid,approved,ready:!!verified&&!!(guardian&&guardian.status==='approved'&&guardian.verified_by&&guardian.verified_at)&&paid&&!approved};
+};
+function label(text,kind,initial=''){const box=el('label','');box.className='field';box.append(el('span',text));const input=document.createElement(kind==='textarea'?'textarea':kind==='select'?'select':'input');if(kind==='input')input.type='text';input.value=initial;box.append(input);return {box,input};}
+function check(label,ok){const node=el('div',(ok?'✓ ':'• ')+label);node.className='check '+(ok?'good':'bad');return node;}
+function render(){
+ const host=$('students');host.replaceChildren();
+ const filtered=records.filter(r=>(!$('event').value||r.event_id===$('event').value)&&(!$('search').value.trim()||((profiles.get(r.user_id)?.full_name||'')+' '+(profiles.get(r.user_id)?.school_or_college||'')).toLowerCase().includes($('search').value.trim().toLowerCase())));
+ const verifiedCount=filtered.filter(r=>statuses(r).verified).length,readyCount=filtered.filter(r=>statuses(r).ready).length,approvedCount=filtered.filter(r=>statuses(r).approved).length;
+ $('stats').replaceChildren();for(const [name,value]of [['Native registrations',filtered.length],['Identity verified',verifiedCount],['Ready to approve',readyCount],['Already approved',approvedCount]]){const x=el('div','');x.className='stat';x.append(el('b',value),el('small',name));$('stats').append(x);}
+ if(!filtered.length){host.append(el('div','No native student workshop registrations match your filter. Publish an authentic workshop and have students register through the official student portal.'));return;}
+ for(const rec of filtered){
+ const flags=statuses(rec),profile=profiles.get(rec.user_id),item=el('article','');item.className='student';
+ const title=el('div','');title.className='row';title.append(el('h3',(profile?.full_name||'Student account')+' · '+rec.event_title));
+ const badge=el('span',flags.approved?'APPROVED':flags.ready?'READY TO APPROVE':'VERIFICATION REQUIRED');badge.className='tag '+(flags.approved||flags.ready?'good':'warn');title.append(badge);item.append(title);
+ item.append(el('p',(profile?.school_or_college||'School not supplied')+' · '+(profile?.class_or_year||'Class not supplied')));
+ const gates=el('div','');gates.className='checks';gates.append(check('Genuine event registration',true),check('Founder-verified identity',flags.verified),check('Approved guardian consent',flags.guardian),check('Captured payment matching workshop',flags.paid),check('No duplicate approval',!flags.approved));item.append(gates);
+ if(!flags.verified&&!flags.approved){
+ const method=label('Independent verification method','select');for(const [v,t]of [['verified_phone','Verified phone call'],['verified_school_record','Verified school record'],['in_person','In-person verification']])method.input.append(new Option(t,v));
+ const note=label('Identity verification evidence (20–1000 characters)','textarea');note.input.maxLength=1000;
+ const btn=el('button','Confirm verified student identity');btn.type='button';
+ btn.onclick=async()=>{if(note.input.value.trim().length<20){$('status').textContent='Write at least 20 characters of factual verification evidence.';return;}if(!confirm('Confirm that you independently verified this student's identity?'))return;btn.disabled=true;try{const r=await db.rpc('iac_admin_verify_native_workshop_student',{p_registration:rec.id,p_method:method.input.value,p_note:note.input.value.trim()});if(r.error)throw r.error;await load();$('status').textContent='Identity verification saved. Guardian and payment gates remain independent.';}catch(e){$('status').textContent='Identity NOT verified: '+e.message;btn.disabled=false;}};
+ item.append(method.box,note.box,btn);
+ }
+ if(flags.ready){
+ const note=label('Final founder approval note (20–1000 characters)','textarea');note.input.maxLength=1000;const btn=el('button','Approve workshop enrollment');btn.type='button';
+ btn.onclick=async()=>{if(note.input.value.trim().length<20){$('status').textContent='Write at least 20 characters of documented approval evidence.';return;}if(!confirm('Approve this exact student and workshop? The database will independently recheck guardian consent and captured event payment.'))return;btn.disabled=true;try{const r=await db.rpc('iac_admin_approve_native_workshop',{p_registration:rec.id,p_note:note.input.value.trim()});if(r.error)throw r.error;await load();$('status').textContent='Founder approval recorded; this student now qualifies for workshop learning access.';}catch(e){$('status').textContent='Approval blocked: '+e.message;btn.disabled=false;}};
+ item.append(note.box,btn);
+ }
+ host.append(item);
+ }
+ if(limited)host.append(el('p','Row limits reached. Some registrations may not appear here; review records in batches before reporting totals.'));
+}
+async function load(){
+ $('refresh').disabled=true;$('status').textContent='Loading live founder verification and payment records…';
+ try{
+ const auth=await db.auth.getUser();if(auth.error||!auth.data.user){$('app').classList.add('hidden');$('status').textContent='Please sign in with your founder account at /platform.html#dashboard';return;}
+ const admin=await db.rpc('iac_is_admin');if(admin.error||admin.data!==true)throw Error('Founder/admin role required');
+ const results=await Promise.all([
+ db.from('iac_events').select('id,title,school_name,fee_paise,kind,published').in('kind',['one_week','workshop']).limit(500),
+ db.from('iac_event_registrations').select('id,event_id,user_id').limit(1500),
+ db.from('iac_guardian_consents').select('student_id,status,verified_by,verified_at').limit(1500),
+ db.from('iac_payment_orders').select('student_id,event_id,product_type,status,paid_at,razorpay_payment_id,currency,amount_paise').eq('product_type','event').limit(1500),
+ db.from('iac_native_workshop_identity_checks').select('event_registration_id').limit(1500),
+ db.from('iac_native_workshop_approvals').select('event_registration_id').limit(1500),
+ db.from('iac_workshop_enrollment_approvals').select('student_id,event_id').limit(1500)
+ ]);
+ for(const r of results)if(r.error)throw r.error;
+ const [ev,regs,guardian,pay,identity,approved,importApprovals]=results.map(rows);
+ limited=results.some((r,i)=>(r.data||[]).length>=[500,1500,1500,1500,1500,1500,1500][i]);
+ events=ev;const evMap=new Map(ev.map(v=>[v.id,v]));
+ records=regs.filter(r=>evMap.has(r.event_id)).map(r=>({...r,event_title:evMap.get(r.event_id).title,fee_paise:evMap.get(r.event_id).fee_paise}));
+ guardians=new Map(guardian.map(g=>[g.student_id,g]));payments=pay;verifications=new Map(identity.map(i=>[i.event_registration_id,true]));approvals=new Set(approved.map(a=>a.event_registration_id));legacy=new Set(importApprovals.map(a=>a.event_id+'|'+a.student_id));
+ profiles=new Map();const ids=[...new Set(records.map(r=>r.user_id))];for(let i=0;i<ids.length;i+=200){const batch=rows(await db.from('iac_profiles').select('id,full_name,school_or_college,class_or_year').in('id',ids.slice(i,i+200)));batch.forEach(p=>profiles.set(p.id,p));}
+ const picker=$('event'),prev=picker.value;picker.replaceChildren(new Option('All workshop events',''));for(const e of events)picker.append(new Option(e.title+' · '+(e.school_name||'Institute'),e.id));picker.value=prev;
+ $('app').classList.remove('hidden');render();$('status').textContent='Live enrollment verification refreshed.'+(limited?' Result limits reached.':'');
+ }catch(e){$('app').classList.add('hidden');$('status').textContent='Unable to load native approval workflow: '+(e.message||'Unknown error');}finally{$('refresh').disabled=false;}
+}
+$('event').onchange=render;$('search').oninput=render;$('refresh').onclick=load;load();
+</script></body></html>
