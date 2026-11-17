@@ -11,6 +11,7 @@ button{font:inherit;font-size:12px;font-weight:800;color:white;background:var(--
 .evidence-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:16px}.evidence-card{border:1px solid var(--line);padding:16px;border-radius:13px;background:#fff;min-width:0}.evidence-card h3{font-size:16px;margin:0 0 6px}.evidence-card p{font-size:12px}.evidence-card label{display:block;font-size:11px;font-weight:800;letter-spacing:.02em;margin:10px 0 5px}.evidence-card textarea,.evidence-card select{display:block;width:100%;font:inherit;border:1px solid #b9c5c0;background:#fff;color:var(--ink);padding:10px;border-radius:9px}.evidence-card textarea{min-height:85px;resize:vertical}.evidence-card button{margin-top:12px}.evidence-card button:focus-visible,.evidence-card select:focus-visible,.evidence-card textarea:focus-visible{outline:3px solid #d99479;outline-offset:3px}.evidence-message{display:block;color:var(--good);font-size:12px;margin-top:7px;min-height:18px}.evidence-message.error{color:#9f4231}@media(max-width:700px){.evidence-grid{grid-template-columns:1fr}}
 .release-reason{padding:9px 0;border-bottom:1px solid var(--line)}.release-reason:last-child{border-bottom:0}.release-reason p{margin:2px 0;font-size:12px}
 .next-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.next-item{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}.next-item h3{margin:5px 0;font-size:15px}.next-item p{margin:6px 0 12px;font-size:12px}.next-item a{color:#955039;font-size:12px;font-weight:800}.next-item .status{font-size:10px}@media(max-width:700px){.next-grid{grid-template-columns:1fr}}
+.seminar-tools{justify-content:flex-start;margin:15px 0;align-items:end}.seminar-tools label{display:grid;gap:6px;font-size:12px;font-weight:800;color:var(--ink)}.seminar-tools input{font:inherit;min-height:41px;border:1px solid #b6c2ca;border-radius:9px;background:#fff;padding:9px;color:var(--ink);width:min(270px,100%)}.seminar-tools input:focus-visible,.seminar-tools button:focus-visible{outline:3px solid #d99479;outline-offset:3px}@media(max-width:570px){.seminar-tools{display:grid;grid-template-columns:1fr}.seminar-tools input{width:100%}}
 </style><link rel="stylesheet" href="/mobile-iac.css">
 <script defer src="/mobile-iac.js"></script>
 </head><body>
@@ -25,6 +26,8 @@ button{font:inherit;font-size:12px;font-weight:800;color:white;background:var(--
 <section class="card" id="seminarAdminMetrics" aria-labelledby="seminarMetricsTitle">
 <div class="row"><div><h2 id="seminarMetricsTitle">School Seminar Certificates — Admin Analytics</h2><p class="small">Private school-wise certificate issuance, downloads and clicks from the authenticated administrator API. Clicks are not unique visitors.</p></div><span class="status warn" id="seminarMetricsFlag" role="status">Checking…</span></div>
 <div class="grid" id="seminarMetricsSummary" aria-live="polite"></div>
+<div class="row seminar-tools"><label for="seminarSearch">Find school <input id="seminarSearch" type="search" placeholder="School or seminar name" autocomplete="off"></label><label for="seminarDate">Seminar date <input id="seminarDate" type="date"></label><button id="seminarClear" type="button">Clear filters</button><button id="seminarExport" type="button" disabled>Export filtered CSV</button></div>
+<p class="small" id="seminarFilterInfo" role="status" aria-live="polite">Waiting for administrator data.</p>
 <div id="seminarMetricsList" aria-live="polite">Loading authorized school statistics…</div>
 <p class="small">Student certificate issuance, existing certificate links and public QR verification are separate and unchanged. Legacy shared-code analytics API decommissioning requires a separate client migration.</p>
 </section>
@@ -323,31 +326,78 @@ function renderNextActions(counts){
   +'<a href="'+escapeValue(link)+'">'+escapeValue(cta)+' →</a></article>'
  ).join('');
 }
-async function loadSeminarAdminMetrics(){
- const flag=$('seminarMetricsFlag'),host=$('seminarMetricsList'),summary=$('seminarMetricsSummary');
- flag.textContent='Checking…';flag.className='status warn';host.textContent='Loading authorized school statistics…';summary.replaceChildren();
- const result=await db.rpc('iac_admin_seminar_certificate_counts');
- if(result.error){flag.textContent='Unavailable';flag.className='status hold';host.textContent='School certificate analytics unavailable for this account. '+(result.error.code==='42501'?'Verified institute administrator required.':'Refresh to retry.');return;}
- const schools=Array.isArray(result.data)?result.data:[];
- const total=k=>schools.reduce((sum,school)=>sum+Number(school[k]||0),0);
- flag.textContent='Authenticated admin data';flag.className='status ok';
+let seminarSchoolRows=null;
+const seminarMetricKeys=['issued','downloaded','total_clicks','pdf_downloads','image_downloads'];
+function safeSeminarCount(v){const n=Number(v);return Number.isFinite(n)&&n>=0?Math.floor(n):0;}
+function selectedSeminarRows(){
+ if(!Array.isArray(seminarSchoolRows))return [];
+ const query=$('seminarSearch').value.trim().toLocaleLowerCase(),date=$('seminarDate').value;
+ return seminarSchoolRows.filter(row=>{
+  const matchingText=(String(row.school||'')+' '+String(row.event||'')).toLocaleLowerCase().includes(query);
+  const matchingDate=!date||String(row.date||'').slice(0,10)===date;
+  return matchingText&&matchingDate;
+ });
+}
+function renderSeminarSchools(){
+ const host=$('seminarMetricsList'),summary=$('seminarMetricsSummary'),rows=selectedSeminarRows();
+ host.replaceChildren();summary.replaceChildren();
+ if(!Array.isArray(seminarSchoolRows))return;
+ const total=k=>rows.reduce((sum,school)=>sum+safeSeminarCount(school[k]),0);
  summary.innerHTML=[
-  number('Seminar schools',schools.length,'Recorded seminar event/school rows'),
-  number('Certificates issued',total('issued'),'Currently non-revoked school certificates'),
-  number('Certificates downloaded',total('downloaded'),'Distinct recorded certificate downloads'),
-  number('Download clicks',total('total_clicks'),'Recorded events, not unique visitors')
+  number('Matching seminars',rows.length,'Schools/events matching current filters'),
+  number('Certificates issued',total('issued'),'Non-revoked certificate records'),
+  number('Certificates downloaded',total('downloaded'),'Recorded distinct downloads'),
+  number('Download clicks',total('total_clicks'),'Events, not unique visitors')
  ].join('');
- host.replaceChildren();
- if(!schools.length){host.textContent='No seminar events recorded yet.';return;}
- for(const school of schools){
+ $('seminarFilterInfo').textContent='Showing '+rows.length+' of '+seminarSchoolRows.length+' recorded school/event rows. Counts reflect current filters.';
+ $('seminarExport').disabled=!rows.length;
+ if(!rows.length){host.textContent='No school seminars match these filters.';return;}
+ for(const school of rows){
   const article=document.createElement('article');article.className='item';
   const heading=document.createElement('h3');heading.textContent=school.school||'Unlabeled school';
   const detail=document.createElement('p');detail.className='small';
   detail.textContent=[school.event||'Seminar',school.date||'Date not set',
-   'Issued: '+Number(school.issued||0),'Downloaded: '+Number(school.downloaded||0),
-   'PDF clicks: '+Number(school.pdf_downloads||0),'Image clicks: '+Number(school.image_downloads||0)].join(' · ');
+   'Issued: '+safeSeminarCount(school.issued),'Downloaded: '+safeSeminarCount(school.downloaded),
+   'PDF clicks: '+safeSeminarCount(school.pdf_downloads),'Image clicks: '+safeSeminarCount(school.image_downloads)].join(' · ');
   article.append(heading,detail);host.append(article);
  }
+}
+function exportSeminarSchools(){
+ const rows=selectedSeminarRows();
+ if(!rows.length)return;
+ const headers=['School','Event','Date','Certificates issued','Certificates downloaded','All download clicks','PDF clicks','Image clicks'];
+ const values=rows.map(row=>[row.school||'',row.event||'',row.date||'',...seminarMetricKeys.map(k=>safeSeminarCount(row[k]))]);
+ const csvCell=value=>{
+  const raw=String(value??'').replace(/[\r\n\t]+/g,' ');
+  const guarded=/^\s*[=+@-]/.test(raw)?"'"+raw:raw;
+  return '"'+guarded.replace(/"/g,'""')+'"';
+ };
+ const csv=[headers,...values].map(row=>row.map(csvCell).join(',')).join('\r\n');
+ const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+ const url=URL.createObjectURL(blob),link=document.createElement('a');
+ link.href=url;link.download='maa-sati-iac-seminar-certificate-analytics.csv';
+ document.body.append(link);link.click();link.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1500);
+ $('seminarFilterInfo').textContent='Exported '+rows.length+' filtered school/event rows. These are recorded clicks, not unique visitors.';
+}
+$('seminarSearch').addEventListener('input',renderSeminarSchools);
+$('seminarDate').addEventListener('change',renderSeminarSchools);
+$('seminarClear').addEventListener('click',()=>{$('seminarSearch').value='';$('seminarDate').value='';renderSeminarSchools();});
+$('seminarExport').addEventListener('click',exportSeminarSchools);
+async function loadSeminarAdminMetrics(){
+ const flag=$('seminarMetricsFlag'),host=$('seminarMetricsList'),summary=$('seminarMetricsSummary');
+ seminarSchoolRows=null;$('seminarExport').disabled=true;
+ flag.textContent='Checking…';flag.className='status warn';host.textContent='Loading authorized school statistics…';summary.replaceChildren();
+ $('seminarFilterInfo').textContent='Checking administrator access to seminar statistics.';
+ const result=await db.rpc('iac_admin_seminar_certificate_counts');
+ if(result.error){
+  flag.textContent='Unavailable';flag.className='status hold';
+  host.textContent='School certificate analytics unavailable for this account. '+(result.error.code==='42501'?'Verified institute administrator required.':'Refresh to retry.');
+  $('seminarFilterInfo').textContent='No export available without authorized data.';return;
+ }
+ seminarSchoolRows=Array.isArray(result.data)?result.data:[];
+ flag.textContent='Authenticated admin data';flag.className='status ok';
+ renderSeminarSchools();
 }
 async function refresh(){
  try{
