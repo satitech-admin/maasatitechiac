@@ -156,6 +156,16 @@ check(learningRoom.includes("['active','completed'].includes(own?.status)") &&
   learningRoom.includes("select('id,course_id,published')"),
   'Lesson progress UI and verified database policy must both require published lessons and approved enrollment');
 
+const adminSeminarDashboard=read('launch.html');
+check(adminSeminarDashboard.includes('id="seminarAdminMetrics"') &&
+  adminSeminarDashboard.includes("db.rpc('iac_admin_seminar_certificate_counts')") &&
+  adminSeminarDashboard.includes("await loadSeminarAdminMetrics();"),
+  'Founder seminar analytics must load only after authenticated administrator launch readiness');
+check(adminSeminarDashboard.includes("document.createElement('article')") &&
+  adminSeminarDashboard.includes('Clicks are not unique visitors') &&
+  adminSeminarDashboard.includes('Legacy shared-code analytics API decommissioning'),
+  'Founder certificate metrics must be DOM-safe and state legacy authentication migration limitation');
+
 const launchHtml=read('launch.html');
 check(launchHtml.includes('id="releaseDecision"')&&launchHtml.includes('id="releaseReasons"'),
   'Owner-only launch release gate is missing');
