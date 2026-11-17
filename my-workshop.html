@@ -29,7 +29,7 @@ async function pick(){
   const [daysResult,attendanceResult,projectResult]=await Promise.all([
   db.from('iac_event_days').select('day_number,title,notes,starts_at,recording_url,join_url').eq('event_id',id).order('day_number'),
   db.from('iac_day_attendance').select('day_number,attended,verified_at').eq('event_registration_id',registration.id),
-  db.from('iac_workshop_project_submissions').select('id,project_url,description,status,instructor_feedback,submitted_at').eq('event_id',id).eq('student_id',user.id).maybeSingle()
+  db.from('iac_workshop_project_submissions').select('id,project_url,description,status,feedback,submitted_at').eq('event_id',id).eq('student_id',user.id).maybeSingle()
   ]);
   const days=unwrap(daysResult),attendance=unwrap(attendanceResult);if(projectResult.error)throw projectResult.error;
   const attendanceByDay=new Map(attendance.map(a=>[a.day_number,a])),present=attendance.filter(a=>a.attended===true&&a.verified_at).length,recorded=attendance.filter(a=>a.attended===true||a.attended===false).length;
@@ -52,7 +52,7 @@ async function pick(){
   const project=projectResult.data;
   if(project){
     $('projectForm').hidden=true;
-    $('projectStatus').textContent='Submitted '+format(project.submitted_at)+' · '+(project.status||'submitted')+(project.instructor_feedback?' · Mentor feedback: '+project.instructor_feedback:'');
+    $('projectStatus').textContent='Submitted '+format(project.submitted_at)+' · '+(project.status||'submitted')+(project.feedback?' · Mentor feedback: '+project.feedback:'');
   }else{$('projectForm').hidden=false;$('projectStatus').textContent='No project submitted yet.';}
   $('content').classList.remove('hidden');
  }catch(err){$('status').textContent='Could not load workshop details: '+(err.message||'Try again');}
