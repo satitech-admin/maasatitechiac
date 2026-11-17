@@ -185,7 +185,18 @@ case 'resend-confirmation':{
 case 'logout':err(await sb.auth.signOut());await refreshUser();if(location.hash==='#dashboard')await render();else go('dashboard');flash('Signed out securely.');return;case 'save-course':if(!authGuard())return;{const saved=await q('saved_courses').upsert({user_id:user.id,course_id:value},{onConflict:'user_id,course_id',ignoreDuplicates:true});err(saved);flash('Course saved to My Profile.');return;}case 'share-course':{const slugMap={'web-development':'web-development-12-months','artificial-intelligence':'ai-ml-12-months','data-science':'data-science-12-months','app-development':'app-development-12-months'};const target=location.origin+'/programs.html?program='+encodeURIComponent(slugMap[value]||value);try{if(navigator.share){await navigator.share({title:'Maa Sati IAC Career Program',url:target});}else if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(target);flash('Course link copied.');}else{openModal('<div class="modalhead"><h2>Share course link</h2><button class="close" data-action="close-modal">×</button></div><p>'+esc(target)+'</p>');}}catch(e){if(e.name!=='AbortError')throw e;}return;}case 'goto-dashboard':go('dashboard');return;case 'edit-profile':profileModal();return;case 'new-project':newProjectModal();return;case 'apply-track':applyModal(value);return;case 'enroll':if(!authGuard())return;err(await q('enrollments').insert({user_id:user.id,course_id:value,status:'pending'}));flash('Enrollment request submitted. Institute approval is required.');await render();return;
 case 'register-event':if(!authGuard())return;err(await q('event_registrations').insert({event_id:value,user_id:user.id}));flash('Your event registration has been recorded.');await render();return;
 case 'open-course':await openCourse(value);return;
-case 'complete-lesson':if(!authGuard())return;{const existing=await q('lesson_progress').select('lesson_id').eq('student_id',user.id).eq('lesson_id',value).maybeSingle();if(existing.data){flash('Lesson already completed.');return}err(await q('lesson_progress').insert({student_id:user.id,lesson_id:value}));flash('Lesson completion saved. +10 XP');const course=await q('lessons').select('course_id').eq('id',value).single();if(course.data)await openCourse(course.data.course_id);return;}
+case 'complete-lesson':if(!authGuard())return;{
+ const lesson=err(await q('lessons').select('id,course_id,published').eq('id',value).maybeSingle());
+ if(!lesson||lesson.published!==true)throw Error('This lesson is not published or is no longer available.');
+ const own=err(await q('enrollments').select('status').eq('user_id',user.id).eq('course_id',lesson.course_id).maybeSingle());
+ if(!['active','completed'].includes(own?.status))throw Error('Approved course enrollment is required before recording lesson progress.');
+ const existing=err(await q('lesson_progress').select('lesson_id').eq('student_id',user.id).eq('lesson_id',lesson.id).maybeSingle());
+ if(existing){flash('Lesson already completed.');await openCourse(lesson.course_id);return;}
+ if(!confirm('Have you actually studied this lesson and completed the required practice? This records your own lesson progress; it does not prove video attendance or award a certificate.'))return;
+ err(await q('lesson_progress').insert({student_id:user.id,lesson_id:lesson.id}));
+ flash('Your lesson progress was saved. Verified assessments and project reviews are separate requirements.');
+ await openCourse(lesson.course_id);return;
+}
 case 'check-course-readiness':{
  if(!isAdmin())throw Error('Verified administrator required for private course evidence.');
  const message=app.querySelector('[data-completion-status="'+value+'"]');
