@@ -100,10 +100,8 @@ async function loadEvent(){
   const results=await Promise.all([
    sb.from('iac_event_days').select('id,day_number,title,notes,join_url,recording_url,starts_at').eq('event_id',currentEvent).order('day_number').limit(7),
    sb.from('iac_workshop_project_submissions').select('id,student_id,project_url,description,status,feedback,submitted_at').eq('event_id',currentEvent).order('submitted_at',{ascending:false}).limit(500),
-   sb.from('iac_event_registrations').select('id,user_id').eq('event_id',currentEvent).limit(500),
-   sb.from('iac_workshop_enrollment_approvals').select('student_id').eq('event_id',currentEvent).limit(500)
+   sb.from('iac_event_registrations').select('id,user_id').eq('event_id',currentEvent).limit(500)
   ]);
-  if(results[3].error){const role=await sb.rpc('iac_is_admin');if(role.error||role.data!==true)throw new Error('Approval metrics require founder access.');}
   const [days,submissions,regs]=results.slice(0,3).map(requireData);
   schedule=new Map(days.map(day=>[day.day_number,day]));
   projects=submissions;registrations=regs;
