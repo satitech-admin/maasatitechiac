@@ -193,8 +193,11 @@ case 'complete-lesson':if(!authGuard())return;{
  const existing=err(await q('lesson_progress').select('lesson_id').eq('student_id',user.id).eq('lesson_id',lesson.id).maybeSingle());
  if(existing){flash('Lesson already completed.');await openCourse(lesson.course_id);return;}
  if(!confirm('Have you actually studied this lesson and completed the required practice? This records your own lesson progress; it does not prove video attendance or award a certificate.'))return;
- err(await q('lesson_progress').insert({student_id:user.id,lesson_id:lesson.id}));
- flash('Your lesson progress was saved. Verified assessments and project reviews are separate requirements.');
+ const saved=await q('lesson_progress').insert({student_id:user.id,lesson_id:lesson.id});
+ if(saved.error&&saved.error.code!=='23505')throw saved.error;
+ flash(saved.error?.code==='23505'
+  ?'Lesson progress was already recorded. Refreshing your course.'
+  :'Your lesson progress was saved. Verified assessments and project reviews are separate requirements.');
  await openCourse(lesson.course_id);return;
 }
 case 'check-course-readiness':{
