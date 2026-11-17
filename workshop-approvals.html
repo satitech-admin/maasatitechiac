@@ -1,0 +1,77 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Workshop Enrollment Approvals | Maa Sati IAC</title>
+<style>:root{font-family:system-ui,Arial,sans-serif;background:#f4f7fb;color:#1c314b}*{box-sizing:border-box}body{margin:0}header{padding:18px max(18px,calc((100% - 1140px)/2));background:#172f50;color:#fff;display:flex;gap:14px;justify-content:space-between;flex-wrap:wrap}header a{color:#fff}main{max-width:1140px;padding:0 18px 80px;margin:32px auto}h1{font-size:clamp(28px,5vw,43px);margin:6px 0}h2{font-size:20px}p{line-height:1.6}.muted{color:#617184}.panel{border:1px solid #dce4ee;background:#fff;padding:20px;border-radius:15px;margin:16px 0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.field{display:grid;gap:7px;font-weight:700;font-size:12px}select,textarea{font:inherit;border:1px solid #b7c6d7;background:#fff;color:#19314d;padding:12px;border-radius:9px;width:100%}textarea{min-height:95px;resize:vertical}button{border:0;border-radius:9px;padding:12px 18px;font:inherit;background:#2456b3;color:#fff;font-weight:750;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}button:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid #dfa444;outline-offset:3px}.check{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid #edf0f4;align-items:center}.check strong{flex:1}.tag{font-size:11px;font-weight:800;padding:5px 9px;border-radius:20px;background:#ffe9d8;color:#8b4e21}.tag.ok{background:#e0f1e7;color:#236343}.notice{border:1px solid #e7d1a9;background:#fff7e8;color:#77552a;padding:14px;border-radius:9px;font-size:13px}.hidden{display:none!important}.scroll{overflow:auto}table{width:100%;border-collapse:collapse;font-size:12px;min-width:620px}td,th{padding:12px;border-bottom:1px solid #e3e9f1;text-align:left}th{background:#f3f6fb;color:#617085}.stats{font-size:13px;font-weight:700}footer{font-size:12px;color:#63758b;margin-top:24px}@media(max-width:700px){.grid{grid-template-columns:1fr}.panel{padding:15px}} </style></head><body>
+<header><strong>Maa Sati IAC · Founder Operations</strong><nav><a href="/launch.html">Founder dashboard</a> · <a href="/workshop-account-matching.html">Verify identity</a> · <a href="/workshop-enrollments.html">Attendance</a></nav></header><main><div class="muted">PRIVATE · VERIFIED FOUNDER ONLY</div><h1>Workshop Enrollment Approval</h1><p class="muted">A documented, manual final approval. The database checks identity, verified guardian consent, same-event captured payment and existing event registration before saving approval. No approval is automatic.</p><div id="status" aria-live="polite" role="status">Checking authorized founder session…</div>
+<section id="app" class="hidden"><div class="panel"><h2>Approval eligibility</h2><div class="grid">
+<label class="field">Verified student identity<select id="identity"><option value="">Choose linked registration</option></select></label>
+<label class="field">Published one-week/workshop event<select id="event"><option value="">Choose event</option></select></label></div>
+<p><button id="check" type="button">Check all requirements</button></p>
+<div id="gates" aria-live="polite">Select a verified identity and a workshop event to see eligibility.</div></div>
+<section class="panel" id="approvalBox" hidden><h2>Final founder decision</h2><p class="notice">Approval may grant an internal workshop approval record. It does not issue a certificate, bypass attendance requirements, or create payments. Verify the learner and event before submitting.</p><label class="field">Reason / evidence note (20–1000 characters)<textarea id="note" maxlength="1000" placeholder="Describe payment, consent and admission checks performed"></textarea></label><p><button id="approve" type="button" disabled>Approve this workshop enrollment</button></p></section>
+<section class="panel"><h2>Recorded approvals</h2><p class="muted stats" id="count">Loading saved approval decisions…</p><div class="scroll"><table><thead><tr><th>Student</th><th>Event</th><th>Approved at</th><th>Evidence note</th></tr></thead><tbody id="approvedRows"></tbody></table></div></section>
+<p class="notice">A screenshot, unverified guardian submission or a payment associated with another event will not satisfy approval requirements. The back-end rechecks requirements when Approve is clicked.</p></section>
+<footer>Approval requires an existing institute event registration. Google Forms-only registrations must first be matched to a genuine student account and the appropriate event registration.</footer></main>
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
+const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
+const $=id=>document.getElementById(id),e=(tag,value)=>{const el=document.createElement(tag);el.textContent=String(value??'');return el;};
+let links=[],events=[],profileById=new Map(),queueById=new Map(),approvalReady=false;
+const checkRows=[['identity_verified','Verified student identity'],['guardian_approved','Guardian consent independently approved'],['valid_workshop','Published workshop with configured fee and available capacity'],['registered_for_event','Student registered for this exact event'],['event_payment_captured','Captured payment for this exact event'],['already_approved','Not previously approved']];
+const reset=()=>{$('approvalBox').hidden=true;$('approve').disabled=true;approvalReady=false;};
+async function verify(){
+ reset();const importId=$('identity').value,eventId=$('event').value;
+ if(!importId||!eventId){$('gates').textContent='Select an identity-linked student and workshop event.';return;}
+ $('gates').textContent='Rechecking all independent approval requirements…';$('check').disabled=true;
+ try{
+ const res=await db.rpc('iac_admin_workshop_approval_readiness',{p_import:importId,p_event:eventId});
+ if(res.error)throw res.error;
+ const data=res.data||{},box=$('gates');box.replaceChildren();
+ for(const [key,label] of checkRows){const ok=key==='already_approved'?!data[key]:!!data[key],row=document.createElement('div');row.className='check';row.append(e('strong',label));const tag=e('span',ok?'PASS':'BLOCKED');tag.className='tag'+(ok?' ok':'');row.append(tag);box.append(row);}
+ approvalReady=data.ready===true;
+ $('approvalBox').hidden=!approvalReady;$('approve').disabled=!approvalReady;
+ if(!approvalReady)box.append(e('p','Approval blocked until every requirement passes. Resolve missing items in the existing institute workflows.'));
+ }catch(err){$('gates').textContent='Could not check eligibility: '+(err.message||'Please retry.');}finally{$('check').disabled=false;}
+}
+function nameOf(id){const p=profileById.get(id);return p?.full_name||'Account record';}
+function eventOf(id){return events.find(x=>x.id===id)?.title||'Event record';}
+async function refresh(){
+ $('status').textContent='Loading protected institute records…';reset();
+ try{
+ const who=await db.auth.getUser();if(who.error||!who.data.user){$('app').classList.add('hidden');$('status').replaceChildren(e('span','Admin sign-in required. '));const a=e('a','Open sign-in');a.href='/platform.html#dashboard';$('status').append(a);return;}
+ const role=await db.rpc('iac_is_admin');if(role.error||role.data!==true)throw Error('Founder/admin authorization required');
+ const responses=await Promise.all([
+ db.from('iac_workshop_identity_links').select('import_id,student_id').limit(500),
+ db.from('iac_workshop_import_queue').select('id,student_name,school_name,class_label').limit(500),
+ db.from('iac_profiles').select('id,full_name').limit(1000),
+ db.from('iac_events').select('id,title,kind,published,fee_paise').in('kind',['one_week','workshop']).eq('published',true).limit(500),
+ db.from('iac_workshop_enrollment_approvals').select('import_id,student_id,event_id,approved_at,approval_note').order('approved_at',{ascending:false}).limit(500)
+ ]);
+ for(const x of responses)if(x.error)throw x.error;
+ const [found,queue,profiles,evt,approved]=responses.map(x=>x.data||[]);
+ links=found;events=evt;profileById=new Map(profiles.map(x=>[x.id,x]));queueById=new Map(queue.map(x=>[x.id,x]));
+ const identity=$('identity');identity.replaceChildren(new Option('Choose linked registration',''));
+ for(const link of links){const r=queueById.get(link.import_id);if(r)identity.append(new Option((r.student_name||nameOf(link.student_id))+' · '+(r.school_name||'School'),link.import_id));}
+ const event=$('event');event.replaceChildren(new Option('Choose event',''));for(const ev of events)event.append(new Option(ev.title+' · '+(ev.fee_paise==null?'Fee not configured':'₹'+(ev.fee_paise/100).toFixed(2)),ev.id));
+ const rows=$('approvedRows');rows.replaceChildren();
+ for(const a of approved){const tr=e('tr','');for(const val of [nameOf(a.student_id),eventOf(a.event_id),new Date(a.approved_at).toLocaleString('en-IN'),a.approval_note])tr.append(e('td',val));rows.append(tr);}
+ if(!approved.length){const row=e('tr',''),td=e('td','No workshop approvals saved yet.');td.colSpan=4;row.append(td);rows.append(row);}
+ $('count').textContent=approved.length+' recorded approvals'+(approved.length>=500?' (only latest 500 shown)':'');
+ $('status').textContent='Founder authorization verified. '+links.length+' identity links and '+evt.length+' published workshop events loaded.';
+ $('app').classList.remove('hidden');$('gates').textContent='Select a verified identity and a workshop event, then check requirements.';
+ }catch(err){$('app').classList.add('hidden');$('status').textContent='Cannot load founder approvals: '+(err.message||'Unknown issue');}
+}
+$('check').onclick=verify;$('identity').onchange=reset;$('event').onchange=reset;
+$('note').addEventListener('input',()=>{$('approve').disabled=!approvalReady||$('note').value.trim().length<20;});
+$('approve').onclick=async()=>{
+ if(!approvalReady||$('note').value.trim().length<20)return;
+ if(!confirm('Confirm independent review of this exact student and workshop? This will permanently record a founder approval decision.'))return;
+ $('approve').disabled=true;
+ try{
+ const check=await db.rpc('iac_admin_workshop_approval_readiness',{p_import:$('identity').value,p_event:$('event').value});
+ if(check.error)throw check.error;if(check.data?.ready!==true)throw Error('Requirements changed. Reload eligibility.');
+ const result=await db.rpc('iac_admin_approve_workshop_enrollment',{p_import:$('identity').value,p_event:$('event').value,p_note:$('note').value.trim()});
+ if(result.error)throw result.error;
+ await refresh();$('status').textContent='Founder approval saved. No payment, consent or certificate was created by this action.';
+ }catch(err){$('status').textContent='Approval NOT saved: '+(err.message||'Request failed');reset();}
+};
+refresh();
+</script></body></html>
