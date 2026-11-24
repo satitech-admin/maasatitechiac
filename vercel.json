@@ -242,6 +242,19 @@
           "value": "private, no-store, max-age=0"
         }
       ]
+    },
+    {
+      "source": "/december-admin.html",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store, max-age=0"
+        }
+      ]
     }
   ]
 }
