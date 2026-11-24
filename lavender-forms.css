@@ -1,0 +1,116 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+  --iac-form-ink: #350d54;
+  --iac-form-purple: #652595;
+  --iac-form-muted: #786786;
+  --iac-form-border: #bfafd0;
+  --iac-form-lavender: #f5edff;
+  --iac-form-surface: #faf7ff;
+  --iac-form-body: 'DM Sans', system-ui, sans-serif;
+  --iac-form-heading: 'Space Grotesk', system-ui, sans-serif;
+}
+
+body[data-account-area],
+body[data-form-theme],
+body.bootcamp-page:has(form) {
+  color: var(--iac-form-ink);
+  background: radial-gradient(ellipse at 0 0, #e9d9ff80, transparent 55%), var(--iac-form-surface);
+  font-family: var(--iac-form-body);
+}
+
+:is(body[data-account-area], body[data-form-theme], body.bootcamp-page:has(form)) :is(h1, h2, h3) {
+  color: var(--iac-form-ink);
+  font-family: var(--iac-form-heading);
+}
+
+:is(body[data-account-area], body[data-form-theme]) > header {
+  background-color: #350d54;
+}
+
+form {
+  font-family: var(--iac-form-body);
+}
+
+:is(.card, .panel, .bootcamp-panel, .modal, .modalbox):has(> form),
+:is(.card, .panel):has(> .grid > form),
+body[data-account-area] .card {
+  color: var(--iac-form-ink);
+  background: linear-gradient(135deg, #fff, var(--iac-form-surface));
+  border-color: #d9c7ed;
+  border-radius: 16px;
+}
+
+:is(.card, .panel, .bootcamp-panel, .modal, .modalbox):has(> form) :is(h2, h3),
+form :is(h2, h3, legend) {
+  color: var(--iac-form-ink);
+  font-family: var(--iac-form-heading);
+}
+
+:is(form, .registration) label {
+  color: var(--iac-form-ink);
+  font-family: var(--iac-form-body);
+  font-weight: 700;
+}
+
+:is(form, .registration) :is(input:not([type='checkbox']):not([type='radio']):not([type='hidden']), select, textarea) {
+  min-height: 49px;
+  padding: 11px 13px;
+  border: 1px solid var(--iac-form-border);
+  border-radius: 10px;
+  background-color: #fff;
+  color: #48255f;
+  color-scheme: light;
+  font-family: var(--iac-form-body);
+  font-size: 1rem;
+}
+
+:is(form, .registration) textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
+:is(form, .registration) :is(input, textarea)::placeholder {
+  color: var(--iac-form-muted);
+}
+
+:is(form, .registration) :is(input, select, textarea):focus {
+  border-color: #8a49bd;
+  outline: 2px solid #a65de0;
+  outline-offset: 1px;
+}
+
+form :is(input[type='checkbox'], input[type='radio']) {
+  width: 17px;
+  height: 17px;
+  min-height: 17px;
+  padding: 0;
+  accent-color: #702c9e;
+  vertical-align: middle;
+}
+
+form :is(button[type='submit'], button:not([type]):not([data-action]), input[type='submit']) {
+  min-height: 44px;
+  padding: 11px 16px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: linear-gradient(105deg, #7734a0, #54207e);
+  color: #fff;
+  font-family: var(--iac-form-body);
+  font-weight: 700;
+}
+
+form :is(button, input[type='submit']):focus-visible,
+:is(.modal, .modalbox):has(> form) a:focus-visible {
+  outline: 3px solid #a65de0;
+  outline-offset: 3px;
+}
+
+form button:disabled {
+  opacity: .65;
+}
+
+body.bootcamp-page:has(form) .bootcamp-button,
+:is(.modal, .modalbox):has(> form) a {
+  color: var(--iac-form-purple);
+}
