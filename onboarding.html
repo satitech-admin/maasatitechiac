@@ -25,7 +25,7 @@ button,.linkbutton{cursor:pointer;font:inherit;font-size:12px;font-weight:800;pa
 <div class="grid">
 <section><div class="card"><div class="row"><h2>My account</h2><span class="pill" id="emailStatus"></span></div><p id="accountEmail"></p><div id="accountInfo"></div><a class="text" href="/platform.html#dashboard">Go to My Learning →</a></div>
 <div class="card"><h2>Guardian authorization</h2><p>For school students (Classes 9–12), the institute must verify parent/guardian permission before course access or seminar registration. Providing an email address alone is not verification.</p><div id="guardianStatus"></div><form id="guardianForm"><label>Parent / guardian's full name<input required id="guardianName" minlength="2" maxlength="120" autocomplete="off"></label><label>Parent / guardian's email<input type="email" required id="guardianEmail" maxlength="254"></label><button type="submit">Submit guardian details for review</button></form><p class="small">The institute will confirm permission through a verified school record, direct verification or an in-person process. Please do not upload identity documents here.</p></div>
-<div class="card"><h2>Password recovery</h2><p>You can update your password using a verified session or request a password reset to your registered email.</p><form id="resetRequest"><label>Registered email<input type="email" id="resetEmail" required></label><button type="submit" class="ghost">Email a reset link</button></form><form id="changePassword"><label>New password<input id="newPassword" type="password" minlength="10" autocomplete="new-password" required></label><button type="submit">Update password</button></form></div></section>
+<div class="card" id="password-recovery"><h2>Password recovery</h2><p>You can update your password using a verified session or request a password reset to your registered email.</p><form id="resetRequest"><label>Registered email<input type="email" id="resetEmail" required></label><button type="submit" class="ghost">Email a reset link</button></form><form id="changePassword"><label>New password<input id="newPassword" type="password" minlength="10" autocomplete="new-password" required></label><button type="submit">Update password</button></form></div></section>
 <section><div class="card"><h2>Teacher / School Coordinator Application</h2><p>Mentors and school coordinators are approved by authorized institute management. Creating a student account never automatically grants staff access.</p><div id="myStaffRequest"></div><form id="staffRequest"><label>Requested role<select id="role"><option value="teacher">Teacher / Mentor</option><option value="coordinator">School Coordinator</option></select></label><label>Institution / organization<input id="institution" required minlength="2" maxlength="160"></label><label>Experience & why you want access<textarea id="experience" minlength="20" maxlength="1500" required></textarea></label><button type="submit">Request staff access</button></form></div>
 <div id="adminArea" class="hidden">
 <div class="card"><h2>Staff approvals · Admin only</h2><div id="staffQueue"></div></div>
@@ -49,7 +49,7 @@ function pill(status){return '<span class="pill '+safe(status)+'">'+safe(status)
 function listEmpty(message){return '<p class="small">'+safe(message)+'</p>'}
 async function load(){
  let auth=await db.auth.getUser();
- if(auth.error||!auth.data.user){$('workspace').classList.add('hidden');$('guest').innerHTML='<h2>Sign in or create your student account</h2><p>Use the account registered for courses, seminars or internships.</p><a class="linkbutton" href="/platform.html#dashboard">Sign in / Register →</a><p class="small">Institute founder? <a class="text" href="/owner-register.html">Register / sign in with the authorized official email</a>.</p><p class="small">Already registered but email not verified? Open Sign in, enter your registered email and use <strong>Resend verification email</strong>. Check inbox and spam. Your email link returns to the official IAC domain.</p><h3 style="margin-top:25px">Forgot your password?</h3><form id="guestReset"><label>Registered email<input required type="email" id="guestResetEmail"></label><button type="submit">Send password reset link</button></form>'; $('guestReset').onsubmit=async event=>{event.preventDefault();await requestReset($('guestResetEmail').value)};return}
+ if(auth.error||!auth.data.user){$('workspace').classList.add('hidden');$('guest').innerHTML='<h2>Sign in or create your student account</h2><p>Use the account registered for courses, seminars or internships.</p><a class="linkbutton" href="/platform.html#dashboard">Sign in / Register →</a><p class="small">Institute founder? <a class="text" href="/owner-register.html">Register / sign in with the authorized official email</a>.</p><p class="small">Already registered but email not verified? Open Sign in, enter your registered email and use <strong>Resend verification email</strong>. Check inbox and spam. Your email link returns to the official IAC domain.</p><h3 id="guest-password-recovery" style="margin-top:25px">Forgot your password?</h3><form id="guestReset"><label>Registered email<input required type="email" id="guestResetEmail" autocomplete="email"></label><button type="submit">Send password reset link</button></form>'; $('guestReset').onsubmit=async event=>{event.preventDefault();await requestReset($('guestResetEmail').value.trim(),event.submitter)};if(location.hash==='#password-recovery'){$('guest-password-recovery').scrollIntoView();$('guestResetEmail').focus({preventScroll:true});}return}
  currentUser=auth.data.user;
  // Keep email-verified signups functional even if they arrive here before opening the LMS.
  const existingProfile=await db.from('iac_profiles').select('id').eq('id',currentUser.id).maybeSingle();
@@ -137,13 +137,15 @@ $('staffRequest').onsubmit=async e=>{
   $('staffRequest').reset();notice('Your staff application was submitted. Admin verification is required.');await load();
  }catch(error){notice(error.message,true)}finally{button.disabled=false}
 };
-async function requestReset(email){
+async function requestReset(email,button){
+ if(button)button.disabled=true;
  try{
   checked(await db.auth.resetPasswordForEmail(email,{redirectTo:IAC_AUTH_ORIGIN+'/onboarding.html'}));
   notice('If this email has a registered account, a password reset link will be sent.');
- }catch(error){notice(error.message,true)}
+ }catch{notice('A reset link could not be requested right now. Please try again shortly.',true)}
+ finally{if(button)button.disabled=false;}
 }
-$('resetRequest').onsubmit=e=>{e.preventDefault();requestReset($('resetEmail').value.trim())};
+$('resetRequest').onsubmit=e=>{e.preventDefault();requestReset($('resetEmail').value.trim(),e.submitter)};
 $('changePassword').onsubmit=async e=>{
  e.preventDefault();
  try{const pass=$('newPassword').value;if(pass.length<10)throw new Error('Use at least 10 characters.');checked(await db.auth.updateUser({password:pass}));$('newPassword').value='';notice('Password updated. Sign out other devices if you suspect unauthorized access.')}
