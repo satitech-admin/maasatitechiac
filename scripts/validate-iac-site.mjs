@@ -3,12 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 
-const pages=['december-bootcamp.html','december-registration.html','december-admin.html','account-acceptance.html','owner-register.html','index.html','about.html','analytics.html','assistant.html','certificate.html',
+const pages=['parents.html','teachers.html','access-admin.html','december-bootcamp.html','december-registration.html','december-admin.html','account-acceptance.html','owner-register.html','index.html','about.html','analytics.html','assistant.html','certificate.html',
   'curriculum-admin.html','fees.html','founder.html','launch.html','learning-journey.html',
   'mentor-operations.html','my-learning.html','onboarding.html','payments.html',
   'platform.html','profile.html','programs.html','skill-badge.html','skill-review.html',
   'start-here.html','study-plan.html'];
-const privatePages=['december-admin','account-acceptance','owner-register','analytics','assistant','certificate','curriculum-admin','founder','launch','learning-journey',
+const privatePages=['teachers','access-admin','december-admin','account-acceptance','owner-register','analytics','assistant','certificate','curriculum-admin','founder','launch','learning-journey',
   'mentor-operations','my-learning','onboarding','payments','profile','skill-badge','skill-review','study-plan'];
 const errors=[];
 let checkedScripts=0,checkedLinks=0;
@@ -159,8 +159,8 @@ if(!platformJs.includes("q('enrollment_review_audit')"))errors.push('Founder enr
 
 // Production auth email links must not point back to random protected Vercel preview URLs.
 const authOrigin='https://maasatitechiac.vercel.app';
-const onboardingJs=fs.readFileSync('onboarding.html','utf8');
-for(const [filename,html] of [['platform.html',platformJs],['onboarding.html',onboardingJs]]){
+const onboardingJs=fs.readFileSync('account-workspaces.js','utf8');
+for(const [filename,html] of [['platform.html',platformJs],['account-workspaces.js',onboardingJs]]){
  if(!html.includes("const IAC_AUTH_ORIGIN='"+authOrigin+"'"))errors.push(filename+': missing canonical auth email origin');
  if(html.includes("location.origin+'/onboarding.html"))errors.push(filename+': unsafe current-origin auth callback');
 }
@@ -171,7 +171,7 @@ if(!platformJs.includes("querySelector('[data-action=\"resend-confirmation\"]')"
 if(!platformJs.includes("emailRedirectTo:IAC_AUTH_ORIGIN+'/onboarding.html'"))errors.push('Signup email callback is not canonical');
 if(!onboardingJs.includes("redirectTo:IAC_AUTH_ORIGIN+'/onboarding.html'"))errors.push('Password recovery callback must match canonical signup destination');
 if(onboardingJs.includes("checked(await db.rpc('iac_claim_founder_admin'))"))errors.push('Founder claim failure must not break normal learner onboarding');
-if(!onboardingJs.includes('const founderClaim=await db.rpc(\'iac_claim_founder_admin\')'))errors.push('Missing founder role activation check in onboarding');
+if(!onboardingJs.includes("db.rpc('iac_claim_founder_admin')")||!onboardingJs.includes("db.rpc('iac_is_admin')"))errors.push('Missing founder activation and administrator checks in approvals');
 if(!onboardingJs.includes('guardianEvidenceNote')||!onboardingJs.includes('p_note:evidence'))
  errors.push('Guardian decisions require written verification/rejection evidence');
 if(!onboardingJs.includes("db.from('iac_guardian_review_audit')"))

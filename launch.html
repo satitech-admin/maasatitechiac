@@ -15,7 +15,7 @@ button{font:inherit;font-size:12px;font-weight:800;color:white;background:var(--
 </style><link rel="stylesheet" href="/mobile-iac.css">
 <script defer src="/mobile-iac.js"></script>
 </head><body>
-<header><a href="/"><strong>MAA SATI IAC</strong><small>INSTITUTE OF ADVANCE COMPUTING</small></a><nav><a href="/platform.html">Learning</a><a href="/onboarding.html">Onboarding</a><a href="/analytics.html">Analytics</a></nav></header>
+<header><a href="/"><strong>MAA SATI IAC</strong><small>INSTITUTE OF ADVANCE COMPUTING</small></a><nav><a href="/platform.html">Learning</a><a href="/access-admin.html">Team and Guardian Approvals</a><a href="/analytics.html">Analytics</a></nav></header>
 <main><div class="eyebrow">PRODUCTION OPERATIONS · OWNER-ONLY</div><h1>Launch with <em>confidence.</em></h1>
 <p>Check actual production data and system safeguards before enrolling real students. Green checks only mean the measured condition is satisfied—not that the entire school/institute is ready.</p>
 <div id="notice" role="status" aria-live="polite"></div>
@@ -328,9 +328,9 @@ function renderCourseReadiness(data,error){
 }
 function renderNextActions(counts){
  const rows=[
-  ['Founder admin access',Number(counts.admins||0)>0,'A verified administrator role exists. Keep role management and audit records restricted.','/onboarding.html','Review team and guardian approvals'],
+  ['Founder admin access',Number(counts.admins||0)>0,'A verified administrator role exists. Keep role management and audit records restricted.','/access-admin.html','Review team and guardian approvals'],
   ['Course catalog & lessons',Number(counts.published_courses||0)>0&&Number(counts.published_lessons||0)>0,'The published catalog contains courses and lessons. Review actual lesson links and content before student access.','/platform.html#admin','Open lesson/video upload workspace'],
-  ['Guardian consent test',Number(counts.verified_guardians||0)>0,'Use a real, consented school account and verify the separate guardian approval process.','/onboarding.html','Review guardian permission'],
+  ['Guardian consent test',Number(counts.verified_guardians||0)>0,'Use a real, consented school account and verify the separate guardian approval process.','/access-admin.html','Review guardian permission'],
   ['Real learner enrollment',Number(counts.active_students||0)>0,'Approve a legitimate learner enrollment and verify only that user can access the assigned course.','/platform.html#admin','Open enrollment workspace'],
   ['Project, badge & certificate',Number(counts.issued_certificates||0)>0,'Review authentic learner work, issue a valid certificate and test its verification and revocation.','/skill-review.html','Open project reviews'],
   ['Release acceptance & HTTPS',false,'Run read-only account checks and record real evidence. Public DNS, SMTP and payment tests remain independently verifiable.','/account-acceptance.html','Run account checks']

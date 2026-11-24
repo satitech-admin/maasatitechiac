@@ -4,12 +4,12 @@ import assert from 'node:assert/strict';
 
 const read = file => fs.readFileSync(file, 'utf8');
 const privatePages = [
-  'december-admin.html', 'account-acceptance.html', 'owner-register.html', 'my-learning.html', 'learning-journey.html', 'study-plan.html',
+  'teachers.html', 'access-admin.html', 'december-admin.html', 'account-acceptance.html', 'owner-register.html', 'my-learning.html', 'learning-journey.html', 'study-plan.html',
   'profile.html', 'analytics.html', 'onboarding.html', 'assistant.html',
   'payments.html', 'certificate.html', 'skill-badge.html',
   'curriculum-admin.html', 'founder.html', 'mentor-operations.html', 'skill-review.html'
 ];
-const publicPages = ['index.html', 'platform.html', 'programs.html', 'start-here.html', 'fees.html', 'about.html', 'december-bootcamp.html'];
+const publicPages = ['parents.html', 'index.html', 'platform.html', 'programs.html', 'start-here.html', 'fees.html', 'about.html', 'december-bootcamp.html'];
 const errors = [];
 const check = (condition, message) => { if (!condition) errors.push(message); };
 

@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import http from 'node:http';
 import {spawn} from 'node:child_process';
-const pages=['index.html','december-bootcamp.html','december-registration.html','december-admin.html','platform.html','programs.html','my-learning.html','onboarding.html',
+const pages=['parents.html','teachers.html','access-admin.html','index.html','december-bootcamp.html','december-registration.html','december-admin.html','platform.html','programs.html','my-learning.html','onboarding.html',
  'founder.html','certificate.html','fees.html','profile.html','skill-review.html',
  'analytics.html','curriculum-admin.html','launch.html','mentor-operations.html',
  'assistant.html','account-acceptance.html','owner-register.html','payments.html',

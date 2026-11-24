@@ -42,6 +42,8 @@ p{color:var(--text)}
 .campus-countdown{font-weight:700}
 .campus-section{padding-block:clamp(2.25rem,5vw,4.5rem)}
 .campus-course-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.85rem;margin-block:1.25rem}
+.campus-audience .campus-course-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.campus-audience + .campus-section{padding-top:0}
 .campus-course-grid article,.campus-support{padding:1.1rem;border:1px solid var(--line);border-radius:.65rem;background:#fff}
 .campus-course-grid h3{margin-bottom:.5rem;line-height:1.25}
 .campus-course-grid a,.campus-text-link{font-weight:700}
@@ -55,3 +57,5 @@ p{color:var(--text)}
 @media(max-width:940px){.campus-course-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.campus-batch{grid-template-columns:1fr}}
 @media(max-width:760px){.campus-header nav{flex-basis:100%;align-items:stretch;flex-direction:column;gap:0}.campus-header nav a{padding:.75rem .25rem}.campus-hero-grid,.campus-outreach-grid,.campus-footer-grid{grid-template-columns:1fr}.campus-hero-photo img{aspect-ratio:16/9}}
 @media(max-width:430px){.campus-shell{width:calc(100% - 1.5rem)}.campus-course-grid{grid-template-columns:1fr}}
+
+@media(max-width:760px){.campus-audience .campus-course-grid{grid-template-columns:1fr}}
