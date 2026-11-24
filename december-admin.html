@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>December Registrations | Maa Sati IAC Admin</title>
+  <link rel="stylesheet" href="/december-bootcamp.css">
+  <script type="module" src="/december-admin.js"></script>
+</head>
+<body class="bootcamp-page">
+  <header class="bootcamp-nav"><a href="/launch.html">Launch dashboard</a><a href="/platform.html#dashboard">Student platform</a></header>
+  <main class="bootcamp-shell bootcamp-content registration">
+    <h1>December bootcamp registrations</h1>
+    <p id="admin-status" role="status" aria-live="polite">Checking administrator access…</p>
+    <p id="admin-sign-in" hidden><a href="/platform.html#dashboard">Sign in as an institute administrator</a></p>
+    <section id="admin-records" hidden>
+      <p>Confirm the submitter’s authority and consent independently before marking a guardian verified. Record the method and date without including identity document numbers. Verification alone does not approve a place.</p>
+      <div class="registration-fields">
+        <label>Class<select id="admin-class"><option value="">All classes</option><option>9</option><option>10</option><option>11</option><option>12</option></select></label>
+        <label>School<input id="admin-school" type="search" placeholder="Filter by school"></label>
+        <label>Status<select id="admin-state"><option value="">All statuses</option><option>pending</option><option>verified</option><option>approved</option><option>declined</option></select></label>
+      </div>
+      <p id="admin-count"></p>
+      <div class="bootcamp-actions"><button class="registration-button" id="admin-refresh">Refresh registrations</button><button class="registration-button" id="admin-export">Export filtered CSV</button></div>
+      <div class="registration-table">
+        <table><thead><tr><th scope="col">Student</th><th scope="col">Guardian</th><th scope="col">Status</th><th scope="col">Review and follow-up</th></tr></thead><tbody id="admin-rows"></tbody></table>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

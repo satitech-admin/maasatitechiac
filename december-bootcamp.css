@@ -22,3 +22,17 @@ a.bootcamp-button{display:inline-block;border-radius:.5rem;background:#f5d28d;co
 .bootcamp-announcement h2{color:#fff;font-size:clamp(1.2rem,3vw,1.7rem);margin:.2rem 0}
 .bootcamp-announcement p{color:#e3edfb;margin:.2rem 0}
 .bootcamp-announcement .bootcamp-kicker{color:#f4cf84}
+.registration h1{font-size:clamp(2rem,6vw,3.4rem);line-height:1.08;margin:.25rem 0}
+.registration{gap:1rem}
+.registration-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr));gap:.85rem}
+.registration label{display:block;font-weight:650;margin-block:.3rem .7rem}
+.registration input:not([type=checkbox]),.registration select,.registration textarea{display:block;width:100%;min-width:0;padding:.65rem;margin-top:.25rem;border:1px solid #a5b5c8;border-radius:.4rem;font:inherit;color:inherit;background:#fff}
+.registration .registration-check{display:flex;align-items:start;gap:.5rem;font-weight:400}
+.registration-check input{margin-top:.35rem}
+.registration-honeypot{position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden}
+.registration-button{background:#152c50;color:#fff;border:0;border-radius:.45rem;padding:.7rem 1rem;font:inherit;font-weight:750;cursor:pointer}
+.registration-button:disabled{opacity:.65;cursor:wait}
+.registration-reference{overflow-wrap:anywhere}
+.registration-table{overflow:auto}
+.registration-table table{border-collapse:collapse;min-width:100%}
+.registration-table th,.registration-table td{vertical-align:top;text-align:left;border-bottom:1px solid #d8e2ef;padding:.7rem;overflow-wrap:anywhere}
