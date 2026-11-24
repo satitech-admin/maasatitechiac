@@ -16,6 +16,11 @@
   <link rel="stylesheet" href="/campus-home.css">
   <script src="/campus-home.js" defer></script>
   <script src="/december-bootcamp.js" defer></script>
+<style>
+.session-kicker{display:inline-block;padding:7px 13px;border:1px solid #c4b5fd;border-radius:24px;background:#f3efff;color:#51378b;font-weight:700;font-size:.85rem;margin-bottom:14px}
+.session-meta{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}.session-meta span{padding:8px 12px;background:#f3efff;border-radius:8px;color:#39276d;font-weight:650}
+.session-photos{display:grid;grid-template-columns:2fr 1fr;gap:8px}.session-photos img{width:100%;height:100%;object-fit:cover;border-radius:12px;display:block}.session-photos .session-main{grid-row:span 2;min-height:260px}.session-photos .session-small{min-height:125px}.session-caption{font-size:.8rem;color:inherit;margin-top:10px}.session-highlight{background:linear-gradient(120deg,#f2edff,#fff);border:1px solid #d8c9fa;border-radius:16px;padding:24px!important}.session-link{display:inline-block;margin-top:8px;color:inherit;font-weight:700}@media(max-width:600px){.session-photos .session-main{min-height:180px}.session-photos .session-small{min-height:85px}.session-highlight{padding:16px!important}}
+</style>
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"EducationalOrganization","name":"Maa Sati IAC — Institute of Advance Computing","url":"https://maasatitechiac.vercel.app/","parentOrganization":{"@type":"Organization","name":"Sati Technologies Pvt. Ltd.","url":"https://www.satitechnologies.com/"}}
   </script>
@@ -30,6 +35,7 @@
       </a>
       <button id="menuToggle" type="button" aria-expanded="false" aria-controls="campus-nav" hidden>Menu</button>
       <nav id="campus-nav" aria-label="Primary navigation">
+        <a href="/december-bootcamp.html">7-Day Session</a>
         <a href="/parents.html">Parents</a>
         <a href="/teachers.html">Teachers</a>
         <a href="/platform.html#events">Schools</a>
@@ -44,19 +50,20 @@
     <section class="campus-hero">
       <div class="campus-shell campus-hero-grid">
         <div>
-          <h1>Learn technology.<br><em>Build something real.</em></h1>
-          <p>Start with a school coding workshop or take the next step in web development, app development, AI or data science. Learn by building projects with guidance from mentors.</p>
+          <span class="session-kicker">UPCOMING · BATCH 01 · STUDENT REGISTRATION</span>
+          <h1>7-Day AI &amp; Coding<br><em>Technology Bootcamp.</em></h1>
+          <p>Explore artificial intelligence, learn coding and build a guided mini project in one week with Maa Sati IAC.</p><div class="session-meta"><span>Starts 10 December 2026</span><span>Classes 9–12</span><span>7 days</span></div>
           <div class="campus-actions">
-            <a class="campus-button campus-button-primary" href="https://satitech-admin.github.io/maa-sati-school-registration/?v=lavender-live">Register for the December bootcamp</a>
-            <a class="campus-button campus-button-secondary" href="/programs.html">Explore courses</a>
+            <a class="campus-button campus-button-primary" href="https://satitech-admin.github.io/maa-sati-school-registration/?v=lavender-live">Register as a student</a>
+            <a class="campus-button campus-button-secondary" href="/december-bootcamp.html">Explore session details</a>
           </div>
         </div>
         <figure class="campus-hero-photo">
-          <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&amp;fit=crop&amp;w=1050&amp;q=80" alt="Learners working together at a table with laptops" width="1050" height="700" fetchpriority="high">
+          <div class="session-photos"><img class="session-main" src="/assets/events/sarvodaya-2026-1.jpeg" alt="Maa Sati IAC presenter addressing students at Sarvodaya School" fetchpriority="high"><img class="session-small" src="/assets/events/sarvodaya-2026-2.jpeg" alt="Students attending the Sarvodaya technology seminar" loading="lazy"><img class="session-small" src="/assets/events/sarvodaya-2026-3.jpeg" alt="Classroom during the previous Maa Sati IAC seminar" loading="lazy"></div><figcaption class="session-caption">Real moments from our previous Sarvodaya School seminar · 22 November 2026. <a class="session-link" href="/platform.html#events?section=sarvodaya-seminar">View gallery →</a></figcaption>
         </figure>
       </div>
     </section>
-    <section class="campus-shell campus-batch" aria-labelledby="december-batch-heading">
+    <section class="campus-shell campus-batch session-highlight" aria-labelledby="december-batch-heading">
       <div>
         <p class="campus-label">Upcoming · Batch 01 · Classes 9–12</p>
         <h2 id="december-batch-heading">7-Day AI, Coding &amp; Technology Bootcamp</h2>
@@ -64,7 +71,7 @@
         <p class="campus-countdown" data-december-countdown hidden></p>
       </div>
       <div class="campus-actions">
-        <a class="campus-button campus-button-primary" href="https://satitech-admin.github.io/maa-sati-school-registration/?v=lavender-live">Parent registration</a>
+        <a class="campus-button campus-button-primary" href="https://satitech-admin.github.io/maa-sati-school-registration/?v=lavender-live">Student registration</a>
         <a class="campus-button campus-button-secondary" href="/december-bootcamp.html">Curriculum &amp; FAQs</a>
       </div>
     </section>
@@ -96,7 +103,7 @@
         </div>
         <div class="campus-support">
           <h2>How can we help?</h2>
-          <a href="/december-bootcamp.html#registration-help">Parent registration help</a>
+          <a href="/december-bootcamp.html#registration-help">Student registration help</a>
           <a href="/platform.html#events?section=school-enquiry">Request a school program</a>
           <a href="/assistant.html">Student support and Study Buddy</a>
           <a href="/platform.html#certificates">Verify a certificate</a>
