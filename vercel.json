@@ -542,5 +542,17 @@
         }
       ]
     }
+  ],
+  "redirects": [
+    {
+      "source": "/december-bootcamp.html",
+      "destination": "/#seven-day-session",
+      "permanent": false
+    },
+    {
+      "source": "/december-bootcamp",
+      "destination": "/#seven-day-session",
+      "permanent": false
+    }
   ]
 }
