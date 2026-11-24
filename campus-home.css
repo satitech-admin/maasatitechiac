@@ -1,0 +1,57 @@
+:root{color-scheme:light;--ink:#142e47;--text:#354e65;--teal:#17635f;--mint:#e8f4ef;--line:#d5e2e5;--paper:#f6faf9;font:1rem/1.6 system-ui,sans-serif}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;color:var(--ink);background:#fff}
+a{color:var(--teal);text-underline-offset:.2em}
+a:focus-visible,button:focus-visible{outline:3px solid #a76519;outline-offset:4px}
+.skip-link{position:absolute;left:1rem;top:1rem;transform:translateY(-200%);background:#fff;padding:.6rem;z-index:3}
+.skip-link:focus{transform:none}
+.campus-shell{width:min(74rem,calc(100% - 2.5rem));margin-inline:auto}
+.campus-header{border-bottom:1px solid var(--line);background:#fff}
+.campus-header-inner,.campus-brand,.campus-header nav,.campus-actions{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.campus-header-inner{justify-content:space-between;padding-block:.7rem}
+.campus-brand{text-decoration:none;color:var(--ink);gap:.6rem}
+.campus-brand img{object-fit:contain}
+.campus-brand strong,.campus-brand small{display:block}
+.campus-brand small{font-size:.72rem;color:var(--text)}
+.campus-header nav a{color:var(--ink);font-weight:650;text-decoration:none;padding:.5rem .25rem}
+.campus-header nav a:hover,.campus-support a:hover{text-decoration:underline}
+.campus-header nav .campus-portal,#menuToggle{border:1px solid var(--line);border-radius:.45rem;padding:.55rem .8rem}
+#menuToggle{min-height:44px;font:inherit;color:var(--ink);background:#fff}
+.campus-hero{background:var(--paper);padding-block:clamp(2rem,6vw,5.25rem)}
+.campus-hero-grid,.campus-outreach-grid,.campus-footer-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(1.25rem,4vw,3.5rem);align-items:center}
+h1,h2,h3,p{margin-top:0}
+h1,h2{font-weight:760;letter-spacing:-.04em;line-height:1.12}
+h1{font-size:clamp(2.4rem,6vw,5rem);margin-bottom:1.1rem}
+h1 em{font-style:normal;color:var(--teal)}
+h2{font-size:clamp(1.65rem,3.5vw,2.7rem);margin-bottom:.8rem}
+p{color:var(--text)}
+.campus-hero p{font-size:clamp(1rem,2vw,1.15rem);max-width:48ch}
+.campus-hero-photo{margin:0}
+.campus-hero-photo img{width:100%;height:auto;display:block;aspect-ratio:4/3;object-fit:cover;border-radius:.75rem;background:var(--mint)}
+.campus-actions{gap:.65rem}
+.campus-button{display:inline-block;padding:.7rem .95rem;border-radius:.45rem;font-weight:700;text-decoration:none}
+.campus-button-primary{background:var(--teal);color:#fff;border:1px solid var(--teal)}
+.campus-button-primary:hover{background:#104b48}
+.campus-button-secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.campus-button-secondary:hover{border-color:var(--teal)}
+.campus-batch{margin-block:1.4rem 0;padding:clamp(1.1rem,3.5vw,2rem);background:var(--mint);border:1px solid var(--line);border-radius:.75rem;display:grid;grid-template-columns:1fr auto;align-items:center;gap:1rem}
+.campus-batch h2{font-size:clamp(1.4rem,3vw,2rem)}
+.campus-batch p{margin-bottom:.35rem}
+.campus-label{color:var(--teal);font-weight:750;font-size:.82rem;letter-spacing:.07em;text-transform:uppercase}
+.campus-countdown{font-weight:700}
+.campus-section{padding-block:clamp(2.25rem,5vw,4.5rem)}
+.campus-course-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.85rem;margin-block:1.25rem}
+.campus-course-grid article,.campus-support{padding:1.1rem;border:1px solid var(--line);border-radius:.65rem;background:#fff}
+.campus-course-grid h3{margin-bottom:.5rem;line-height:1.25}
+.campus-course-grid a,.campus-text-link{font-weight:700}
+.campus-outreach{background:var(--paper)}
+.campus-outreach-grid{align-items:start}
+.campus-support a{display:block;padding:.5rem 0;border-top:1px solid var(--line)}
+.campus-footer{padding-block:1.7rem;border-top:1px solid var(--line)}
+.campus-footer-grid{grid-template-columns:1fr auto}
+.campus-footer p{margin-bottom:0}
+.campus-footer nav{display:flex;gap:1rem;flex-wrap:wrap}
+@media(max-width:940px){.campus-course-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.campus-batch{grid-template-columns:1fr}}
+@media(max-width:760px){.campus-header nav{flex-basis:100%;align-items:stretch;flex-direction:column;gap:0}.campus-header nav a{padding:.75rem .25rem}.campus-hero-grid,.campus-outreach-grid,.campus-footer-grid{grid-template-columns:1fr}.campus-hero-photo img{aspect-ratio:16/9}}
+@media(max-width:430px){.campus-shell{width:calc(100% - 1.5rem)}.campus-course-grid{grid-template-columns:1fr}}
