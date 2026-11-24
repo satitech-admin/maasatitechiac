@@ -44,8 +44,28 @@ async function load(){
    db.rpc('iac_is_staff')
   ]);
   const requests=checked(requestResult);
-  $('myStaffRequest').innerHTML=requests.length?requests.map(x=>'<div class="item">'+safe(x.requested_role)+' at '+safe(x.institution)+' '+pill(x.status)+' <small>'+displayDate(x.created_at)+'</small></div>').join(''):listEmpty('No staff role requested yet.');
   const hasStaffAccess=checked(staffResult)===true;
+  if(!hasStaffAccess&&!requests.length&&currentUser.user_metadata?.account_area!=='teacher'){
+   $('workspace').classList.add('hidden');
+   const message=document.createElement('p');
+   message.textContent='This account belongs to the student portal. Use your teacher or school coordinator account for this workspace.';
+   const link=document.createElement('a');
+   link.href='/platform.html#dashboard';
+   link.textContent='Return to my student dashboard';
+   const switchAccount=document.createElement('button');
+   switchAccount.type='button';
+   switchAccount.textContent='Switch account';
+   switchAccount.addEventListener('click',async()=>{
+    switchAccount.disabled=true;
+    try{
+     checked(await db.auth.signOut({scope:'local'}));
+     location.reload();
+    }catch(error){notice(error.message,true);switchAccount.disabled=false;}
+   });
+   $('guest').replaceChildren(message,link,document.createTextNode(' '),switchAccount);
+   return;
+  }
+  $('myStaffRequest').innerHTML=requests.length?requests.map(x=>'<div class="item">'+safe(x.requested_role)+' at '+safe(x.institution)+' '+pill(x.status)+' <small>'+displayDate(x.created_at)+'</small></div>').join(''):listEmpty('No staff role requested yet.');
   $('teacherTools').classList.toggle('hidden',!hasStaffAccess);
   if(!currentUser.email_confirmed_at){
    $('staffRequest').classList.add('hidden');
