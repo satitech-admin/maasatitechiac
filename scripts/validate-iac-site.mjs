@@ -3,12 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 
-const pages=['december-bootcamp.html','account-acceptance.html','owner-register.html','index.html','about.html','analytics.html','assistant.html','certificate.html',
+const pages=['december-bootcamp.html','december-registration.html','december-admin.html','account-acceptance.html','owner-register.html','index.html','about.html','analytics.html','assistant.html','certificate.html',
   'curriculum-admin.html','fees.html','founder.html','launch.html','learning-journey.html',
   'mentor-operations.html','my-learning.html','onboarding.html','payments.html',
   'platform.html','profile.html','programs.html','skill-badge.html','skill-review.html',
   'start-here.html','study-plan.html'];
-const privatePages=['account-acceptance','owner-register','analytics','assistant','certificate','curriculum-admin','founder','launch','learning-journey',
+const privatePages=['december-admin','account-acceptance','owner-register','analytics','assistant','certificate','curriculum-admin','founder','launch','learning-journey',
   'mentor-operations','my-learning','onboarding','payments','profile','skill-badge','skill-review','study-plan'];
 const errors=[];
 let checkedScripts=0,checkedLinks=0;

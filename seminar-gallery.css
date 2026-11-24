@@ -1,0 +1,8 @@
+#seminar-photo-viewer{width:min(68rem,calc(100% - 1.5rem));max-width:none;max-height:calc(100% - 1.5rem);padding:1rem;border:0;border-radius:.75rem;background:#12233a;color:#fff;overflow:auto}
+#seminar-photo-viewer::backdrop{background:#0a1729cf}
+#seminar-photo-viewer figure{margin:.75rem 0}
+#seminar-photo-viewer img{display:block;width:100%;height:min(65vh,40rem);object-fit:contain}
+#seminar-photo-viewer figcaption{margin-top:.65rem}
+.seminar-photo-controls{display:flex;flex-wrap:wrap;justify-content:space-between;gap:.5rem}
+#seminar-photo-viewer button{padding:.6rem .85rem;border:1px solid #aebfce;border-radius:.35rem;background:#fff;color:#142e47;font:inherit;font-weight:700;cursor:pointer}
+#seminar-photo-viewer button:focus-visible{outline:3px solid #ffca66;outline-offset:3px}

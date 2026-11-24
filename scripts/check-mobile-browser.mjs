@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import http from 'node:http';
 import {spawn} from 'node:child_process';
-const pages=['index.html','platform.html','programs.html','my-learning.html','onboarding.html',
+const pages=['index.html','december-bootcamp.html','december-registration.html','december-admin.html','platform.html','programs.html','my-learning.html','onboarding.html',
  'founder.html','certificate.html','fees.html','profile.html','skill-review.html',
  'analytics.html','curriculum-admin.html','launch.html','mentor-operations.html',
  'assistant.html','account-acceptance.html','owner-register.html','payments.html',
@@ -33,6 +33,16 @@ function inspectLayout(){
  const toggle=document.querySelector('.iac-mobile-nav-toggle');
  const navNeeded=nav&&!native&&Array.from(nav.children).filter(x=>x.matches('a,button,details')).length>=2;
  let menuOK=true;
+ if(width<=760&&native){
+  menuOK=getComputedStyle(native).display!=='none'&&getComputedStyle(nav).display==='none';
+  if(menuOK){
+   native.click();
+   menuOK=native.getAttribute('aria-expanded')==='true'&&getComputedStyle(nav).display!=='none';
+   native.click();
+   menuOK=menuOK&&native.getAttribute('aria-expanded')==='false';
+  }
+ }
+
  if(width<=760&&navNeeded){
   menuOK=!!toggle&&getComputedStyle(toggle).display!=='none';
   if(menuOK){

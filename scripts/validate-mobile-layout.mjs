@@ -13,9 +13,10 @@ let checked=0;
 for(const file of files){
  const html=fs.readFileSync(file,'utf8');
  assert.match(html,/<meta\s+name=["']viewport["']/i,file+' must use responsive viewport');
- assert.equal((html.match(/href=["']\/mobile-iac\.css["']/g)||[]).length,1,file+' needs exactly one mobile CSS link');
- assert.equal((html.match(/src=["']\/mobile-iac\.js["']/g)||[]).length,1,file+' needs exactly one mobile JS link');
- assert(html.indexOf('href="/mobile-iac.css"')<html.indexOf('</head>'),file+' stylesheet must be in head');
+ const asset = file === 'index.html' ? 'campus-home' : 'mobile-iac';
+ assert.equal(html.split('href="/'+asset+'.css"').length-1,1,file+' needs one responsive stylesheet');
+ assert.equal(html.split('src="/'+asset+'.js"').length-1,1,file+' needs one responsive script');
+ assert(html.indexOf('href="/'+asset+'.css"')<html.indexOf('</head>'),file+' stylesheet must be in head');
  checked++;
 }
 for(const clause of ['max-width:760px','max-width:600px','max-width:380px','prefers-reduced-motion']){
@@ -25,7 +26,7 @@ for(const clause of ['table{display:block','overflow-x:auto','.iac-mobile-nav-ex
  assert(css.includes(clause),'Missing required mobile usability feature: '+clause);
 }
 assert(!css.includes('transform:scale('),'Mobile stylesheet must not distort logos or certificate artwork');
-assert(/class="menu-toggle"|id="menuToggle"/.test(fs.readFileSync('index.html','utf8')),'Home page original menu must be preserved');
+assert(/class="menu-toggle"|id="menuToggle"/.test(fs.readFileSync('index.html','utf8')),'Home page must have a dedicated menu control');
 
 function classList(){
  const state=new Set();
