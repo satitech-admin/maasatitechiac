@@ -33,5 +33,3 @@ document.addEventListener('keydown', event => {
 });
 syncMenu();
 
-const countdown = document.querySelector('[data-december-countdown]');
-countdown.hidden = Date.now() >= Date.parse('2026-12-10T00:00:00+05:30');
