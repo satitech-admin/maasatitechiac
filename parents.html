@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>For Parents and Guardians | Maa Sati IAC</title>
+  <meta name="description" content="Find the Maa Sati IAC school bootcamp application, programme details and guardian verification information.">
+  <link rel="canonical" href="https://maasatitechiac.vercel.app/parents.html">
+  <link rel="stylesheet" href="/december-bootcamp.css">
+  <script type="module" src="/parent-status.js"></script>
+</head>
+<body class="bootcamp-page">
+  <header class="bootcamp-nav"><a href="/">Maa Sati IAC</a></header>
+  <main class="bootcamp-shell bootcamp-content">
+    <section>
+      <h1>For parents and guardians</h1>
+      <p>Apply for a school programme on behalf of your child and find out how the institute verifies guardian consent.</p>
+    </section>
+    <section class="bootcamp-panel">
+      <h2>December bootcamp for Classes 9–12</h2>
+      <p>Batch 01 starts on <time datetime="2026-12-10">10 December 2026</time>. The parent or legal guardian can apply without creating a student account.</p>
+      <div class="bootcamp-actions">
+        <a class="bootcamp-button" href="/december-registration.html">Open parent application</a>
+        <a href="/december-bootcamp.html">Curriculum and FAQs</a>
+      </div>
+    </section>
+    <section class="bootcamp-panel registration">
+      <h2>Check your application status</h2>
+      <p>Use your registration reference and the parent or guardian email entered on the application.</p>
+      <form id="parent-status" method="post">
+        <div class="registration-fields">
+          <label>Registration reference<input name="reference" maxlength="36" autocomplete="off" required></label>
+          <label>Parent or guardian email<input name="email" type="email" autocomplete="email" maxlength="254" required></label>
+        </div>
+        <button type="submit" class="registration-button" disabled>Check status</button>
+      </form>
+      <p id="parent-status-result" role="status" aria-live="polite"></p>
+    </section>
+    <section>
+      <h2>What happens after applying?</h2>
+      <ol>
+        <li>Save the reference number shown after submitting the application.</li>
+        <li>The institute contacts the parent or guardian to independently confirm permission.</li>
+        <li>Staff review the application after guardian verification.</li>
+      </ol>
+      <p><a href="/december-bootcamp.html#registration-help">Get help with a parent application</a></p>
+    </section>
+  </main>
+</body>
+</html>
