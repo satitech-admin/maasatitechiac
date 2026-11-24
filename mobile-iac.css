@@ -1,3 +1,5 @@
+@import url("/lavender-forms.css");
+
 /* Maa Sati IAC — shared mobile layout layer, 16 Nov 2026.
    Loaded AFTER legacy page styles. Keeps all original branding, artwork and logo aspect ratios. */
 :root{--iac-touch-size:44px}
