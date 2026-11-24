@@ -7,15 +7,17 @@ main{width:min(1050px,calc(100% - 34px));margin:35px auto 70px}.eyebrow{font-siz
 @media(max-width:730px){.grid{grid-template-columns:1fr}header{flex-direction:column;align-items:flex-start}.badge-art{min-height:340px;padding:14px}.card{padding:16px}}
 </style><link rel="stylesheet" href="/mobile-iac.css">
 <script defer src="/mobile-iac.js"></script>
+<link rel="stylesheet" href="/certificate-ceremony.css">
 </head><body>
 <header><a href="/"><strong>MAA SATI IAC</strong></a><nav><a href="/programs.html">Career Programs</a> · <a href="/profile.html">My Profile</a> · <a href="/certificate.html">Certificate Verification</a></nav></header>
 <main><div class="eyebrow">OFFICIAL DIGITAL SKILL CREDENTIALS</div><h1>Earned with work.<br><em>Verified with evidence.</em></h1><p>A genuine Maa Sati IAC skill badge is issued only after a passing skill quiz and instructor-approved project by an enrolled learner. This page checks the actual institute certificate registry.</p>
 <div id="message" role="status" aria-live="polite"></div>
 <form id="verifyForm" class="card"><label for="code">Enter official skill certificate code</label><div class="row"><input id="code" maxlength="80" placeholder="MSIAC-2026-XXXXXXXXXXXX" style="flex:1;min-width:180px" required><button type="submit">Verify badge</button></div></form>
+<a id="badge-qr" class="badge-qr-link" hidden>Open badge verification</a>
 <div id="result" class="hidden grid"><div class="card"><div class="badge-art">
 <svg id="badgeSvg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 490" role="img" aria-label="Maa Sati IAC verified skill badge">
-<defs><linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f9e8b8"/><stop offset=".4" stop-color="#d6ab62"/><stop offset="1" stop-color="#a9683e"/></linearGradient><linearGradient id="dark" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2e6655"/><stop offset="1" stop-color="#17212b"/></linearGradient></defs>
-<path d="M148 292L90 461l146-57 142 57-54-169" fill="#bc6045" stroke="#f2cd84" stroke-width="9"/>
+<defs><linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f9e8b8"/><stop offset=".4" stop-color="#d6ab62"/><stop offset="1" stop-color="#a9683e"/></linearGradient><linearGradient id="dark" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#153966"/><stop offset="1" stop-color="#081c39"/></linearGradient></defs>
+<path d="M148 292L90 461l146-57 142 57-54-169" fill="#17437a" stroke="#f2cd84" stroke-width="9"/>
 <circle cx="240" cy="216" r="177" fill="url(#metal)"/><circle cx="240" cy="216" r="164" fill="url(#dark)" stroke="#f9df9f" stroke-width="8"/><circle cx="240" cy="216" r="143" fill="none" stroke="#c5bd8e" stroke-dasharray="2 11" stroke-width="3"/>
 <text x="240" y="120" text-anchor="middle" fill="#f3dbac" font-family="Arial" font-weight="bold" font-size="20" letter-spacing="3">MAA SATI IAC</text>
 <path d="M206 167l34-23 34 23-12 38h-44z" fill="#f7d29a"/><path d="M240 154v50M218 183h44" stroke="#22463e" stroke-width="5"/>
@@ -23,26 +25,45 @@ main{width:min(1050px,calc(100% - 34px));margin:35px auto 70px}.eyebrow{font-siz
 <text x="240" y="271" text-anchor="middle" fill="#fff9e4" font-family="Arial" font-size="28" font-weight="bold" letter-spacing="2">VERIFIED</text>
 <text x="240" y="309" text-anchor="middle" fill="#f3d4a1" font-family="Arial" font-size="14" letter-spacing="2">PROJECT + QUIZ PASSED</text>
 <text x="240" y="339" text-anchor="middle" fill="#f3d4a1" font-family="Arial" font-size="11">INSTITUTE-ISSUED CREDENTIAL</text>
+<text id="badge-skill-name" x="240" y="355" text-anchor="middle" fill="#fff9e4" font-family="Arial" font-size="12"></text>
 </svg></div><div class="row" style="margin-top:17px"><button id="downloadBadge" type="button">Download badge SVG</button><button class="secondary" id="shareBadge" type="button">Share credential</button></div></div><div class="card"><span class="tag" id="verifiedTag">Official verification</span><h2 style="margin-top:15px">Skill Completion Certificate</h2><div id="details"></div><div class="row" style="margin-top:20px"><a id="certificateLink" class="button" href="/certificate.html">Open signed certificate</a><button id="copyCredential" class="secondary" type="button">Copy verification URL</button></div><p style="font-size:12px">The downloadable badge contains no unverified student photograph or personal details. This public certificate code can be checked against the institute registry.</p></div></div>
 <div class="footer">Maa Sati IAC · Only genuinely awarded and non-revoked skill badges show as valid</div>
 </main>
 <script type="module">
 import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
+import {verificationUrl, verificationQR} from '/credential-qr.js';
 const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
 const el=id=>document.getElementById(id),escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]||'&#39;'));
 let currentCode=null,record=null;
 function status(message,failed=false){el('message').innerHTML='<div class="notice'+(failed?' error':'')+'">'+escapeHTML(message)+'</div>'}
-function link(){return location.origin+'/skill-badge.html?code='+encodeURIComponent(currentCode||'')}
+let badgeRun=0;
+let badgeQR=null;
+function resetBadge(){
+ badgeRun++;
+ badgeQR=null;
+ currentCode=null;
+ record=null;
+ el('result').classList.add('hidden');
+ el('badge-qr').hidden=true;
+ el('badge-qr').removeAttribute('href');
+ el('badge-qr').textContent='Open badge verification';
+}
+el('code').addEventListener('input',resetBadge);
+function link(){return verificationUrl('/skill-badge.html',currentCode||'')}
 async function verify(code){
+ resetBadge();
+ const run=badgeRun;
  if(!/^MSIAC-[A-Z0-9-]{8,70}$/i.test(code))return status('Enter an official Maa Sati IAC certificate code.',true);
- el('result').classList.add('hidden');currentCode=null;record=null;
  const result=await db.rpc('iac_verify_certificate',{p_code:code.trim().toUpperCase()});
+ if(run!==badgeRun)return;
  if(result.error){status('Verification temporarily unavailable. Try again later.',true);return}
  const row=Array.isArray(result.data)?result.data[0]:result.data;
  if(!row||!row.valid||row.certificate_type!=='skill'){
   status('No valid skill badge found. A revoked, non-skill or unknown certificate cannot be displayed as a verified skill.',true);return
  }
  currentCode=code.trim().toUpperCase();record=row;
+ const skillName=String(row.program_title||'').split(' · ').at(-1);
+ el('badge-skill-name').textContent=skillName.length>38?skillName.slice(0,37)+'…':skillName;
  el('result').classList.remove('hidden');
  el('verifiedTag').textContent='✓ Verified institute skill credential';
  el('details').innerHTML=[
@@ -54,6 +75,20 @@ async function verify(code){
  el('certificateLink').href='/certificate.html?code='+encodeURIComponent(currentCode);
  history.replaceState(null,'','?code='+encodeURIComponent(currentCode));
  status('Official skill badge verified against the Maa Sati IAC certificate registry.');
+ const target=el('badge-qr');
+ target.href=link();
+ target.hidden=false;
+ try{
+  const data=await verificationQR(target.href);
+  if(run!==badgeRun)return;
+  badgeQR=data;
+  const image=document.createElement('img');
+  image.src=data;
+  image.alt='Scan to verify this skill badge';
+  target.prepend(image);
+ }catch{
+  // The clickable registry link remains available.
+ }
 }
 el('verifyForm').onsubmit=async event=>{event.preventDefault();await verify(el('code').value)};
 el('copyCredential').onclick=async()=>{if(!currentCode)return;try{await navigator.clipboard.writeText(link());status('Public verification link copied.')}catch{status('Copy the URL from your address bar.')}};
@@ -62,6 +97,12 @@ el('downloadBadge').onclick=()=>{if(!record||!currentCode)return;
  const original=el('badgeSvg');const copy=original.cloneNode(true);
  const ns='http://www.w3.org/2000/svg';
  const code=document.createElementNS(ns,'text');code.setAttribute('x','240');code.setAttribute('y','367');code.setAttribute('text-anchor','middle');code.setAttribute('fill','#f7d8a6');code.setAttribute('font-family','Arial');code.setAttribute('font-size','11');code.textContent=currentCode;copy.appendChild(code);
+ if(badgeQR){
+  copy.setAttribute('viewBox','0 0 480 600');
+  const image=document.createElementNS(ns,'image');
+  for(const [key,value] of Object.entries({x:180,y:470,width:120,height:120,href:badgeQR}))image.setAttribute(key,value);
+  copy.appendChild(image);
+ }
  const xml=new XMLSerializer().serializeToString(copy);
  const file=new Blob([xml],{type:'image/svg+xml;charset=utf-8'});const url=URL.createObjectURL(file);
  const a=document.createElement('a');a.href=url;a.download='Maa-Sati-IAC-Verified-Skill-Badge.svg';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
