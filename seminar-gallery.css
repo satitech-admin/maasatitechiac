@@ -6,3 +6,5 @@
 .seminar-photo-controls{display:flex;flex-wrap:wrap;justify-content:space-between;gap:.5rem}
 #seminar-photo-viewer button{padding:.6rem .85rem;border:1px solid #aebfce;border-radius:.35rem;background:#fff;color:#142e47;font:inherit;font-weight:700;cursor:pointer}
 #seminar-photo-viewer button:focus-visible{outline:3px solid #ffca66;outline-offset:3px}
+
+#seminar-photo-viewer img{touch-action:pan-y pinch-zoom}#seminar-photo-viewer button{min-height:44px} @media(max-width:600px){#seminar-photo-viewer{width:calc(100% - 1rem);padding:.75rem}#seminar-photo-viewer img{height:min(60dvh,40rem)}}

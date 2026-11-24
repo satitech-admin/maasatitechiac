@@ -26,6 +26,15 @@ if (typeof dialog?.showModal === 'function') {
     close.focus();
   });
 
+  let touchStart = null;
+  image.addEventListener('touchstart', event => { touchStart = event.changedTouches[0].clientX; }, {passive:true});
+  image.addEventListener('touchend', event => {
+    if (touchStart === null) return;
+    const dx = event.changedTouches[0].clientX - touchStart;
+    touchStart = null;
+    if (Math.abs(dx) > 50) showPhoto(current + (dx < 0 ? 1 : -1));
+  }, {passive:true});
+  image.addEventListener('touchcancel', () => { touchStart = null; });
   dialog.querySelector('[data-gallery-prev]').addEventListener('click', () => showPhoto(current - 1));
   dialog.querySelector('[data-gallery-next]').addEventListener('click', () => showPhoto(current + 1));
   close.addEventListener('click', () => dialog.close());
