@@ -4,47 +4,25 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
-  <title>Parent Registration | Maa Sati IAC December Bootcamp</title>
+  <title>Student Registration | Maa Sati IAC December Bootcamp</title>
   <link rel="stylesheet" href="/december-bootcamp.css">
-  <script type="module" src="/december-registration.js"></script>
+  
 </head>
 <body class="bootcamp-page">
   <header class="bootcamp-nav"><a href="/">Maa Sati IAC</a><a href="/december-bootcamp.html">View the bootcamp</a></header>
   <main class="bootcamp-shell bootcamp-content registration">
     <section>
-      <h1>Parent registration</h1>
+      <h1>Student registration</h1>
       <p>7-Day AI, Coding &amp; Technology Bootcamp · Batch 01 · Starts 10 December 2026</p>
-      <p>For Classes 9–12. A parent or legal guardian should complete this form. The institute will verify consent before approving a place.</p>
+      <p>For Classes 9–12. Complete the official student registration form. Students under 18 should ask their parent or legal guardian to assist.</p>
     </section>
-    <form id="parent-registration" method="post" class="bootcamp-panel">
-      <div class="registration-fields">
-        <label>Student full name<input name="student" minlength="2" maxlength="100" required></label>
-        <label>Class<select name="grade" required><option value="">Select class</option><option>9</option><option>10</option><option>11</option><option>12</option></select></label>
-        <label>School name<input name="school" minlength="2" maxlength="150" required></label>
-        <label>City<input name="city" minlength="2" maxlength="100" required></label>
-        <label>District<input name="district" minlength="2" maxlength="100" required></label>
-        <label>State<input name="state" minlength="2" maxlength="100" required></label>
-        <label>Parent or guardian full name<input name="guardian" autocomplete="name" minlength="2" maxlength="100" required></label>
-        <label>Parent or guardian mobile number<input name="mobile" autocomplete="tel" type="tel" placeholder="10-digit Indian mobile number" pattern="(?:[+]91 *)?[6-9][0-9]{9}" maxlength="16" required></label>
-        <label>Parent or guardian email<input name="email" autocomplete="email" type="email" maxlength="254" required></label>
-        <label>Previous coding experience<select name="experience" required><option value="">Select experience</option><option value="none">None</option><option value="some">Tried a little coding</option><option value="regular">Regularly practise coding</option></select></label>
-      </div>
-      <label>Optional remarks<textarea name="remarks" maxlength="500" rows="3"></textarea></label>
-      <div class="registration-honeypot" aria-hidden="true"><label>Leave blank<input name="website" tabindex="-1" autocomplete="off"></label></div>
-      <p id="registration-privacy"><strong>Privacy.</strong> Maa Sati IAC uses these details to review the application, contact the parent or guardian and arrange the batch. Authorized institute administrators can access the registration. Do not include identity documents or other sensitive details in the remarks.</p>
-      <label class="registration-check"><input type="checkbox" name="eligible" required> The student is currently in Class 9, 10, 11 or 12.</label>
-      <label class="registration-check"><input type="checkbox" name="consent" required> I am the parent or legal guardian and consent to the institute contacting me to verify this application.</label>
-      <label class="registration-check"><input type="checkbox" name="privacy" required> I have read and acknowledge the privacy notice above.</label>
-      <button class="registration-button" type="submit" disabled>Submit registration</button>
-      <noscript>Enable JavaScript to submit the secure registration form.</noscript>
-    </form>
-    <section class="bootcamp-panel" id="registration-result" hidden tabindex="-1">
-      <h2>Registration received</h2>
-      <p>Save this reference for follow-up. The institute still needs to verify guardian consent and approve the application.</p>
-      <p class="registration-reference"><strong id="registration-reference"></strong></p>
-      <p><a href="/parents.html#parent-status">Check your application status later</a></p>
+    <section class="bootcamp-panel">
+      <h2>Register for Batch 01</h2>
+      <p>Use the original school registration site to submit your application. Save the confirmation details after submitting.</p>
+      <a class="bootcamp-button" href="https://satitech-admin.github.io/maa-sati-school-registration/?v=lavender-live">Open official student registration</a>
+      <p id="registration-privacy"><strong>Privacy:</strong> Review the privacy and consent information on the official registration form before submitting personal details. The institute may contact a parent or guardian to verify consent.</p>
+      <p>Already submitted through the earlier institute portal? <a href="/parents.html#parent-status">Check your previous application status</a>.</p>
     </section>
-    <p id="registration-status" role="status" aria-live="polite"></p>
     <p><a href="/december-bootcamp.html#registration-help">Need help with registration?</a></p>
   </main>
 </body>
