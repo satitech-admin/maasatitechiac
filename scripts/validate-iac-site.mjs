@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 
-const pages=['account-acceptance.html','owner-register.html','index.html','about.html','analytics.html','assistant.html','certificate.html',
+const pages=['december-bootcamp.html','account-acceptance.html','owner-register.html','index.html','about.html','analytics.html','assistant.html','certificate.html',
   'curriculum-admin.html','fees.html','founder.html','launch.html','learning-journey.html',
   'mentor-operations.html','my-learning.html','onboarding.html','payments.html',
   'platform.html','profile.html','programs.html','skill-badge.html','skill-review.html',
