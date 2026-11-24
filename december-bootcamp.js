@@ -1,5 +1,6 @@
 const countdown = document.querySelector('[data-december-countdown]');
 if (countdown) {
+  countdown.hidden = false;
   const start = Date.parse('2026-12-10T00:00:00+05:30');
   function showCountdown() {
     const remaining = start - Date.now();
