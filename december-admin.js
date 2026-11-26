@@ -109,6 +109,7 @@ async function load() {
     rows = loaded;
     render();
     records.hidden = false;
+    await loadGoogleRegistrations();
     status.textContent = 'Authorized administrator view';
   } catch {
     status.textContent = 'Registrations could not be loaded. Try again.';
@@ -137,4 +138,102 @@ byId('admin-export').addEventListener('click', () => {
 
 for (const field of filters) field.addEventListener('input', render);
 byId('admin-refresh').addEventListener('click', load);
+
+const importStatus = byId('google-registration-status');
+const importForm = byId('google-registration-import');
+const googleRegistrationTable = 'iac_google_registrations';
+const paymentStates = {
+  pending: 'Pending',
+  verified: 'Verified against payment records',
+  needs_follow_up: 'Needs follow-up'
+};
+
+async function loadGoogleRegistrations() {
+  const body = byId('google-registration-list');
+  body.replaceChildren();
+  const {data, error} = await db.from(googleRegistrationTable)
+    .select('id,response_timestamp,student,grade,school,guardian_mobile,payment_status')
+    .order('imported_at', {ascending:false}).order('id').limit(200);
+  if (error) {
+    importStatus.textContent = 'The Google Form review queue could not be loaded.';
+    return;
+  }
+  for (const entry of data) {
+    const row = body.insertRow();
+    cell(row, entry.student, `Class ${entry.grade} · ${entry.school}`, entry.response_timestamp);
+    cell(row, entry.guardian_mobile);
+    const review = row.insertCell();
+    const select = document.createElement('select');
+    select.setAttribute('aria-label', `Payment status for ${entry.student}`);
+    for (const [value, label] of Object.entries(paymentStates)) {
+      select.add(new Option(label, value, false, entry.payment_status === value));
+    }
+    select.addEventListener('change', async () => {
+      const nextStatus = select.value;
+      if (nextStatus === 'verified' && !window.confirm('Confirm you matched the ₹199 payment in institute payment records.')) {
+        select.value = entry.payment_status;
+        return;
+      }
+      select.disabled = true;
+      const result = await db.from(googleRegistrationTable)
+        .update({payment_status: nextStatus}).eq('id', entry.id)
+        .eq('payment_status', entry.payment_status).select('id').maybeSingle();
+      if (result.error || !result.data) {
+        importStatus.textContent = 'Payment status could not be saved. Refresh the queue before retrying.';
+        select.value = entry.payment_status;
+      } else {
+        entry.payment_status = nextStatus;
+        importStatus.textContent = 'Payment review saved.';
+      }
+      select.disabled = false;
+    });
+    review.append(select);
+  }
+  importStatus.textContent = data.length === 200 ? 'Showing the 200 most recently imported registrations.' : `${data.length} imported registrations.`;
+}
+
+function parseGoogleRegistrationRows(text) {
+  const lines = text.split(/\r?\n/).filter(line => line.trim());
+  if (!lines.length || lines.length > 200) throw new Error('Paste between 1 and 200 registration rows.');
+  return lines.map((line, index) => {
+    const columns = line.split('\t').map(value => value.trim());
+    const [response_timestamp, student, rawGrade, school, mobile] = columns;
+    const grade = rawGrade?.replace(/^class\s*/i, '');
+    const guardian_mobile = mobile?.replace(/^\+91\s*/, '').replaceAll(' ', '');
+    if (columns.length !== 5 || response_timestamp.length < 5 || response_timestamp.length > 60 ||
+        student.length < 2 || student.length > 120 || !/^(9|10|11|12)$/.test(grade) ||
+        school.length < 2 || school.length > 160 || !/^[6-9][0-9]{9}$/.test(guardian_mobile)) {
+      throw new Error(`Row ${index + 1} does not match the five required columns.`);
+    }
+    return {response_timestamp, student, grade, school, guardian_mobile};
+  });
+}
+
+importForm.addEventListener('submit', async event => {
+  event.preventDefault();
+  const input = byId('google-registration-rows');
+  const button = importForm.querySelector('button');
+  let registrations;
+  try {
+    registrations = parseGoogleRegistrationRows(input.value);
+  } catch (error) {
+    importStatus.textContent = error.message;
+    return;
+  }
+  button.disabled = true;
+  try {
+    const {data, error} = await db.from(googleRegistrationTable).upsert(registrations, {
+      onConflict: 'response_timestamp,student,guardian_mobile', ignoreDuplicates: true
+    }).select('id');
+    if (error) throw error;
+    input.value = '';
+    await loadGoogleRegistrations();
+    importStatus.textContent = `${data.length} imported. ${registrations.length - data.length} duplicate rows skipped.`;
+  } catch {
+    importStatus.textContent = 'The rows could not be imported. Your pasted data is still available to retry.';
+  } finally {
+    button.disabled = false;
+  }
+});
+
 load();

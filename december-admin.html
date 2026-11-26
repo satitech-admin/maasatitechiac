@@ -16,6 +16,20 @@
     <p id="admin-sign-in" hidden><a href="/platform.html#dashboard">Sign in as an institute administrator</a></p>
     <section id="admin-records" hidden>
       <p>Confirm the submitter’s authority and consent independently before marking a guardian verified. Record the method and date without including identity document numbers. Verification alone does not approve a place.</p>
+      <section class="bootcamp-panel" aria-labelledby="google-registrations-title">
+        <h2 id="google-registrations-title">Official Google Form registrations</h2>
+        <p>Paste columns from the private response workbook in this order: response timestamp, student name, class, school, guardian mobile. Paste only data rows, separated by tabs. Keep payment proof in Drive.</p>
+        <form id="google-registration-import">
+          <label for="google-registration-rows">Registration rows</label>
+          <textarea id="google-registration-rows" rows="4" maxlength="100000" required></textarea>
+          <button class="registration-button" type="submit">Import registrations</button>
+        </form>
+        <p id="google-registration-status" role="status"></p>
+        <div class="registration-table">
+          <table><thead><tr><th scope="col">Student</th><th scope="col">Guardian mobile</th><th scope="col">Payment review</th></tr></thead><tbody id="google-registration-list"></tbody></table>
+        </div>
+      </section>
+      <h2>Earlier institute portal registrations</h2>
       <div class="registration-fields">
         <label>Class<select id="admin-class"><option value="">All classes</option><option>9</option><option>10</option><option>11</option><option>12</option></select></label>
         <label>School<input id="admin-school" type="search" placeholder="Filter by school"></label>
