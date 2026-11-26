@@ -31,7 +31,7 @@ function inspectLayout(){
  const right=Math.max(document.documentElement.scrollWidth,document.body.scrollWidth);
  const nav=document.querySelector('header nav'),native=document.getElementById('menuToggle');
  const toggle=document.querySelector('.iac-mobile-nav-toggle');
- const inlineNavigation=nav?.matches('.bootcamp-nav nav');
+ const inlineNavigation=nav?.matches('.bootcamp-nav nav, .gallery-nav');
  const navNeeded=nav&&!native&&!inlineNavigation&&Array.from(nav.children).filter(x=>x.matches('a,button,details')).length>=2;
  let menuOK=true;
  if(width<=760&&inlineNavigation){
