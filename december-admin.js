@@ -152,7 +152,7 @@ async function loadGoogleRegistrations() {
   const body = byId('google-registration-list');
   body.replaceChildren();
   const {data, error} = await db.from(googleRegistrationTable)
-    .select('id,response_timestamp,student,grade,school,guardian_mobile,payment_status')
+    .select('id,response_timestamp,student,grade,school,guardian_mobile,payment_status,seat_confirmed_at,notified_at,notification_channel')
     .order('imported_at', {ascending:false}).order('id').limit(200);
   if (error) {
     importStatus.textContent = 'The Google Form review queue could not be loaded.';
@@ -183,11 +183,40 @@ async function loadGoogleRegistrations() {
         select.value = entry.payment_status;
       } else {
         entry.payment_status = nextStatus;
+        await loadGoogleRegistrations();
         importStatus.textContent = 'Payment review saved.';
       }
       select.disabled = false;
     });
+    select.disabled = Boolean(entry.seat_confirmed_at);
     review.append(select);
+    const next = cell(row,
+      entry.seat_confirmed_at ? 'Seat confirmed' : 'Seat pending',
+      entry.notified_at ? `Verification message recorded via ${entry.notification_channel.toUpperCase()}` : 'Verification message not recorded');
+    const actions = entry.notified_at ? [] : entry.seat_confirmed_at
+      ? [['email', 'Record email sent'], ['sms', 'Record SMS sent']]
+      : entry.payment_status === 'verified' ? [['confirm', 'Confirm seat']] : [];
+    for (const [action, title] of actions) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = title;
+      button.addEventListener('click', async () => {
+        const message = action === 'confirm'
+          ? 'Confirm this seat after checking guardian consent and availability?'
+          : `Record that staff already sent the verification message by ${action.toUpperCase()}?`;
+        if (!window.confirm(message)) return;
+        for (const control of next.querySelectorAll('button')) control.disabled = true;
+        try {
+          const result = await db.rpc('iac_google_registration_follow_up', {p_id: entry.id, p_action: action});
+          if (result.error) throw result.error;
+          await loadGoogleRegistrations();
+        } catch {
+          importStatus.textContent = 'The follow-up could not be saved. Refresh the queue before retrying.';
+          for (const control of next.querySelectorAll('button')) control.disabled = false;
+        }
+      });
+      next.append(button);
+    }
   }
   importStatus.textContent = data.length === 200 ? 'Showing the 200 most recently imported registrations.' : `${data.length} imported registrations.`;
 }
