@@ -24,16 +24,20 @@ export function credentialShareContent({record, code, url, badge = false}) {
   const kind = badge ? 'Skill Badge' : 'Certificate';
   const title = program ? `${program} | ${kind}` : kind;
   const description = achievementDescription(record);
+  const share = new URL('/api/credential-share', 'https://maasatitechiac.vercel.app');
+  share.searchParams.set('kind', badge ? 'badge' : 'certificate');
+  share.searchParams.set('code', code);
+  const shareUrl = share.href;
   const issueDate = new Date(record.issued_at);
   const date = Number.isNaN(issueDate.getTime()) ? '' : new Intl.DateTimeFormat('en-IN', {
     month: 'long', year: 'numeric', timeZone: 'UTC'
   }).format(issueDate);
   return {
-    title, description, url,
-    caption: `I earned the ${title} from ${issuer}. ${description} Verify my credential: ${url}`,
+    title, description, url, shareUrl,
+    caption: `I earned the ${title} from ${issuer}. ${description} Verify my credential: ${shareUrl}`,
     profile: [`Name: ${title}`, `Issuing organization: ${issuer}`, date && `Issue date: ${date}`,
       `Credential ID: ${code}`, `Credential URL: ${url}`].filter(Boolean).join('\n'),
-    linkedinShare: 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(url),
+    linkedinShare: 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(shareUrl),
     linkedinProfile: 'https://www.linkedin.com/profile/add?startTask=CERTIFICATION'
   };
 }
@@ -90,7 +94,7 @@ export function renderCredentialShare(container, options) {
   copy('Copy profile details', data.profile);
   if (navigator.share) button('Share', async () => {
     try {
-      await navigator.share({title: data.title, text: data.caption.split(' Verify my credential:')[0], url: data.url});
+      await navigator.share({title: data.title, text: data.caption.split(' Verify my credential:')[0], url: data.shareUrl});
     } catch (error) {
       if (error.name !== 'AbortError') feedback.textContent = 'Sharing unavailable. Use Copy link or Copy post text.';
     }
