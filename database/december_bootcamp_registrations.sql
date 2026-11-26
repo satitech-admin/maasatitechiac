@@ -48,7 +48,7 @@ declare
   v_remarks text := coalesce(trim(p->>'remarks'), '');
 begin
   if p is null or jsonb_typeof(p) <> 'object' or pg_column_size(p) > 8192
-    or now() >= '2026-12-10 00:00:00+05:30'::timestamptz
+    or now() >= '2026-12-06 00:00:00+05:30'::timestamptz
     or coalesce(p->>'website','') <> ''
     or p->'consent' is distinct from 'true'::jsonb
     or p->'privacy' is distinct from 'true'::jsonb

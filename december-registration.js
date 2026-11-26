@@ -1,7 +1,7 @@
 const form = document.querySelector('#parent-registration');
 const button = form.querySelector('button[type="submit"]');
 const status = document.querySelector('#registration-status');
-const deadline = Date.parse('2026-12-10T00:00:00+05:30');
+const deadline = Date.parse('2026-12-06T00:00:00+05:30');
 const endpoint = 'https://ylobnofwmryltbzdtkla.supabase.co/rest/v1/rpc/iac_december_submit';
 const publishableKey = 'sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9';
 

@@ -5,12 +5,8 @@ import os from 'node:os';
 import path from 'node:path';
 import http from 'node:http';
 import {spawn} from 'node:child_process';
-const pages=['gallery.html','parents.html','teachers.html','access-admin.html','index.html','december-bootcamp.html','december-registration.html','december-admin.html','platform.html','programs.html','my-learning.html','onboarding.html',
- 'founder.html','certificate.html','fees.html','profile.html','skill-review.html',
- 'analytics.html','curriculum-admin.html','launch.html','mentor-operations.html',
- 'assistant.html','account-acceptance.html','owner-register.html','payments.html',
- 'learning-journey.html','skill-badge.html','study-plan.html','about.html','start-here.html'];
-const extra=new Set(['index.html','platform.html','programs.html','my-learning.html','onboarding.html','founder.html','certificate.html']);
+const pages = fs.readdirSync(process.cwd()).filter(file => file.endsWith('.html')).sort();
+const widths = [320, 360, 375, 390, 414, 768, 1024, 1280, 1440, 1920];
 const binary=[process.env.CHROME_BINARY,'/usr/bin/google-chrome','/usr/bin/google-chrome-stable','/usr/bin/chromium','/usr/bin/chromium-browser'].find(p=>p&&fs.existsSync(p));
 if(!binary)throw Error('Chrome/Chromium not found for viewport test');
 if(typeof WebSocket!=='function')throw Error('Node 22+ global WebSocket required');
@@ -31,10 +27,11 @@ function inspectLayout(){
  const right=Math.max(document.documentElement.scrollWidth,document.body.scrollWidth);
  const nav=document.querySelector('header nav'),native=document.getElementById('menuToggle');
  const toggle=document.querySelector('.iac-mobile-nav-toggle');
- const inlineNavigation=nav?.matches('.bootcamp-nav nav, .gallery-nav');
+ const enhancedNavigation=!!document.querySelector('script[src$="mobile-iac.js"]');
+ const inlineNavigation=nav&&(!enhancedNavigation||nav.matches('.bootcamp-nav nav, .gallery-nav'));
  const navNeeded=nav&&!native&&!inlineNavigation&&Array.from(nav.children).filter(x=>x.matches('a,button,details')).length>=2;
  let menuOK=true;
- if(width<=760&&inlineNavigation){
+ if(width<=760&&inlineNavigation&&!native){
   menuOK=[...nav.querySelectorAll('a')].every(link=>{
    const box=link.getBoundingClientRect();
    return box.width>0&&box.left>=0&&box.right<=width;
@@ -98,21 +95,27 @@ try{
  };
  await send('Page.enable');
  for(const file of pages){
-  const widths=extra.has(file)?[320,360,768]:[360,768];
   for(const width of widths){
-   await send('Emulation.setDeviceMetricsOverride',{width,height:820,deviceScaleFactor:1,mobile:true});
+   await send('Emulation.setDeviceMetricsOverride',{width,height:820,deviceScaleFactor:1,mobile:width<=768});
    await send('Page.navigate',{url:'http://127.0.0.1:'+address+'/'+file});
+   let loaded = false;
    for(let t=0;t<25;t++){
-    try{if(await evaluate('document.readyState')!=='loading')break}catch{}
+    try{
+     const ready=await evaluate('location.pathname + ":" + document.readyState');
+     if(ready==='/'+file+':complete'){
+      loaded = true;
+      break;
+     }
+    }catch{}
     await sleep(60);
    }
-   await sleep(90);
+   if(!loaded)throw Error('Page did not finish loading: '+file);
    const result=await evaluate('('+inspectLayout.toString()+')()');
    count++;
-   if(result.scroll>result.width+4||!result.menuOK)errors.push({file,target:width,...result});
+   if(result.width!==width||result.scroll>width+4||!result.menuOK)errors.push({file,target:width,...result});
   }
  }
- console.log('Headless browser: '+count+' mobile/tablet viewports across '+pages.length+' pages');
+ console.log('Headless browser: '+count+' phone, tablet and desktop viewport checks across '+pages.length+' pages');
  if(errors.length){console.error(JSON.stringify(errors,null,2));process.exitCode=1}
  else console.log('PASS: responsive body widths and real mobile menu interactions');
 }finally{
