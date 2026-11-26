@@ -73,6 +73,7 @@ html{scroll-behavior:smooth} .road-card:target{outline:2px solid #b46b4c;outline
 <section id="history" class="section hidden"><h2>My practice history</h2><div id="attempts"></div><div id="interviewHistory"></div></section></div>
 <div class="footer">Maa Sati IAC · Course access and completed milestones require approved enrollment · Interviews are for educational practice, not employment guarantees</div></main>
 <script type="module">
+import {showTimedQuiz} from '/timed-skill-quiz.js';
 import{createClient}from'https://esm.sh/@supabase/supabase-js@2.119.0';
 const db=createClient('https://ylobnofwmryltbzdtkla.supabase.co','sb_publishable_YqLFRfMUlW5hzTOh_50hQQ_Ntr0pYa9');
 const get=id=>document.getElementById(id);
@@ -236,6 +237,10 @@ function renderQuizzes(){
 }
 async function loadQuiz(id){
  const quiz=quizzes.find(q=>q.id===id);if(!quiz)return;
+ const availability=await db.rpc('iac_timed_quiz_available',{p_quiz:id});
+ if(availability.error){show('Could not check quiz availability. Please retry.',true);return;}
+ if(availability.data===true){showTimedQuiz({db,quiz,host:get('quizPlay'),user});return;}
+
  const result=await db.from('iac_mock_questions').select('id,prompt,options,sort_order').eq('quiz_id',id).order('sort_order');
  questions=checked(result);currentQuiz=quiz;
  get('quizPlay').innerHTML='<div class="card" style="margin:20px 0"><div class="row"><h2>'+escapeHtml(quiz.title)+'</h2><span class="tag neutral">'+questions.length+' QUESTIONS</span></div><form id="quizForm">'+questions.map((q,index)=>'<div class="question"><strong>'+(index+1)+'. '+escapeHtml(q.prompt)+'</strong><div class="choices">'+q.options.map((option,i)=>'<label class="choice"><input type="radio" required name="q'+escapeHtml(q.id)+'" value="'+i+'"><span>'+escapeHtml(option)+'</span></label>').join('')+'</div></div>').join('')+'<div class="actions"><button id="submitQuiz">Submit for verified scoring</button></div></form><div id="quizFeedback"></div></div>';
