@@ -9,7 +9,7 @@ const privatePages = [
   'payments.html', 'certificate.html', 'skill-badge.html',
   'curriculum-admin.html', 'founder.html', 'mentor-operations.html', 'skill-review.html'
 ];
-const publicPages = ['parents.html', 'index.html', 'platform.html', 'programs.html', 'start-here.html', 'fees.html', 'about.html', 'december-bootcamp.html'];
+const publicPages = ['parents.html', 'index.html', 'gallery.html', 'programs.html', 'start-here.html', 'fees.html', 'about.html', 'december-bootcamp.html'];
 const errors = [];
 const check = (condition, message) => { if (!condition) errors.push(message); };
 
