@@ -265,4 +265,36 @@ importForm.addEventListener('submit', async event => {
   }
 });
 
+
+const syncKey = byId('google-sync-key');
+const copySyncKey = byId('google-sync-copy');
+byId('google-sync-rotate').addEventListener('click', async event => {
+  if (!window.confirm('Generate a new sync credential and invalidate any previous one?')) return;
+  const button = event.currentTarget;
+  button.disabled = true;
+  try {
+    const result = await db.rpc('iac_rotate_registration_sync_credential');
+    if (result.error || !/^[a-f0-9]{64}$/.test(result.data)) throw new Error('Credential rotation failed');
+    syncKey.value = result.data;
+    byId('google-sync-key-label').hidden = false;
+    copySyncKey.hidden = false;
+    importStatus.textContent = 'Sync credential generated. Copy it into the private Apps Script project.';
+  } catch {
+    importStatus.textContent = 'Sync credential could not be generated.';
+  } finally {
+    button.disabled = false;
+  }
+});
+copySyncKey.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(syncKey.value);
+    syncKey.value = '';
+    byId('google-sync-key-label').hidden = true;
+    copySyncKey.hidden = true;
+    importStatus.textContent = 'Sync credential copied.';
+  } catch {
+    importStatus.textContent = 'Clipboard access failed. Retry from an HTTPS browser session.';
+  }
+});
+
 load();

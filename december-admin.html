@@ -25,6 +25,13 @@
           <button class="registration-button" type="submit">Import registrations</button>
         </form>
         <p id="google-registration-status" role="status"></p>
+        <details>
+          <summary>Configure automatic Google Sheet import</summary>
+          <p>Generate a credential for the private Apps Script property <code>IAC_SYNC_CREDENTIAL</code>. This replaces any previous sync credential.</p>
+          <button class="registration-button" id="google-sync-rotate" type="button">Generate sync credential</button>
+          <label id="google-sync-key-label" hidden>Sync credential<input id="google-sync-key" type="password" readonly autocomplete="off"></label>
+          <button id="google-sync-copy" type="button" hidden>Copy sync credential</button>
+        </details>
         <div class="registration-table">
           <table><thead><tr><th scope="col">Student</th><th scope="col">Guardian mobile</th><th scope="col">Payment review</th><th scope="col">Seat and notification</th></tr></thead><tbody id="google-registration-list"></tbody></table>
         </div>
